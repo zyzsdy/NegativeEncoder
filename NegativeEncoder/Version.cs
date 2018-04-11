@@ -8,7 +8,7 @@ namespace NegativeEncoder
 {
     class Version
     {
-        public const string VER = "0.1.0";
+        public const string VER = "0.1.1";
         public static string AboutText = "Negative Encoder (消极压制) v" + VER + @"
 By Zyzsdy
 
@@ -45,6 +45,11 @@ NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.en.md
 ---------------------------------------
 
 更新记录
+v0.1.1 (2018-4-11)
+* AvsBuilder增加repeat选项
+* 修改文本框内容时实时更新AVS
+* UI细节调整
+
 v0.1.0 (2018-4-10)
 * 修复bug
 * 更新依赖工具

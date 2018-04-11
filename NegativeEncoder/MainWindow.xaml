@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NegativeEncoder"
         mc:Ignorable="d"
-        Title="消极压制" Height="600" Width="580" Loaded="Window_Loaded">
+        Title="消极压制" Height="372" Width="580" Loaded="Window_Loaded">
     <Grid>
         <TabControl>
             <TabItem Header="视频">
@@ -52,11 +52,12 @@
                     <TextBox x:Name="avsSubtitleTextBox" Height="22" Margin="49,70,89,0" VerticalAlignment="Top" PreviewDragOver="avsSubtitleTextBox_PreviewDragOver" PreviewDrop="avsSubtitleTextBox_PreviewDrop"/>
                     <Button x:Name="avsSubtitleBrowseButton" Content="浏览..." Margin="0,70,10,0" VerticalAlignment="Top" Height="22" HorizontalAlignment="Right" Width="74" Click="avsSubtitleBrowseButton_Click"/>
                     <CheckBox x:Name="avsResizeCheckBox" Content="调整大小" HorizontalAlignment="Right" Margin="0,108,245,0" VerticalAlignment="Top" Click="avsResizeCheckBox_Click"/>
-                    <TextBox x:Name="avsResizeX" HorizontalAlignment="Right" Height="22" Margin="0,106,180,0" TextWrapping="Wrap" Text="1280" VerticalAlignment="Top" Width="60"/>
-                    <TextBox x:Name="avsResizeY" HorizontalAlignment="Right" Height="22" Margin="0,106,104,0" TextWrapping="Wrap" Text="720" VerticalAlignment="Top" Width="60"/>
+                    <TextBox x:Name="avsResizeX" HorizontalAlignment="Right" Height="22" Margin="0,106,180,0" TextWrapping="Wrap" Text="1280" VerticalAlignment="Top" Width="60" TextChanged="avsResizeX_TextChanged"/>
+                    <TextBox x:Name="avsResizeY" HorizontalAlignment="Right" Height="22" Margin="0,106,104,0" TextWrapping="Wrap" Text="720" VerticalAlignment="Top" Width="60" TextChanged="avsResizeY_TextChanged"/>
                     <Label Content="x" Margin="0,102,164,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="16"/>
                     <Button x:Name="avsStartEncodingButton" Content="开始压制" Margin="0,106,10,0" VerticalAlignment="Top" Height="22" HorizontalAlignment="Right" Width="74" Click="avsStartEncodingButton_Click"/>
                     <TextBox x:Name="avsTextBox" Margin="10,143,10,9.5" TextWrapping="Wrap"/>
+                    <CheckBox x:Name="avsRepeatCheckBox" Content="Repeat" HorizontalAlignment="Left" Margin="10,108,0,0" VerticalAlignment="Top" Click="avsRepeatCheckBox_Click"/>
 
                 </Grid>
             </TabItem>

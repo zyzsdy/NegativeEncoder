@@ -27,7 +27,14 @@ namespace NegativeEncoder
             var vsfiltermodPath = System.IO.Path.Combine(mw.baseDir, "Lib\\avstools\\plugins\\VSFilterMod.dll");
             sb.AppendFormat("LoadPlugin(\"{0}\")\n", lsmashPath);
             sb.AppendFormat("LoadPlugin(\"{0}\")\n", vsfiltermodPath);
-            sb.AppendFormat("LWLibavVideoSource(\"{0}\")\n", mw.avsVideoInputTextBox.Text);
+            if(mw.avsRepeatCheckBox.IsChecked == true)
+            {
+                sb.AppendFormat("LWLibavVideoSource(\"{0}\", repeat=True)\n", mw.avsVideoInputTextBox.Text);
+            }
+            else
+            {
+                sb.AppendFormat("LWLibavVideoSource(\"{0}\")\n", mw.avsVideoInputTextBox.Text);
+            }
             sb.AppendFormat("ConvertToYV12()\n");
             if(mw.avsResizeCheckBox.IsChecked == true)
             {

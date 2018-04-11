@@ -674,5 +674,20 @@ namespace NegativeEncoder
                 });
             });
         }
+
+        private void avsRepeatCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            avsTextBox.Text = AvsBuilder.BuildAvs(this);
+        }
+
+        private void avsResizeX_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (windowIsLoaded) avsTextBox.Text = AvsBuilder.BuildAvs(this);
+        }
+
+        private void avsResizeY_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (windowIsLoaded) avsTextBox.Text = AvsBuilder.BuildAvs(this);
+        }
     }
 }
