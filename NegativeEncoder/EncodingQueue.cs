@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Management;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -161,7 +162,7 @@ namespace NegativeEncoder
 
         public void Stop()
         {
-            mainProc?.Kill();
+            mainProc?.KillProcessTree();
             IsFinished = true;
             Progress = 0;
             OnPropertyChanged("IsFinished");
@@ -268,6 +269,29 @@ namespace NegativeEncoder
         private void NewTask_Destroyed(object sender)
         {
             Remove((EncodingTask)sender);
+        }
+    }
+
+    public static class ProcessEx
+    {
+        // 杀死进程树
+        public static void KillProcessTree(this Process parent)
+        {
+            var searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + parent.Id);
+            var moc = searcher.Get();
+            foreach (ManagementObject mo in moc)
+            {
+                Process childProcess = Process.GetProcessById(Convert.ToInt32(mo["ProcessID"]));
+                childProcess.KillProcessTree();
+            }
+            try
+            {
+                if (parent.Id != Process.GetCurrentProcess().Id) parent.Kill();//结束当前进程
+            }
+            catch
+            {
+                /* process already exited */
+            }
         }
     }
 }

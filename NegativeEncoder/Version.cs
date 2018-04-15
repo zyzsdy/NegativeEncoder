@@ -8,7 +8,7 @@ namespace NegativeEncoder
 {
     class Version
     {
-        public const string VER = "0.1.1";
+        public const string VER = "0.1.2";
         public static string AboutText = "Negative Encoder (消极压制) v" + VER + @"
 By Zyzsdy
 
@@ -45,6 +45,11 @@ NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.en.md
 ---------------------------------------
 
 更新记录
+v0.1.2 (2018-4-15)
+* 改善AVS编辑框不便输入的问题
+* 修复中止按钮无法结束所有进程的问题
+* AvsBuilder增加高精度转换选项（感谢 灵动 提供解决方案）
+
 v0.1.1 (2018-4-11)
 * AvsBuilder增加repeat选项
 * 修改文本框内容时实时更新AVS

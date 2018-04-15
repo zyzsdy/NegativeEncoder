@@ -689,5 +689,10 @@ namespace NegativeEncoder
         {
             if (windowIsLoaded) avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
+
+        private void avsHighPrecisionConvertCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            avsTextBox.Text = AvsBuilder.BuildAvs(this);
+        }
     }
 }

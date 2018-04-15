@@ -23,19 +23,44 @@ namespace NegativeEncoder
         public static string BuildAvs(MainWindow mw)
         {
             var sb = new StringBuilder();
+
+            // 插入LoadPlugin
             var lsmashPath = System.IO.Path.Combine(mw.baseDir, "Lib\\avstools\\plugins\\LSMASHSource.dll");
-            var vsfiltermodPath = System.IO.Path.Combine(mw.baseDir, "Lib\\avstools\\plugins\\VSFilterMod.dll");
             sb.AppendFormat("LoadPlugin(\"{0}\")\n", lsmashPath);
-            sb.AppendFormat("LoadPlugin(\"{0}\")\n", vsfiltermodPath);
-            if(mw.avsRepeatCheckBox.IsChecked == true)
+            if (mw.avsSubtitleTextBox.Text != "")
             {
-                sb.AppendFormat("LWLibavVideoSource(\"{0}\", repeat=True)\n", mw.avsVideoInputTextBox.Text);
+                var vsfiltermodPath = System.IO.Path.Combine(mw.baseDir, "Lib\\avstools\\plugins\\VSFilterMod.dll");
+                sb.AppendFormat("LoadPlugin(\"{0}\")\n", vsfiltermodPath);
+            }
+
+            if(mw.avsHighPrecisionConvertCheckBox.IsChecked == true)
+            {
+                var ditherPath = System.IO.Path.Combine(mw.baseDir, "Lib\\avstools\\plugins\\dither.dll");
+                sb.AppendFormat("LoadPlugin(\"{0}\")\n", ditherPath);
+            }
+
+            // 插入源
+            sb.AppendFormat("LWLibavVideoSource(\"{0}\"", mw.avsVideoInputTextBox.Text);
+
+            if (mw.avsRepeatCheckBox.IsChecked == true)
+            {
+                sb.Append(", repeat=True");
+            }
+            if (mw.avsHighPrecisionConvertCheckBox.IsChecked == true)
+            {
+                sb.Append(", format=\"YUV420P16\",stacked=True");
+            }
+            sb.Append(")\n");
+
+            if(mw.avsHighPrecisionConvertCheckBox.IsChecked == true)
+            {
+                sb.Append("ditherpost()\n");
             }
             else
             {
-                sb.AppendFormat("LWLibavVideoSource(\"{0}\")\n", mw.avsVideoInputTextBox.Text);
+                sb.Append("ConvertToYV12()\n");
             }
-            sb.AppendFormat("ConvertToYV12()\n");
+            
             if(mw.avsResizeCheckBox.IsChecked == true)
             {
                 sb.AppendFormat("LanczosResize({0},{1})\n", mw.avsResizeX.Text, mw.avsResizeY.Text);
