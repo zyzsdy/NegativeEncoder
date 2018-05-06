@@ -49,6 +49,7 @@ namespace NegativeEncoder
         private string isInterlaceSource = "False";
         private string activeInterlacedMode;
         private string isSetDar = "False";
+        private string isSetIt = "False";
         private string darValue;
         private string isUseCustomParameter = "False";
         private string customParameter;
@@ -215,6 +216,19 @@ namespace NegativeEncoder
             }
         }
 
+        public bool IsSetIt
+        {
+            get
+            {
+                return isSetIt == "True";
+            }
+            set
+            {
+                Write("isSetIt", value ? "True" : "False");
+                isSetIt = value ? "True" : "False";
+            }
+        }
+
         public string DarValue
         {
             get
@@ -346,6 +360,9 @@ namespace NegativeEncoder
                         break;
                     case "isSetDar":
                         isSetDar = regKey.GetValue("isSetDar").ToString();
+                        break;
+                    case "isSetIt":
+                        isSetIt = regKey.GetValue("isSetIt").ToString();
                         break;
                     case "darValue":
                         darValue = regKey.GetValue("darValue").ToString();

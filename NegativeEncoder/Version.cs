@@ -8,7 +8,7 @@ namespace NegativeEncoder
 {
     class Version
     {
-        public const string VER = "0.1.2";
+        public const string VER = "0.1.3";
         public static string AboutText = "Negative Encoder (消极压制) v" + VER + @"
 By Zyzsdy
 
@@ -45,6 +45,9 @@ NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.en.md
 ---------------------------------------
 
 更新记录
+v0.1.3 (2018-5-6)
+* 增加Inverse Telecine
+
 v0.1.2 (2018-4-15)
 * 改善AVS编辑框不便输入的问题
 * 修复中止按钮无法结束所有进程的问题

@@ -62,6 +62,7 @@ namespace NegativeEncoder
             laicqRadioButton.IsEnabled = false;
             isinterlaceCheckBox.IsEnabled = false;
             isSetDarCheckBox.IsEnabled = false;
+            isSetItCheckBox.IsEnabled = false;
             if (!customParameterSwitcher.IsChecked ?? false)
             {
                 //encoder == 0 as QSV ; 1 as NVENC
@@ -71,6 +72,7 @@ namespace NegativeEncoder
                     laRadioButton.IsEnabled = true;
                     icqRadioButton.IsEnabled = true;
                     laicqRadioButton.IsEnabled = true;
+                    isSetItCheckBox.IsEnabled = true;
                 }
                 cqpRadioButton.IsEnabled = true;
                 cbrRadioButton.IsEnabled = true;
@@ -139,6 +141,8 @@ namespace NegativeEncoder
 
                 isSetDarCheckBox.IsChecked = config.IsSetDar;
                 if (config.DarValue != null) darValueBox.Text = config.DarValue;
+
+                isSetItCheckBox.IsChecked = config.IsSetIt;
 
                 customParameterSwitcher.IsChecked = config.IsUseCustomParameter;
                 if (config.CustomParameter != null) customParameterInputBox.Text = config.CustomParameter;
@@ -693,6 +697,12 @@ namespace NegativeEncoder
         private void avsHighPrecisionConvertCheckBox_Click(object sender, RoutedEventArgs e)
         {
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
+        }
+
+        private void isSetItCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (config != null) config.IsSetIt = isSetItCheckBox.IsChecked ?? false;
+            if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
     }
 }

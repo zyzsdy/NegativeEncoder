@@ -122,10 +122,11 @@
                         <TextBlock>TFF</TextBlock>
                         <TextBlock>BFF</TextBlock>
                     </ComboBox>
-                    <CheckBox x:Name="isSetDarCheckBox" Content="DAR" Margin="198,120,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="isSetDarCheckBox_Checked"/>
-                    <TextBox x:Name="darValueBox" HorizontalAlignment="Left" Height="23" Margin="248,118,0,0" Text="16:9" VerticalAlignment="Top" Width="70" TextChanged="darValueBox_TextChanged"/>
+                    <CheckBox x:Name="isSetDarCheckBox" Content="DAR" Margin="302,120,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="isSetDarCheckBox_Checked"/>
+                    <TextBox x:Name="darValueBox" HorizontalAlignment="Left" Height="23" Margin="352,118,0,0" Text="16:9" VerticalAlignment="Top" Width="70" TextChanged="darValueBox_TextChanged"/>
                     <TextBox x:Name="customParameterInputBox" TextWrapping="Wrap" Text="--cqp 24:26:27" Margin="10,0,10,10" Height="87" VerticalAlignment="Bottom" TextChanged="customParameterInputBox_TextChanged"/>
                     <CheckBox x:Name="customParameterSwitcher" Content="自定义参数" Margin="10,0,0,102.5" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="92" Click="customParameterSwitcher_Checked"/>
+                    <CheckBox x:Name="isSetItCheckBox" Content="it" Margin="198,120,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="Inverse Telecine" Click="isSetItCheckBox_Click"/>
                 </Grid>
             </TabItem>
             <TabItem Header="关于">

@@ -69,7 +69,15 @@ namespace NegativeEncoder
                         break;
                 }
                 argList.Add("--vpp-deinterlace");
-                argList.Add("bob");
+
+                if(config.IsSetIt && config.ActiveEncoder == Encoder.QSV)
+                {
+                    argList.Add("it");
+                }
+                else
+                {
+                    argList.Add("bob");
+                }
             }
 
             if (config.IsSetDar)
