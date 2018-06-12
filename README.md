@@ -7,7 +7,7 @@
 
 ## Download
 
-唯一指定下载地址：https://pan.baidu.com/s/1UK2NsaY4h8j-rwC2KwbB4A 密码:7x7x
+请去[Releases](https://github.com/zyzsdy/NegativeEncoder/releases)找安装包。原有百度网盘的下载不再提供了。
 
 ## 关于Lib目录
 
