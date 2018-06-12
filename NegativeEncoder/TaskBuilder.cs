@@ -70,13 +70,41 @@ namespace NegativeEncoder
                 }
                 argList.Add("--vpp-deinterlace");
 
-                if(config.IsSetIt && config.ActiveEncoder == Encoder.QSV)
+                switch (config.ActiveDeintOption)
                 {
-                    argList.Add("it");
-                }
-                else
-                {
-                    argList.Add("bob");
+                    case DeintOption.NORMAL:
+                        if((config.ActiveEncoder ?? Encoder.QSV) == Encoder.NVENC)
+                        {
+                            argList.Add("adaptive");
+                        }
+                        else
+                        {
+                            argList.Add("normal");
+                        }
+                        break;
+                    case DeintOption.DOUBLE:
+                        argList.Add("bob");
+                        break;
+                    case DeintOption.IVTC:
+                        if ((config.ActiveEncoder ?? Encoder.QSV) == Encoder.NVENC)
+                        {
+                            argList.Add("adaptive");
+                        }
+                        else
+                        {
+                            argList.Add("it");
+                        }
+                        break;
+                    default:
+                        if ((config.ActiveEncoder ?? Encoder.QSV) == Encoder.NVENC)
+                        {
+                            argList.Add("adaptive");
+                        }
+                        else
+                        {
+                            argList.Add("normal");
+                        }
+                        break;
                 }
             }
 
@@ -92,7 +120,7 @@ namespace NegativeEncoder
         public static string GetBaseEncoderFile(string baseDir, Config config)
         {
             string encodingPath;
-            if (config.ActiveEncoder == Encoder.QSV) encodingPath = "Lib\\qsvenc\\QSVEncC64.exe";
+            if ((config.ActiveEncoder ?? Encoder.QSV) == Encoder.QSV) encodingPath = "Lib\\qsvenc\\QSVEncC64.exe";
             else encodingPath = "Lib\\nvenc\\NVEncC64.exe";
             return System.IO.Path.Combine(baseDir, encodingPath);
         }
@@ -123,7 +151,14 @@ namespace NegativeEncoder
 
             string ioargs = String.Format("-i \"{0}\" -o \"{1}\"", input, output);
             string gargs = GenericArgumentBuilder(config);
-            string arguments = ioargs + " " + gargs;
+
+            string addargs = "";
+            if (config.IsSetResize)
+            {
+                addargs += String.Format("--output-res {0}x{1}", config.ResizeXValue ?? "1920", config.ResizeYValue ?? "1080");
+            }
+
+            string arguments = ioargs + " " + addargs + " " + gargs;
 
             return new Tuple<string, string>(executableEncodingFileName, arguments);
         }
@@ -206,54 +241,48 @@ namespace NegativeEncoder
 
         public static Tuple<string, string> SimpleWithAudioEncodingTaskBuilder(string baseDir, string input, string output, Config config)
         {
-            //temp work dir
-            string workDir = System.IO.Path.GetDirectoryName(output);
-            //build bat
-            string batName = System.IO.Path.GetFileNameWithoutExtension(output) + "_SimpleBatTemp.bat";
-            string batFullname = System.IO.Path.Combine(workDir, batName);
-
-            var batSb = new StringBuilder();
-            batSb.Append("@echo off\n");
-
             var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
-            var tempVideoName = System.IO.Path.GetFileNameWithoutExtension(output) + "_tempVideo.mp4";
-            var tempVideoFullname = System.IO.Path.Combine(workDir, tempVideoName);
-            var gargs = GenericArgumentBuilder(config);
 
-            batSb.AppendFormat("\"{0}\" -i \"{1}\" -o \"{2}\" {3}\n",
-                executableEncodingFileName,
-                input,
-                tempVideoFullname,
-                gargs);
+            string ioargs = String.Format("-i \"{0}\" -o \"{1}\"", input, output);
+            string gargs = GenericArgumentBuilder(config);
 
-            var ffmpegFile = System.IO.Path.Combine(baseDir, "Lib\\ffmpeg.exe");
-            var neroaacFile = System.IO.Path.Combine(baseDir, "Lib\\neroAacEnc.exe");
-            var bitrate = (int.Parse(config.BitrateValue ?? "128") * 1000).ToString();
-            var tempAudioName = System.IO.Path.GetFileNameWithoutExtension(output) + "_tempAudio.mp4";
-            var tempAudioFullname = System.IO.Path.Combine(workDir, tempAudioName);
+            var addArgList = new List<string>
+            {
+                "--avhw",
+                "--audio-codec",
+                "--audio-bitrate",
+                config.BitrateValue ?? "192"
+            };
 
-            batSb.AppendFormat("\"{0}\" -i \"{1}\" -vn -sn -v 0 -c:a pcm_s16le -f wav pipe: | \"{2}\" -ignorelength -lc -br {3} -if - -of \"{4}\"\n",
-                ffmpegFile,
-                input,
-                neroaacFile,
-                bitrate,
-                tempAudioFullname);
+            if (config.IsSetResize)
+            {
+                addArgList.Add("--output-res");
+                addArgList.Add(String.Format("{0}x{1}", config.ResizeXValue ?? "1920", config.ResizeYValue ?? "1080"));
+            }
 
-            var mp4boxFile = System.IO.Path.Combine(baseDir, "Lib\\MP4Box.exe");
+            if (config.IsAudioFix)
+            {
+                addArgList.Add("--avsync");
+                if (!config.IsInterlaceSource)
+                {
+                    addArgList.Add("forcecfr");
+                }
+                else if((config.ActiveDeintOption ?? DeintOption.NORMAL) == DeintOption.NORMAL)
+                {
+                    addArgList.Add("forcecfr");
+                }
+                else
+                {
+                    addArgList.Add("vfr");
+                }
+            }
 
-            batSb.AppendFormat("\"{0}\" -add \"{1}#trackID=1:par=1:1:name=\" -add \"{2}:name=\" -new \"{3}\"\n",
-                mp4boxFile,
-                tempVideoFullname,
-                tempAudioFullname,
-                output);
+            string addargs = String.Join(" ", addArgList);
 
-            batSb.AppendFormat("@del \"{0}\"\n", tempVideoFullname);
-            batSb.AppendFormat("@del \"{0}\"\n", tempAudioFullname);
-            batSb.AppendFormat("@del \"{0}\"\n", batFullname);
-            //save bat
-            TempFileHelper(batFullname, batSb.ToString());
 
-            return new Tuple<string, string>(batFullname, "");
+            string arguments = ioargs + " " + addargs + " " + gargs;
+
+            return new Tuple<string, string>(executableEncodingFileName, arguments);
         }
 
         public static Tuple<string, string> MKVBoxTaskBuilder(string baseDir, string videoInput, string audioInput, string output, Config config)

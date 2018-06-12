@@ -33,6 +33,13 @@ namespace NegativeEncoder
         MP4
     }
 
+    public enum DeintOption
+    {
+        NORMAL,
+        DOUBLE,
+        IVTC
+    }
+
     public class Config
     {
         private const string regKeyPath = "SOFTWARE\\NegativeEncoder";
@@ -49,13 +56,17 @@ namespace NegativeEncoder
         private string isInterlaceSource = "False";
         private string activeInterlacedMode;
         private string isSetDar = "False";
-        private string isSetIt = "False";
         private string darValue;
         private string isUseCustomParameter = "False";
         private string customParameter;
         private string isAudioEncoding = "False";
+        private string isAudioFix = "False";
         private string bitrateValue;
         private string activeBoxFormat;
+        private string activeDeintOption;
+        private string isSetResize = "False";
+        private string resizeXValue;
+        private string resizeYValue;
 
         public Encoder? ActiveEncoder
         {
@@ -216,19 +227,6 @@ namespace NegativeEncoder
             }
         }
 
-        public bool IsSetIt
-        {
-            get
-            {
-                return isSetIt == "True";
-            }
-            set
-            {
-                Write("isSetIt", value ? "True" : "False");
-                isSetIt = value ? "True" : "False";
-            }
-        }
-
         public string DarValue
         {
             get
@@ -281,6 +279,19 @@ namespace NegativeEncoder
             }
         }
 
+        public bool IsAudioFix
+        {
+            get
+            {
+                return isAudioFix == "True";
+            }
+            set
+            {
+                Write("isAudioFix", value ? "True" : "False");
+                isAudioFix = value ? "True" : "False";
+            }
+        }
+
         public string BitrateValue
         {
             get
@@ -305,6 +316,59 @@ namespace NegativeEncoder
             {
                 Write("activeBoxFormat", ((int)value).ToString());
                 activeBoxFormat = ((int)value).ToString();
+            }
+        }
+
+        public DeintOption? ActiveDeintOption
+        {
+            get
+            {
+                if (activeDeintOption == null) return null;
+                return (DeintOption)Enum.ToObject(typeof(DeintOption), int.Parse(activeDeintOption));
+            }
+            set
+            {
+                Write("activeDeintOption", ((int)value).ToString());
+                activeDeintOption = ((int)value).ToString();
+            }
+        }
+
+        public bool IsSetResize
+        {
+            get
+            {
+                return isSetResize == "True";
+            }
+            set
+            {
+                Write("isSetResize", value ? "True" : "False");
+                isSetResize = value ? "True" : "False";
+            }
+        }
+
+        public string ResizeXValue
+        {
+            get
+            {
+                return resizeXValue;
+            }
+            set
+            {
+                Write("resizeXValue", value);
+                resizeXValue = value;
+            }
+        }
+
+        public string ResizeYValue
+        {
+            get
+            {
+                return resizeYValue;
+            }
+            set
+            {
+                Write("resizeYValue", value);
+                resizeYValue = value;
             }
         }
 
@@ -361,9 +425,6 @@ namespace NegativeEncoder
                     case "isSetDar":
                         isSetDar = regKey.GetValue("isSetDar").ToString();
                         break;
-                    case "isSetIt":
-                        isSetIt = regKey.GetValue("isSetIt").ToString();
-                        break;
                     case "darValue":
                         darValue = regKey.GetValue("darValue").ToString();
                         break;
@@ -376,14 +437,29 @@ namespace NegativeEncoder
                     case "isAudioEncoding":
                         isAudioEncoding = regKey.GetValue("isAudioEncoding").ToString();
                         break;
+                    case "isAudioFix":
+                        isAudioFix = regKey.GetValue("isAudioFix").ToString();
+                        break;
                     case "bitrateValue":
                         bitrateValue = regKey.GetValue("bitrateValue").ToString();
                         break;
                     case "activeBoxFormat":
                         activeBoxFormat = regKey.GetValue("activeBoxFormat").ToString();
                         break;
+                    case "activeDeintOption":
+                        activeDeintOption = regKey.GetValue("activeDeintOption").ToString();
+                        break;
+                    case "isSetResize":
+                        isSetResize = regKey.GetValue("isSetResize").ToString();
+                        break;
+                    case "resizeXValue":
+                        resizeXValue = regKey.GetValue("resizeXValue").ToString();
+                        break;
+                    case "resizeYValue":
+                        resizeYValue = regKey.GetValue("resizeYValue").ToString();
+                        break;
                     default:
-                        throw new Exception("Not support this keyname");
+                        break;
                 }
             }
             hkcu.Close();

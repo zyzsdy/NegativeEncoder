@@ -37,7 +37,11 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-
+                    <CheckBox x:Name="isAudioFix" Content="音频同步" HorizontalAlignment="Right" Margin="0,80,207,0" VerticalAlignment="Top" Click="isAudioFix_Click" ToolTip="开启本选项后将检查时间戳并固定帧率，处理时间将会变长。&#13;本选项仅在反交错关闭或者设为'normal'时才有效。"/>
+                    <CheckBox x:Name="simpleResizeCheckBox" Content="调整大小" HorizontalAlignment="Left" Margin="10,80,0,0" VerticalAlignment="Top" Click="simpleResizeCheckBox_Click"/>
+                    <TextBox x:Name="simpleResizeX" HorizontalAlignment="Left" Height="22" Margin="83,78,0,0" TextWrapping="Wrap" Text="1920" VerticalAlignment="Top" Width="60" TextChanged="simpleResizeX_TextChanged"/>
+                    <TextBox x:Name="simpleResizeY" HorizontalAlignment="Left" Height="22" Margin="160,78,0,0" TextWrapping="Wrap" Text="1080" VerticalAlignment="Top" Width="60" TextChanged="simpleResizeY_TextChanged"/>
+                    <Label Content="x" Margin="142,74,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="16"/>
                 </Grid>
             </TabItem>
             <TabItem Header="AVS">
@@ -105,8 +109,8 @@
                     </ComboBox>
                     <RadioButton x:Name="cqpRadioButton" Content="CQP" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" GroupName="en_mode" IsChecked="True" Checked="cqpRadioButton_Checked"/>
                     <TextBox x:Name="cqpValueBox" HorizontalAlignment="Left" Height="23" Margin="61,48,0,0" Text="24:26:27" VerticalAlignment="Top" Width="70" TextChanged="cqpValueBox_TextChanged"/>
-                    <RadioButton x:Name="vqpRadioButton" Content="VQP" HorizontalAlignment="Left" Margin="149,50,0,0" VerticalAlignment="Top" GroupName="en_mode" RenderTransformOrigin="-0.475,0.533" Checked="vqpRadioButton_Checked"/>
-                    <TextBox x:Name="vqpValueBox" HorizontalAlignment="Left" Height="23" Margin="198,48,0,0" Text="24:26:27" VerticalAlignment="Top" Width="70" RenderTransformOrigin="0.288,0.571" TextChanged="vqpValueBox_TextChanged"/>
+                    <RadioButton x:Name="vqpRadioButton" Content="VQP" HorizontalAlignment="Left" Margin="149,50,0,0" VerticalAlignment="Top" GroupName="en_mode" RenderTransformOrigin="-0.475,0.533" Checked="vqpRadioButton_Checked" Visibility="Hidden"/>
+                    <TextBox x:Name="vqpValueBox" HorizontalAlignment="Left" Height="23" Margin="198,48,0,0" Text="24:26:27" VerticalAlignment="Top" Width="70" RenderTransformOrigin="0.288,0.571" TextChanged="vqpValueBox_TextChanged" Visibility="Hidden"/>
                     <RadioButton x:Name="laRadioButton" Content="Lookahead(kbps)" HorizontalAlignment="Left" Margin="285,50,0,0" VerticalAlignment="Top" GroupName="en_mode" RenderTransformOrigin="-0.475,0.533" Checked="laRadioButton_Checked"/>
                     <TextBox x:Name="laValueBox" HorizontalAlignment="Left" Height="23" Margin="408,48,0,0" Text="3000" VerticalAlignment="Top" Width="70" RenderTransformOrigin="0.288,0.571" TextChanged="laValueBox_TextChanged"/>
                     <RadioButton x:Name="cbrRadioButton" Content="CBR" HorizontalAlignment="Left" Margin="10,82,0,0" VerticalAlignment="Top" GroupName="en_mode" Checked="cbrRadioButton_Checked"/>
@@ -126,7 +130,11 @@
                     <TextBox x:Name="darValueBox" HorizontalAlignment="Left" Height="23" Margin="352,118,0,0" Text="16:9" VerticalAlignment="Top" Width="70" TextChanged="darValueBox_TextChanged"/>
                     <TextBox x:Name="customParameterInputBox" TextWrapping="Wrap" Text="--cqp 24:26:27" Margin="10,0,10,10" Height="87" VerticalAlignment="Bottom" TextChanged="customParameterInputBox_TextChanged"/>
                     <CheckBox x:Name="customParameterSwitcher" Content="自定义参数" Margin="10,0,0,102.5" Height="15" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="92" Click="customParameterSwitcher_Checked"/>
-                    <CheckBox x:Name="isSetItCheckBox" Content="it" Margin="198,120,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="Inverse Telecine" Click="isSetItCheckBox_Click"/>
+                    <ComboBox x:Name="deintOptionComboBox" Margin="184,118,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="72" SelectedIndex="0" SelectionChanged="deintOptionComboBox_SelectionChanged">
+                        <TextBlock ToolTip="正常的反交错(30fps->30fps)">normal</TextBlock>
+                        <TextBlock ToolTip="dobule模式(30fps->60fps)">double</TextBlock>
+                        <TextBlock ToolTip="Inverse Telecine模式(30fps->24fps)">ivtc</TextBlock>
+                    </ComboBox>
                 </Grid>
             </TabItem>
             <TabItem Header="关于">

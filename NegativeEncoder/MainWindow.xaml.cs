@@ -62,7 +62,6 @@ namespace NegativeEncoder
             laicqRadioButton.IsEnabled = false;
             isinterlaceCheckBox.IsEnabled = false;
             isSetDarCheckBox.IsEnabled = false;
-            isSetItCheckBox.IsEnabled = false;
             if (!customParameterSwitcher.IsChecked ?? false)
             {
                 //encoder == 0 as QSV ; 1 as NVENC
@@ -72,7 +71,6 @@ namespace NegativeEncoder
                     laRadioButton.IsEnabled = true;
                     icqRadioButton.IsEnabled = true;
                     laicqRadioButton.IsEnabled = true;
-                    isSetItCheckBox.IsEnabled = true;
                 }
                 cqpRadioButton.IsEnabled = true;
                 cbrRadioButton.IsEnabled = true;
@@ -80,10 +78,18 @@ namespace NegativeEncoder
                 isinterlaceCheckBox.IsEnabled = true;
                 isSetDarCheckBox.IsEnabled = true;
             }
+            DeintOption sel = (DeintOption)Enum.ToObject(typeof(DeintOption), deintOptionComboBox.SelectedIndex);
+            if (encoder == 1 && sel == DeintOption.IVTC)
+            {
+                MessageBox.Show("Nvenc not support option ivtc");
+                deintOptionComboBox.SelectedIndex = (int)DeintOption.NORMAL;
+                return;
+            }
         }
 
         private void checkEncoderModeSelectAndSetDisable()
         {
+            //if ((isAudioFix.IsChecked ?? false) && deintOptionComboBox.SelectedIndex == (int)DeintOption.DOUBLE) deintOptionComboBox.SelectedIndex = (int)DeintOption.NORMAL;
             cqpValueBox.IsEnabled = false;
             vqpValueBox.IsEnabled = false;
             laValueBox.IsEnabled = false;
@@ -92,6 +98,7 @@ namespace NegativeEncoder
             icqValueBox.IsEnabled = false;
             laicqValueBox.IsEnabled = false;
             tffOrBffComboBox.IsEnabled = false;
+            //deintOptionComboBox.IsEnabled = false;
             darValueBox.IsEnabled = false;
             customParameterInputBox.IsEnabled = false;
             if (customParameterSwitcher.IsChecked ?? false)
@@ -107,7 +114,11 @@ namespace NegativeEncoder
                 if (vbrRadioButton.IsChecked ?? false) vbrValueBox.IsEnabled = true;
                 if (icqRadioButton.IsChecked ?? false) icqValueBox.IsEnabled = true;
                 if (laicqRadioButton.IsChecked ?? false) laicqValueBox.IsEnabled = true;
-                if (isinterlaceCheckBox.IsChecked ?? false) tffOrBffComboBox.IsEnabled = true;
+                if (isinterlaceCheckBox.IsChecked ?? false)
+                {
+                    tffOrBffComboBox.IsEnabled = true;
+                    //if(!isAudioFix.IsChecked ?? false) deintOptionComboBox.IsEnabled = true;
+                }
                 if (isSetDarCheckBox.IsChecked ?? false) darValueBox.IsEnabled = true;
             }
             
@@ -142,16 +153,20 @@ namespace NegativeEncoder
                 isSetDarCheckBox.IsChecked = config.IsSetDar;
                 if (config.DarValue != null) darValueBox.Text = config.DarValue;
 
-                isSetItCheckBox.IsChecked = config.IsSetIt;
-
                 customParameterSwitcher.IsChecked = config.IsUseCustomParameter;
                 if (config.CustomParameter != null) customParameterInputBox.Text = config.CustomParameter;
 
                 isAudioEncodeCheckBox.IsChecked = config.IsAudioEncoding;
+                isAudioFix.IsChecked = config.IsAudioFix;
 
                 if (config.BitrateValue != null) audioBitrateTextBox.Text = config.BitrateValue;
 
                 boxFormatComboBox.SelectedIndex = (int)(config.ActiveBoxFormat ?? BoxFormat.MKV);
+                deintOptionComboBox.SelectedIndex = (int)(config.ActiveDeintOption ?? DeintOption.NORMAL);
+
+                simpleResizeCheckBox.IsChecked = config.IsSetResize;
+                if (config.ResizeXValue != null) simpleResizeX.Text = config.ResizeXValue;
+                if (config.ResizeYValue != null) simpleResizeY.Text = config.ResizeYValue;
             }
 
             // 初始化
@@ -699,10 +714,35 @@ namespace NegativeEncoder
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
 
-        private void isSetItCheckBox_Click(object sender, RoutedEventArgs e)
+        private void isAudioFix_Click(object sender, RoutedEventArgs e)
         {
-            if (config != null) config.IsSetIt = isSetItCheckBox.IsChecked ?? false;
+            if (config != null) config.IsAudioFix = isAudioFix.IsChecked ?? false;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
+        }
+
+        private void deintOptionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (config != null) config.ActiveDeintOption = (DeintOption)Enum.ToObject(typeof(DeintOption), deintOptionComboBox.SelectedIndex);
+            if (windowIsLoaded)
+            {
+                changeDisableForEncodeMode(encoderSelecter.SelectedIndex);
+                checkEncoderModeSelectAndSetDisable();
+            }
+        }
+
+        private void simpleResizeCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (config != null) config.IsSetResize = simpleResizeCheckBox.IsChecked ?? false;
+        }
+
+        private void simpleResizeX_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (config != null) config.ResizeXValue = simpleResizeX.Text;
+        }
+
+        private void simpleResizeY_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (config != null) config.ResizeYValue = simpleResizeY.Text;
         }
     }
 }

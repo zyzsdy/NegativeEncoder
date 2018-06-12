@@ -8,7 +8,7 @@ namespace NegativeEncoder
 {
     class Version
     {
-        public const string VER = "0.1.3";
+        public const string VER = "0.2.0";
         public static string AboutText = "Negative Encoder (消极压制) v" + VER + @"
 By Zyzsdy
 
@@ -45,6 +45,16 @@ NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.en.md
 ---------------------------------------
 
 更新记录
+v0.2.0 (2018-6-12)
+* 删除VQP模式
+* 简单压制选项中增加分辨率调整
+* 增加强制音频同步功能
+
+v0.1.4 (2018-6-11)
+* 增加反交错选项(normal, bob, ivtc)，原有it选项合并到这里
+* 简单压制的音频码率受到“音频”标签页内的选项控制
+* 修复bug
+
 v0.1.3 (2018-5-6)
 * 增加Inverse Telecine
 
