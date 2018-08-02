@@ -163,7 +163,7 @@ namespace NegativeEncoder
             return new Tuple<string, string>(executableEncodingFileName, arguments);
         }
 
-        public static Tuple<string, string> AvsEncodingTaskBuilder(string baseDir, string avsText, string output, Config config)
+        public static Tuple<string, string> AvsEncodingTaskBuilder(string baseDir, string avsText, string input, string output, Config config)
         {
             //temp work dir
             string workDir = System.IO.Path.GetDirectoryName(output);
@@ -193,15 +193,22 @@ namespace NegativeEncoder
 
             var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
             string gargs = GenericArgumentBuilder(config);
-
+            var tempoutput = config.AvsEncodeAudioConvert ? System.IO.Path.Combine(System.IO.Path.GetDirectoryName(output), "temp_" + System.IO.Path.GetFileName(output)):output;
             batSb.AppendFormat("\"{0}\" {1} \"{2}\" | \"{3}\" --y4m -i - -o \"{4}\" {5}\n",
                 avs2pipemodFile,
                 avs2pipemodFirstArg,
                 avsFullname,
                 executableEncodingFileName,
-                output,
+                tempoutput,
                 gargs);
+            if (config.AvsEncodeAudioConvert)
+            {
+                var ffmpegFile = System.IO.Path.Combine(baseDir, "Lib\\ffmpeg.exe");
+                batSb.AppendFormat("\"{0}\" -i \"{1}\" -i \"{2}\" -map 0:v -map 1:a -vcodec copy -acodec aac -q 1 -y \"{3}\"\n", ffmpegFile, tempoutput, input, output);
+                batSb.AppendFormat("@del \"{0}\"\n", tempoutput);
+            }
             batSb.AppendFormat("@del \"{0}\"\n", avsFullname);
+            batSb.AppendFormat("@del \"{0}\"\n", input+".lwi");
             batSb.AppendFormat("@del \"{0}\"\n", batFullname);
 
             //save bat

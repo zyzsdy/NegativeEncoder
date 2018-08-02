@@ -31,6 +31,7 @@ namespace NegativeEncoder
         private string runLog = "";
         private EncodingType encodingType;
         private int totalFrames = 0;
+        public Tuple<string, string> fileargs;
 
         public event DestoryEncodingTaskHandle Destroyed;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -39,11 +40,12 @@ namespace NegativeEncoder
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public EncodingTask(string taskName, EncodingType encodingType)
+        public EncodingTask(string taskName, EncodingType encodingType, Tuple<string, string> fileargs)
         {
             this.taskName = taskName;
             this.progress = 0;
             this.encodingType = encodingType;
+            this.fileargs = fileargs;
         }
 
         public void Destroy()
@@ -66,8 +68,10 @@ namespace NegativeEncoder
 
         public EncodingType EncodingType { get => encodingType; set => encodingType = value; }
 
-        public void Start(string exefile, string args)
+        public void Start()
         {
+            string exefile = fileargs.Item1, args = fileargs.Item2;
+            RunLog += exefile + " " + args + "\n";
             mainProc = new Process
             {
                 StartInfo =
@@ -157,7 +161,6 @@ namespace NegativeEncoder
                 }
                 mainProc.WaitForExit();
             });
-
         }
 
         public void Stop()
@@ -185,26 +188,22 @@ namespace NegativeEncoder
         public EncodingTask AddSimpleEncodingTask(string baseDir, string input, string output, Config config)
         {
             var name = System.IO.Path.GetFileName(output);
-            var newTask = new EncodingTask(name, EncodingType.Simple);
+            var newTask = new EncodingTask(name, EncodingType.Simple, TaskBuilder.SimpleEncodingTaskBuilder(baseDir, input, output, config));
             newTask.Destroyed += NewTask_Destroyed;
 
-            var fileargs = TaskBuilder.SimpleEncodingTaskBuilder(baseDir, input, output, config);
-            newTask.Start(fileargs.Item1, fileargs.Item2);
-            newTask.RunLog += fileargs.Item1 + " " + fileargs.Item2 + "\n";
+            
             Add(newTask);
 
             return newTask;
         }
 
-        public EncodingTask AddAvsEncodingTask(string baseDir, string avsText, string output, Config config)
+        public EncodingTask AddAvsEncodingTask(string baseDir, string avsText, string input, string output, Config config)
         {
             var name = System.IO.Path.GetFileName(output);
-            var newTask = new EncodingTask(name, EncodingType.AVS);
+            var newTask = new EncodingTask(name, EncodingType.AVS, TaskBuilder.AvsEncodingTaskBuilder(baseDir, avsText, input, output, config));
             newTask.Destroyed += NewTask_Destroyed;
-
-            var fileargs = TaskBuilder.AvsEncodingTaskBuilder(baseDir, avsText, output, config);
-            newTask.Start(fileargs.Item1, fileargs.Item2);
-            newTask.RunLog += fileargs.Item1 + " " + fileargs.Item2 + "\n";
+            
+            
             Add(newTask);
 
             return newTask;
@@ -213,12 +212,8 @@ namespace NegativeEncoder
         public EncodingTask AddSimpleWithAudioEncodingTask(string baseDir, string input, string output, Config config)
         {
             var name = System.IO.Path.GetFileName(output);
-            var newTask = new EncodingTask(name, EncodingType.SimpleWithAudio);
+            var newTask = new EncodingTask(name, EncodingType.SimpleWithAudio, TaskBuilder.SimpleWithAudioEncodingTaskBuilder(baseDir, input, output, config));
             newTask.Destroyed += NewTask_Destroyed;
-
-            var fileargs = TaskBuilder.SimpleWithAudioEncodingTaskBuilder(baseDir, input, output, config);
-            newTask.Start(fileargs.Item1, fileargs.Item2);
-            newTask.RunLog += fileargs.Item1 + " " + fileargs.Item2 + "\n";
             Add(newTask);
 
             return newTask;
@@ -227,12 +222,9 @@ namespace NegativeEncoder
         public EncodingTask AddAudioEncodingTask(string baseDir, string input, string output, Config config)
         {
             var name = System.IO.Path.GetFileName(output);
-            var newTask = new EncodingTask(name, EncodingType.Audio);
+            var newTask = new EncodingTask(name, EncodingType.Audio, TaskBuilder.AudioEncodingTaskBuilder(baseDir, input, output, config));
             newTask.Destroyed += NewTask_Destroyed;
-
-            var fileargs = TaskBuilder.AudioEncodingTaskBuilder(baseDir, input, output, config);
-            newTask.Start(fileargs.Item1, fileargs.Item2);
-            newTask.RunLog += fileargs.Item1 + " " + fileargs.Item2 + "\n";
+            
             Add(newTask);
 
             return newTask;
@@ -241,12 +233,10 @@ namespace NegativeEncoder
         public EncodingTask AddMKVBoxEncodingTask(string baseDir, string videoInput, string audioInput, string output, Config config)
         {
             var name = System.IO.Path.GetFileName(output);
-            var newTask = new EncodingTask(name, EncodingType.MKVBox);
+            var newTask = new EncodingTask(name, EncodingType.MKVBox, TaskBuilder.MKVBoxTaskBuilder(baseDir, videoInput, audioInput, output, config));
             newTask.Destroyed += NewTask_Destroyed;
-
-            var fileargs = TaskBuilder.MKVBoxTaskBuilder(baseDir, videoInput, audioInput, output, config);
-            newTask.Start(fileargs.Item1, fileargs.Item2);
-            newTask.RunLog += fileargs.Item1 + " " + fileargs.Item2 + "\n";
+            
+            
             Add(newTask);
 
             return newTask;
@@ -255,12 +245,10 @@ namespace NegativeEncoder
         public EncodingTask AddMP4BoxEncodingTask(string baseDir, string videoInput, string audioInput, string output, Config config)
         {
             var name = System.IO.Path.GetFileName(output);
-            var newTask = new EncodingTask(name, EncodingType.MP4Box);
+            var newTask = new EncodingTask(name, EncodingType.MP4Box, TaskBuilder.MP4BoxTaskBuilder(baseDir, videoInput, audioInput, output, config));
             newTask.Destroyed += NewTask_Destroyed;
-
-            var fileargs = TaskBuilder.MP4BoxTaskBuilder(baseDir, videoInput, audioInput, output, config);
-            newTask.Start(fileargs.Item1, fileargs.Item2);
-            newTask.RunLog += fileargs.Item1 + " " + fileargs.Item2 + "\n";
+            
+            
             Add(newTask);
 
             return newTask;

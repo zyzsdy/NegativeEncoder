@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -27,6 +28,7 @@ namespace NegativeEncoder
         private Config config;
         public string baseDir;
         private EncodingQueue encodingQueue;
+        
 
         public MainWindow()
         {
@@ -49,6 +51,7 @@ namespace NegativeEncoder
             // 初始化界面
             InitializeComponent();
             config = new Config();
+            DataContext = config;
         }
 
         private void changeDisableForEncodeMode(int encoder)
@@ -322,6 +325,8 @@ namespace NegativeEncoder
 
         private void AutoSetSaveVideoPath(TextBox source, string suffix, TextBox dest)
         {
+            if (source.Text == "")
+                return;
             try
             {
                 var directoryPath = System.IO.Path.GetDirectoryName(source.Text);
@@ -338,12 +343,33 @@ namespace NegativeEncoder
 
         private void inputBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            if(ofd.ShowDialog() == true)
+            OpenFileDialog ofd = new OpenFileDialog { Multiselect = true };
+            if (ofd.ShowDialog() == true)
             {
-                videoInputTextBox.Text = ofd.FileName;
+                if (ofd.FileNames.Length == 1)
+                {
+                    videoInputTextBox.Text = ofd.FileName;
+                    AutoSetSaveVideoPath(videoInputTextBox, "_neenc.mp4", videoSaveTextBox);
+                }
+                else
+                {
+                    foreach(var fileName in ofd.FileNames)
+                    {
+                        videoInputTextBox.Text = fileName;
+                        AutoSetSaveVideoPath(videoInputTextBox, "_neenc.mp4", videoSaveTextBox);
+                        EncodingTask t;
+                        if (isAudioEncodeCheckBox.IsChecked == true)
+                        {
+                            t = encodingQueue.AddSimpleWithAudioEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
+                        }
+                        else
+                        {
+                            t = encodingQueue.AddSimpleEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
+                        }
+                    }
+                    videoInputTextBox.Text = videoSaveTextBox.Text = "";
+                }
             }
-            AutoSetSaveVideoPath(videoInputTextBox, "_neenc.mp4", videoSaveTextBox);
         }
 
         private void saveBrowseButton_Click(object sender, RoutedEventArgs e)
@@ -357,32 +383,38 @@ namespace NegativeEncoder
 
         private void startEncodingButton_Click(object sender, RoutedEventArgs e)
         {
-            if(videoInputTextBox.Text == "" || videoSaveTextBox.Text == "")
+            if (encodingQueue.Count == 0)
             {
-                MessageBox.Show("输入和输出都不能为空");
-                return;
-            }
-            EncodingTask t;
-            if (isAudioEncodeCheckBox.IsChecked == true)
-            {
-                t = encodingQueue.AddSimpleWithAudioEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
-            }
-            else
-            {
-                t = encodingQueue.AddSimpleEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
-            }
-            startEncodingButton.IsEnabled = false;
-            startEncodingButton.Content = "请等待...";
-            Task.Run(() =>
-            {
-                Thread.Sleep(3000);
-                Dispatcher.Invoke(() =>
+                if (videoInputTextBox.Text == "" || videoSaveTextBox.Text == "")
                 {
-                    startEncodingButton.IsEnabled = true;
-                    startEncodingButton.Content = "开始压制";
-                    OpenTaskDetailWindow(t);
+                    MessageBox.Show("输入和输出都不能为空");
+                    return;
+                }
+                if (isAudioEncodeCheckBox.IsChecked == true)
+                {
+                    encodingQueue.AddSimpleWithAudioEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
+                }
+                else
+                {
+                    encodingQueue.AddSimpleEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
+                }
+            }
+            foreach (var t in encodingQueue)
+            {
+                t.Start();
+                startEncodingButton.IsEnabled = false;
+                startEncodingButton.Content = "请等待...";
+                Task.Run(() =>
+                {
+                    Thread.Sleep(3000);
+                    Dispatcher.Invoke(() =>
+                    {
+                        startEncodingButton.IsEnabled = true;
+                        startEncodingButton.Content = "开始压制";
+                        OpenTaskDetailWindow(t);
+                    });
                 });
-            });
+            }
         }
 
         // avs选项卡：avs视频拖动处理
@@ -399,7 +431,8 @@ namespace NegativeEncoder
                 avsVideoInputTextBox.Text = f;
             }
             AutoSetSaveVideoPath(avsVideoInputTextBox, "_neavs.mp4", avsVideoSaveTextBox);
-            avsTextBox.Text = AvsBuilder.BuildAvs(this);
+            if (avsVideoSaveTextBox.Text!="")
+                avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
 
         private void avsInputBrowseButton_Click(object sender, RoutedEventArgs e)
@@ -410,7 +443,8 @@ namespace NegativeEncoder
                 avsVideoInputTextBox.Text = ofd.FileName;
             }
             AutoSetSaveVideoPath(avsVideoInputTextBox, "_neavs.mp4", avsVideoSaveTextBox);
-            avsTextBox.Text = AvsBuilder.BuildAvs(this);
+            if (avsVideoSaveTextBox.Text != "")
+                avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
 
         // avs选项卡：avs字幕拖动处理
@@ -495,10 +529,6 @@ namespace NegativeEncoder
 
         private void boxFormatComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(windowIsLoaded && boxFormatComboBox.SelectedIndex == (int)BoxFormat.MP4)
-            {
-                var result = MessageBox.Show("8102年了，B站都支持MKV直传了，居然还有人要用MP4格式。", "我看看日历", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-            }
             if (config != null)
             {
                 config.ActiveBoxFormat = (BoxFormat)Enum.ToObject(typeof(BoxFormat), boxFormatComboBox.SelectedIndex);
@@ -614,8 +644,7 @@ namespace NegativeEncoder
                 MessageBox.Show("输出不能为空");
                 return;
             }
-
-            var t = encodingQueue.AddAvsEncodingTask(baseDir, avsTextBox.Text, avsVideoSaveTextBox.Text, config);
+            var t = encodingQueue.AddAvsEncodingTask(baseDir, avsTextBox.Text, avsVideoInputTextBox.Text, avsVideoSaveTextBox.Text, config);
             avsStartEncodingButton.IsEnabled = false;
             avsStartEncodingButton.Content = "请等待...";
             Task.Run(() =>
