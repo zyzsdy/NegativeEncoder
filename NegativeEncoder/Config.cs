@@ -67,6 +67,7 @@ namespace NegativeEncoder
         private string isSetResize = "False";
         private string resizeXValue;
         private string resizeYValue;
+        private string avsEncodeAudioConvert = "False";
 
         public Encoder? ActiveEncoder
         {
@@ -369,6 +370,16 @@ namespace NegativeEncoder
             {
                 Write("resizeYValue", value);
                 resizeYValue = value;
+            }
+        }
+
+        public bool AvsEncodeAudioConvert
+        {
+            get => avsEncodeAudioConvert == "True";
+            set
+            {
+                Write("avsEncodeAudioConvert", value ? "True" : "False");
+                avsEncodeAudioConvert = value ? "True" : "False";
             }
         }
 

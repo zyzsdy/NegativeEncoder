@@ -63,6 +63,7 @@
                     <TextBox x:Name="avsTextBox" Margin="10,143,10,9.5" TextWrapping="Wrap" AcceptsReturn="True"/>
                     <CheckBox x:Name="avsRepeatCheckBox" Content="Repeat" HorizontalAlignment="Left" Margin="10,108,0,0" VerticalAlignment="Top" ToolTip="勾选后可使LWLVS在处理输入时自动插入一些重复帧。" Click="avsRepeatCheckBox_Click"/>
                     <CheckBox x:Name="avsHighPrecisionConvertCheckBox" Content="8bit转换" HorizontalAlignment="Left" Margin="75,108,0,0" VerticalAlignment="Top" ToolTip="当输入色深为高精度（9~16bit）时，请勾选此复选框。" Click="avsHighPrecisionConvertCheckBox_Click"/>
+                    <CheckBox x:Name="avsEncodeAudioConvertCheckBox" Content="同时压制音频" HorizontalAlignment="Left" Margin="150,108,0,0" VerticalAlignment="Top" ToolTip="勾选此复选框会用aac -q 1来压制音频。" IsChecked="{Binding AvsEncodeAudioConvert}"/>
 
                 </Grid>
             </TabItem>
