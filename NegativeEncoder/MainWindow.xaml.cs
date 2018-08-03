@@ -16,7 +16,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
 namespace NegativeEncoder
 {
     /// <summary>
@@ -28,8 +27,6 @@ namespace NegativeEncoder
         private Config config;
         public string baseDir;
         private EncodingQueue encodingQueue;
-        
-
         public MainWindow()
         {
             // 启动
@@ -53,7 +50,6 @@ namespace NegativeEncoder
             config = new Config();
             DataContext = config;
         }
-
         private void changeDisableForEncodeMode(int encoder)
         {
             cqpRadioButton.IsEnabled = false;
@@ -89,7 +85,6 @@ namespace NegativeEncoder
                 return;
             }
         }
-
         private void checkEncoderModeSelectAndSetDisable()
         {
             //if ((isAudioFix.IsChecked ?? false) && deintOptionComboBox.SelectedIndex == (int)DeintOption.DOUBLE) deintOptionComboBox.SelectedIndex = (int)DeintOption.NORMAL;
@@ -124,16 +119,13 @@ namespace NegativeEncoder
                 }
                 if (isSetDarCheckBox.IsChecked ?? false) darValueBox.IsEnabled = true;
             }
-            
         }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             //载入config
             if (config != null)
             {
                 encoderSelecter.SelectedIndex = (int)(config.ActiveEncoder ?? Encoder.QSV);
-
                 cqpRadioButton.IsChecked = (config.ActiveEncoderMode ?? EncoderMode.CQP) == EncoderMode.CQP;
                 vqpRadioButton.IsChecked = (config.ActiveEncoderMode ?? EncoderMode.CQP) == EncoderMode.VQP;
                 laRadioButton.IsChecked = (config.ActiveEncoderMode ?? EncoderMode.CQP) == EncoderMode.LA;
@@ -141,7 +133,6 @@ namespace NegativeEncoder
                 vbrRadioButton.IsChecked = (config.ActiveEncoderMode ?? EncoderMode.CQP) == EncoderMode.VBR;
                 icqRadioButton.IsChecked = (config.ActiveEncoderMode ?? EncoderMode.CQP) == EncoderMode.ICQ;
                 laicqRadioButton.IsChecked = (config.ActiveEncoderMode ?? EncoderMode.CQP) == EncoderMode.LAICQ;
-
                 if (config.CqpValue != null) cqpValueBox.Text = config.CqpValue;
                 if (config.VqpValue != null) vqpValueBox.Text = config.VqpValue;
                 if (config.LaValue != null) laValueBox.Text = config.LaValue;
@@ -149,29 +140,21 @@ namespace NegativeEncoder
                 if (config.VbrValue != null) vbrValueBox.Text = config.VbrValue;
                 if (config.IcqValue != null) icqValueBox.Text = config.IcqValue;
                 if (config.LaicqValue != null) laicqValueBox.Text = config.LaicqValue;
-
                 isinterlaceCheckBox.IsChecked = config.IsInterlaceSource;
                 tffOrBffComboBox.SelectedIndex = (int)(config.ActiveInterlacedMode ?? InterlacedMode.TFF);
-
                 isSetDarCheckBox.IsChecked = config.IsSetDar;
                 if (config.DarValue != null) darValueBox.Text = config.DarValue;
-
                 customParameterSwitcher.IsChecked = config.IsUseCustomParameter;
                 if (config.CustomParameter != null) customParameterInputBox.Text = config.CustomParameter;
-
                 isAudioEncodeCheckBox.IsChecked = config.IsAudioEncoding;
                 isAudioFix.IsChecked = config.IsAudioFix;
-
                 if (config.BitrateValue != null) audioBitrateTextBox.Text = config.BitrateValue;
-
                 boxFormatComboBox.SelectedIndex = (int)(config.ActiveBoxFormat ?? BoxFormat.MKV);
                 deintOptionComboBox.SelectedIndex = (int)(config.ActiveDeintOption ?? DeintOption.NORMAL);
-
                 simpleResizeCheckBox.IsChecked = config.IsSetResize;
                 if (config.ResizeXValue != null) simpleResizeX.Text = config.ResizeXValue;
                 if (config.ResizeYValue != null) simpleResizeY.Text = config.ResizeYValue;
             }
-
             // 初始化
             aboutText.Text = Version.AboutText;
             changeDisableForEncodeMode(encoderSelecter.SelectedIndex);
@@ -179,70 +162,59 @@ namespace NegativeEncoder
             encodingTaskListBox.ItemsSource = encodingQueue;
             windowIsLoaded = true;
         }
-
         private void encoderSelecter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(config != null) config.ActiveEncoder = (Encoder)Enum.ToObject(typeof(Encoder), encoderSelecter.SelectedIndex);
+            if (config != null) config.ActiveEncoder = (Encoder)Enum.ToObject(typeof(Encoder), encoderSelecter.SelectedIndex);
             if (windowIsLoaded)
             {
                 changeDisableForEncodeMode(encoderSelecter.SelectedIndex);
             }
         }
-
         private void cqpRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.ActiveEncoderMode = EncoderMode.CQP;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void vqpRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.ActiveEncoderMode = EncoderMode.VQP;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void laRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.ActiveEncoderMode = EncoderMode.LA;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void cbrRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.ActiveEncoderMode = EncoderMode.CBR;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void vbrRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.ActiveEncoderMode = EncoderMode.VBR;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void icqRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.ActiveEncoderMode = EncoderMode.ICQ;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void laicqRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.ActiveEncoderMode = EncoderMode.LAICQ;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void isinterlaceCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.IsInterlaceSource = isinterlaceCheckBox.IsChecked ?? false;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void isSetDarCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.IsSetDar = isSetDarCheckBox.IsChecked ?? false;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void customParameterSwitcher_Checked(object sender, RoutedEventArgs e)
         {
             if (config != null) config.IsUseCustomParameter = customParameterSwitcher.IsChecked ?? false;
@@ -252,77 +224,64 @@ namespace NegativeEncoder
                 checkEncoderModeSelectAndSetDisable();
             }
         }
-
         private void cqpValueBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.CqpValue = cqpValueBox.Text;
         }
-
         private void vqpValueBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.VqpValue = vqpValueBox.Text;
         }
-
         private void laValueBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.LaValue = laValueBox.Text;
         }
-
         private void cbrValueBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.CbrValue = cbrValueBox.Text;
         }
-
         private void vbrValueBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.VbrValue = vbrValueBox.Text;
         }
-
         private void icqValueBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.IcqValue = icqValueBox.Text;
         }
-
         private void laicqValueBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.LaicqValue = laicqValueBox.Text;
         }
-
         private void tffOrBffComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (config != null) config.ActiveInterlacedMode = (InterlacedMode)Enum.ToObject(typeof(InterlacedMode), tffOrBffComboBox.SelectedIndex);
         }
-
         private void darValueBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.DarValue = darValueBox.Text;
         }
-
         private void customParameterInputBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.CustomParameter = customParameterInputBox.Text;
         }
-
         private void isAudioEncodeCheckBox_Click(object sender, RoutedEventArgs e)
         {
             if (config != null) config.IsAudioEncoding = isAudioEncodeCheckBox.IsChecked ?? false;
         }
-
         // “视频”选项卡：处理输入的拖动
         private void videoInputTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
         }
-
         private void videoInputTextBox_PreviewDrop(object sender, DragEventArgs e)
         {
-            foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop)) {
+            foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop))
+            {
                 videoInputTextBox.Text = f;
             }
             AutoSetSaveVideoPath(videoInputTextBox, "_neenc.mp4", videoSaveTextBox);
         }
-
         private void AutoSetSaveVideoPath(TextBox source, string suffix, TextBox dest)
         {
             if (source.Text == "")
@@ -338,9 +297,7 @@ namespace NegativeEncoder
             {
                 MessageBox.Show("填入的路径不正确。", "输入校验失败", MessageBoxButton.OK, MessageBoxImage.Asterisk);
             }
-            
         }
-
         private void inputBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog { Multiselect = true };
@@ -353,7 +310,7 @@ namespace NegativeEncoder
                 }
                 else
                 {
-                    foreach(var fileName in ofd.FileNames)
+                    foreach (var fileName in ofd.FileNames)
                     {
                         videoInputTextBox.Text = fileName;
                         AutoSetSaveVideoPath(videoInputTextBox, "_neenc.mp4", videoSaveTextBox);
@@ -371,16 +328,14 @@ namespace NegativeEncoder
                 }
             }
         }
-
         private void saveBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog { DefaultExt = "mp4", Filter = "MP4 Video(*.mp4)|*.mp4|所有文件(*.*)|*.*" };
-            if(sfd.ShowDialog() == true)
+            if (sfd.ShowDialog() == true)
             {
                 videoSaveTextBox.Text = sfd.FileName;
             }
         }
-
         private void startEncodingButton_Click(object sender, RoutedEventArgs e)
         {
             if (encodingQueue.Count == 0)
@@ -416,14 +371,12 @@ namespace NegativeEncoder
                 });
             }
         }
-
         // avs选项卡：avs视频拖动处理
         private void avsVideoInputTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
         }
-
         private void avsVideoInputTextBox_PreviewDrop(object sender, DragEventArgs e)
         {
             foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop))
@@ -431,10 +384,9 @@ namespace NegativeEncoder
                 avsVideoInputTextBox.Text = f;
             }
             AutoSetSaveVideoPath(avsVideoInputTextBox, "_neavs.mp4", avsVideoSaveTextBox);
-            if (avsVideoSaveTextBox.Text!="")
+            if (avsVideoSaveTextBox.Text != "")
                 avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
-
         private void avsInputBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -446,14 +398,12 @@ namespace NegativeEncoder
             if (avsVideoSaveTextBox.Text != "")
                 avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
-
         // avs选项卡：avs字幕拖动处理
         private void avsSubtitleTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
         }
-
         private void avsSubtitleTextBox_PreviewDrop(object sender, DragEventArgs e)
         {
             foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop))
@@ -462,7 +412,6 @@ namespace NegativeEncoder
             }
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
-
         private void avsSubtitleBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog { Filter = "ASS 字幕文件(*.ass)|*.ass" };
@@ -472,12 +421,10 @@ namespace NegativeEncoder
             }
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
-
         private void avsResizeCheckBox_Click(object sender, RoutedEventArgs e)
         {
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
-
         private void avsSaveBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog { DefaultExt = "mp4", Filter = "MP4 Video(*.mp4)|*.mp4|所有文件(*.*)|*.*" };
@@ -486,19 +433,16 @@ namespace NegativeEncoder
                 avsVideoSaveTextBox.Text = sfd.FileName;
             }
         }
-
         private void audioBitrateTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.BitrateValue = audioBitrateTextBox.Text;
         }
-
         // 音频选项卡：输入视频拖动处理
         private void audioInputTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
         }
-
         private void audioInputTextBox_PreviewDrop(object sender, DragEventArgs e)
         {
             foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop))
@@ -507,7 +451,6 @@ namespace NegativeEncoder
             }
             AutoSetSaveVideoPath(audioInputTextBox, "_neAAC.mp4", audioSaveTextBox);
         }
-
         private void audioInputBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -517,7 +460,6 @@ namespace NegativeEncoder
             }
             AutoSetSaveVideoPath(audioInputTextBox, "_neAAC.mp4", audioSaveTextBox);
         }
-
         private void audioSaveBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog { DefaultExt = "mp4", Filter = "MP4 Video(*.mp4)|*.mp4|所有文件(*.*)|*.*" };
@@ -526,7 +468,6 @@ namespace NegativeEncoder
                 audioSaveTextBox.Text = sfd.FileName;
             }
         }
-
         private void boxFormatComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (config != null)
@@ -545,21 +486,19 @@ namespace NegativeEncoder
                 }
             }
         }
-
         // 封装选项卡：输入视频拖动处理
         private void boxVideoInputTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
         }
-
         private void boxVideoInputTextBox_PreviewDrop(object sender, DragEventArgs e)
         {
             foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop))
             {
                 boxVideoInputTextBox.Text = f;
             }
-            if(config.ActiveBoxFormat == BoxFormat.MKV)
+            if (config.ActiveBoxFormat == BoxFormat.MKV)
             {
                 AutoSetSaveVideoPath(boxVideoInputTextBox, "_mux.mkv", boxSaveTextBox);
             }
@@ -567,9 +506,7 @@ namespace NegativeEncoder
             {
                 AutoSetSaveVideoPath(boxVideoInputTextBox, "_mux.mp4", boxSaveTextBox);
             }
-            
         }
-
         private void boxInputBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -586,14 +523,12 @@ namespace NegativeEncoder
                 AutoSetSaveVideoPath(boxVideoInputTextBox, "_mux.mp4", boxSaveTextBox);
             }
         }
-
         // 封装选项卡：输入音频拖动处理
         private void boxAudioInputTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
         }
-
         private void boxAudioInputTextBox_PreviewDrop(object sender, DragEventArgs e)
         {
             foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop))
@@ -601,7 +536,6 @@ namespace NegativeEncoder
                 boxAudioInputTextBox.Text = f;
             }
         }
-
         private void boxAudioBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -610,7 +544,6 @@ namespace NegativeEncoder
                 boxAudioInputTextBox.Text = ofd.FileName;
             }
         }
-
         private void boxSaveBrowseButton_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog { DefaultExt = "mp4", Filter = "MP4 Video(*.mp4)|*.mp4|所有文件(*.*)|*.*" };
@@ -619,24 +552,19 @@ namespace NegativeEncoder
                 boxSaveTextBox.Text = sfd.FileName;
             }
         }
-
         private void ListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             EncodingTask source = (EncodingTask)((ListBoxItem)sender).Content;
-
             OpenTaskDetailWindow(source);
         }
-
         private void OpenTaskDetailWindow(EncodingTask t)
         {
             TaskDetail taskDetail = new TaskDetail
             {
                 DataContext = t
             };
-
             taskDetail.Show();
         }
-
         private void avsStartEncodingButton_Click(object sender, RoutedEventArgs e)
         {
             if (avsVideoSaveTextBox.Text == "")
@@ -647,6 +575,7 @@ namespace NegativeEncoder
             var t = encodingQueue.AddAvsEncodingTask(baseDir, avsTextBox.Text, avsVideoInputTextBox.Text, avsVideoSaveTextBox.Text, config);
             avsStartEncodingButton.IsEnabled = false;
             avsStartEncodingButton.Content = "请等待...";
+            t.Start();
             Task.Run(() =>
             {
                 Thread.Sleep(3000);
@@ -658,7 +587,6 @@ namespace NegativeEncoder
                 });
             });
         }
-
         private void audioStartEncodingButton_Click(object sender, RoutedEventArgs e)
         {
             if (audioSaveTextBox.Text == "")
@@ -675,10 +603,10 @@ namespace NegativeEncoder
                 MessageBox.Show("无法将比特率值解析为整数，请检查！");
                 return;
             }
-
             var t = encodingQueue.AddAudioEncodingTask(baseDir, audioInputTextBox.Text, audioSaveTextBox.Text, config);
             audioStartEncodingButton.IsEnabled = false;
             audioStartEncodingButton.Content = "请等待...";
+            t.Start();
             Task.Run(() =>
             {
                 Thread.Sleep(3000);
@@ -690,17 +618,15 @@ namespace NegativeEncoder
                 });
             });
         }
-
         private void boxStartButton_Click(object sender, RoutedEventArgs e)
         {
-            if(boxVideoInputTextBox.Text == "" || boxAudioInputTextBox.Text == "" || boxSaveTextBox.Text == "")
+            if (boxVideoInputTextBox.Text == "" || boxAudioInputTextBox.Text == "" || boxSaveTextBox.Text == "")
             {
                 MessageBox.Show("输入和输出都不能为空");
                 return;
             }
-
             EncodingTask t;
-            if(boxFormatComboBox.SelectedIndex == (int)BoxFormat.MKV)
+            if (boxFormatComboBox.SelectedIndex == (int)BoxFormat.MKV)
             {
                 t = encodingQueue.AddMKVBoxEncodingTask(baseDir, boxVideoInputTextBox.Text, boxAudioInputTextBox.Text, boxSaveTextBox.Text, config);
             }
@@ -708,9 +634,9 @@ namespace NegativeEncoder
             {
                 t = encodingQueue.AddMP4BoxEncodingTask(baseDir, boxVideoInputTextBox.Text, boxAudioInputTextBox.Text, boxSaveTextBox.Text, config);
             }
-
             boxStartButton.IsEnabled = false;
             boxStartButton.Content = "请等待...";
+            t.Start();
             Task.Run(() =>
             {
                 Thread.Sleep(3000);
@@ -722,33 +648,27 @@ namespace NegativeEncoder
                 });
             });
         }
-
         private void avsRepeatCheckBox_Click(object sender, RoutedEventArgs e)
         {
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
-
         private void avsResizeX_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (windowIsLoaded) avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
-
         private void avsResizeY_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (windowIsLoaded) avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
-
         private void avsHighPrecisionConvertCheckBox_Click(object sender, RoutedEventArgs e)
         {
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
-
         private void isAudioFix_Click(object sender, RoutedEventArgs e)
         {
             if (config != null) config.IsAudioFix = isAudioFix.IsChecked ?? false;
             if (windowIsLoaded) checkEncoderModeSelectAndSetDisable();
         }
-
         private void deintOptionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (config != null) config.ActiveDeintOption = (DeintOption)Enum.ToObject(typeof(DeintOption), deintOptionComboBox.SelectedIndex);
@@ -758,17 +678,14 @@ namespace NegativeEncoder
                 checkEncoderModeSelectAndSetDisable();
             }
         }
-
         private void simpleResizeCheckBox_Click(object sender, RoutedEventArgs e)
         {
             if (config != null) config.IsSetResize = simpleResizeCheckBox.IsChecked ?? false;
         }
-
         private void simpleResizeX_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.ResizeXValue = simpleResizeX.Text;
         }
-
         private void simpleResizeY_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (config != null) config.ResizeYValue = simpleResizeY.Text;
