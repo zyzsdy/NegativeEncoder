@@ -285,6 +285,138 @@ namespace NegativeEncoder
             return new Tuple<string, string>(executableEncodingFileName, arguments);
         }
 
+        internal static Tuple<string, string> FFPWithAudioEncodingTaskBuilder(string baseDir, string input, string output, Config config)
+        {
+            //temp work dir
+            string workDir = System.IO.Path.GetDirectoryName(output);
+            string videoName = System.IO.Path.GetFileNameWithoutExtension(output) + "_videoTemp.mp4";
+            string videoFullname = System.IO.Path.Combine(workDir, videoName);
+            string aacName = System.IO.Path.GetFileNameWithoutExtension(output) + "_aacTemp.aac";
+            string aacFullname = System.IO.Path.Combine(workDir, aacName);
+            //build bat
+            string batName = System.IO.Path.GetFileNameWithoutExtension(output) + "_ffpWithAudioBatTemp.bat";
+            string batFullname = System.IO.Path.Combine(workDir, batName);
+
+            var batSb = new StringBuilder();
+            batSb.Append("@echo off\n");
+
+            var ffmpegFile = System.IO.Path.Combine(baseDir, "Lib\\ffmpeg.exe");
+            var mp4boxFile = System.IO.Path.Combine(baseDir, "Lib\\MP4Box.exe");
+            var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
+            string gargs = GenericArgumentBuilder(config);
+
+            var addArgList = new List<string>();
+
+            if (config.IsSetResize)
+            {
+                addArgList.Add("--output-res");
+                addArgList.Add(String.Format("{0}x{1}", config.ResizeXValue ?? "1920", config.ResizeYValue ?? "1080"));
+            }
+
+            if (config.IsAudioFix)
+            {
+                addArgList.Add("--avsync");
+                if (!config.IsInterlaceSource)
+                {
+                    addArgList.Add("forcecfr");
+                }
+                else if ((config.ActiveDeintOption ?? DeintOption.NORMAL) == DeintOption.NORMAL)
+                {
+                    addArgList.Add("forcecfr");
+                }
+                else
+                {
+                    addArgList.Add("vfr");
+                }
+            }
+
+            string addargs = String.Join(" ", addArgList);
+
+            batSb.AppendFormat("\"{0}\" -y -i \"{1}\" -an -pix_fmt yuv420p -f yuv4mpegpipe - | \"{2}\" --y4m -i - -o \"{3}\" {4} {5}\n",
+                ffmpegFile,
+                input,
+                executableEncodingFileName,
+                videoFullname,
+                gargs,
+                addargs);
+            batSb.AppendFormat("\"{0}\" -i \"{1}\" -vn -sn -c:a copy -y -map 0:a:0 \"{2}\"\n",
+                ffmpegFile,
+                input,
+                aacFullname);
+            batSb.AppendFormat("\"{0}\" -add \"{1}#trackID=1:par=1:1:name=\" -add \"{2}:name=\" -new \"{3}\"\n",
+                mp4boxFile,
+                videoFullname,
+                aacFullname,
+                output);
+
+            batSb.AppendFormat("@del \"{0}\"\n", videoFullname);
+            batSb.AppendFormat("@del \"{0}\"\n", aacFullname);
+            batSb.AppendFormat("@del \"{0}\"\n", batFullname);
+
+            //save bat
+            TempFileHelper(batFullname, batSb.ToString());
+
+            return new Tuple<string, string>(batFullname, "");
+        }
+
+        internal static Tuple<string, string> FFPEncodingTaskBuilder(string baseDir, string input, string output, Config config)
+        {
+            //temp work dir
+            string workDir = System.IO.Path.GetDirectoryName(output);
+
+            //build bat
+            string batName = System.IO.Path.GetFileNameWithoutExtension(output) + "_ffpBatTemp.bat";
+            string batFullname = System.IO.Path.Combine(workDir, batName);
+
+            var batSb = new StringBuilder();
+            batSb.Append("@echo off\n");
+
+            var ffmpegFile = System.IO.Path.Combine(baseDir, "Lib\\ffmpeg.exe");
+            var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
+            string gargs = GenericArgumentBuilder(config);
+
+            var addArgList = new List<string>();
+
+            if (config.IsSetResize)
+            {
+                addArgList.Add("--output-res");
+                addArgList.Add(String.Format("{0}x{1}", config.ResizeXValue ?? "1920", config.ResizeYValue ?? "1080"));
+            }
+
+            if (config.IsAudioFix)
+            {
+                addArgList.Add("--avsync");
+                if (!config.IsInterlaceSource)
+                {
+                    addArgList.Add("forcecfr");
+                }
+                else if ((config.ActiveDeintOption ?? DeintOption.NORMAL) == DeintOption.NORMAL)
+                {
+                    addArgList.Add("forcecfr");
+                }
+                else
+                {
+                    addArgList.Add("vfr");
+                }
+            }
+
+            string addargs = String.Join(" ", addArgList);
+
+            batSb.AppendFormat("\"{0}\" -y -i \"{1}\" -an -pix_fmt yuv420p -f yuv4mpegpipe - | \"{2}\" --y4m -i - -o \"{3}\" {4} {5}\n",
+                ffmpegFile,
+                input,
+                executableEncodingFileName,
+                output,
+                gargs,
+                addargs);
+            batSb.AppendFormat("@del \"{0}\"\n", batFullname);
+
+            //save bat
+            TempFileHelper(batFullname, batSb.ToString());
+
+            return new Tuple<string, string>(batFullname, "");
+        }
+
         public static Tuple<string, string> MKVBoxTaskBuilder(string baseDir, string videoInput, string audioInput, string output, Config config)
         {
             var mkvmergeFile = System.IO.Path.Combine(baseDir, "Lib\\mkvmerge.exe");

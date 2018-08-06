@@ -8,7 +8,7 @@ namespace NegativeEncoder
 {
     class Version
     {
-        public const string VER = "0.2.0";
+        public const string VER = "0.2.1";
         public static string AboutText = "Negative Encoder (消极压制) v" + VER + @"
 By Zyzsdy
 
@@ -45,6 +45,9 @@ NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.en.md
 ---------------------------------------
 
 更新记录
+v0.2.1 (2018-8-6)
+* 增加FFmpeg Pipe压制模式
+
 v0.2.0 (2018-6-12)
 * 删除VQP模式
 * 简单压制选项中增加分辨率调整

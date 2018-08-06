@@ -270,6 +270,34 @@ namespace NegativeEncoder
         {
             Remove((EncodingTask)sender);
         }
+
+        internal EncodingTask AddFFPWithAudioEncodingTask(string baseDir, string input, string output, Config config)
+        {
+            var name = System.IO.Path.GetFileName(output);
+            var newTask = new EncodingTask(name, EncodingType.SimpleWithAudio);
+            newTask.Destroyed += NewTask_Destroyed;
+
+            var fileargs = TaskBuilder.FFPWithAudioEncodingTaskBuilder(baseDir, input, output, config);
+            newTask.Start(fileargs.Item1, fileargs.Item2);
+            newTask.RunLog += fileargs.Item1 + " " + fileargs.Item2 + "\n";
+            Add(newTask);
+
+            return newTask;
+        }
+
+        internal EncodingTask AddFFPEncodingTask(string baseDir, string input, string output, Config config)
+        {
+            var name = System.IO.Path.GetFileName(output);
+            var newTask = new EncodingTask(name, EncodingType.SimpleWithAudio);
+            newTask.Destroyed += NewTask_Destroyed;
+
+            var fileargs = TaskBuilder.FFPEncodingTaskBuilder(baseDir, input, output, config);
+            newTask.Start(fileargs.Item1, fileargs.Item2);
+            newTask.RunLog += fileargs.Item1 + " " + fileargs.Item2 + "\n";
+            Add(newTask);
+
+            return newTask;
+        }
     }
 
     public static class ProcessEx

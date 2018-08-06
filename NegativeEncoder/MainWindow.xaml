@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NegativeEncoder"
         mc:Ignorable="d"
-        Title="消极压制" Height="372" Width="580" Loaded="Window_Loaded">
+        Title="消极压制" Height="500" Width="580" Loaded="Window_Loaded">
     <Grid>
         <TabControl>
             <TabItem Header="视频">
@@ -98,6 +98,13 @@
                     </ComboBox>
                     <Button x:Name="boxStartButton" Content="开始封装" Margin="0,115,10,0" VerticalAlignment="Top" Height="22" HorizontalAlignment="Right" Width="74" Click="boxStartButton_Click"/>
 
+                </Grid>
+            </TabItem>
+            <TabItem Header="常用">
+                <Grid>
+                    <GroupBox Header="FFmpeg Pipe" Height="58" VerticalAlignment="Top" Margin="10,10,10,0">
+                        <Button x:Name="startFFPEncodingButton" Content="开始压制" Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="74" Height="22" Click="startFFPEncodingButton_Click"/>
+                    </GroupBox>
                 </Grid>
             </TabItem>
             <TabItem Header="选项">

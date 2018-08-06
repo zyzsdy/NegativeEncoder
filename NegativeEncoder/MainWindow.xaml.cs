@@ -744,5 +744,35 @@ namespace NegativeEncoder
         {
             if (config != null) config.ResizeYValue = simpleResizeY.Text;
         }
+
+        private void startFFPEncodingButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (videoInputTextBox.Text == "" || videoSaveTextBox.Text == "")
+            {
+                MessageBox.Show("输入和输出都不能为空");
+                return;
+            }
+            EncodingTask t;
+            if (isAudioEncodeCheckBox.IsChecked == true)
+            {
+                t = encodingQueue.AddFFPWithAudioEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
+            }
+            else
+            {
+                t = encodingQueue.AddFFPEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
+            }
+            startFFPEncodingButton.IsEnabled = false;
+            startFFPEncodingButton.Content = "请等待...";
+            Task.Run(() =>
+            {
+                Thread.Sleep(3000);
+                Dispatcher.Invoke(() =>
+                {
+                    startFFPEncodingButton.IsEnabled = true;
+                    startFFPEncodingButton.Content = "开始压制";
+                    OpenTaskDetailWindow(t);
+                });
+            });
+        }
     }
 }
