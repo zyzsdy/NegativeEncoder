@@ -103,7 +103,11 @@
             <TabItem Header="常用">
                 <Grid>
                     <GroupBox Header="FFmpeg Pipe" Height="58" VerticalAlignment="Top" Margin="10,10,10,0">
-                        <Button x:Name="startFFPEncodingButton" Content="开始压制" Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="74" Height="22" Click="startFFPEncodingButton_Click"/>
+                        <Grid>
+                            <Button x:Name="startFFPEncodingButton" Content="无音频" Margin="10,10,0,0" VerticalAlignment="Top" Height="22" Click="startFFPEncodingButton_Click" HorizontalAlignment="Left" Width="74"/>
+                            <Button x:Name="startFFPAudioEncodingButton" Content="复制音频" Margin="89,10,0,0" VerticalAlignment="Top" Height="22" HorizontalAlignment="Left" Width="74" Click="startFFPAudioEncodingButton_Click"/>
+                            <Button x:Name="startFFPAVEncodingButton" Content="处理音频与视频" Margin="168,10,0,0" VerticalAlignment="Top" Height="22" HorizontalAlignment="Left" Width="100" Click="startFFPAVEncodingButton_Click"/>
+                        </Grid>
                     </GroupBox>
                 </Grid>
             </TabItem>

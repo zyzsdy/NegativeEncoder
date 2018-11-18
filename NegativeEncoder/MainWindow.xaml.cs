@@ -763,14 +763,7 @@ namespace NegativeEncoder
                 return;
             }
             EncodingTask t;
-            if (isAudioEncodeCheckBox.IsChecked == true)
-            {
-                t = encodingQueue.AddFFPWithAudioEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
-            }
-            else
-            {
-                t = encodingQueue.AddFFPEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
-            }
+            t = encodingQueue.AddFFPEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
             startFFPEncodingButton.IsEnabled = false;
             startFFPEncodingButton.Content = "请等待...";
             Task.Run(() =>
@@ -779,7 +772,7 @@ namespace NegativeEncoder
                 Dispatcher.Invoke(() =>
                 {
                     startFFPEncodingButton.IsEnabled = true;
-                    startFFPEncodingButton.Content = "开始压制";
+                    startFFPEncodingButton.Content = "无音频";
                     OpenTaskDetailWindow(t);
                 });
             });
@@ -904,6 +897,54 @@ namespace NegativeEncoder
                 presetcollection.ActiveIndex = 0;
                 presetSelecter.SelectedIndex = 0;
             }
+        }
+
+        private void startFFPAudioEncodingButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (videoInputTextBox.Text == "" || videoSaveTextBox.Text == "")
+            {
+                MessageBox.Show("输入和输出都不能为空");
+                return;
+            }
+            EncodingTask t;
+            t = encodingQueue.AddFFPWithAudioEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
+            
+            startFFPAudioEncodingButton.IsEnabled = false;
+            startFFPAudioEncodingButton.Content = "请等待...";
+            Task.Run(() =>
+            {
+                Thread.Sleep(3000);
+                Dispatcher.Invoke(() =>
+                {
+                    startFFPAudioEncodingButton.IsEnabled = true;
+                    startFFPAudioEncodingButton.Content = "复制音频";
+                    OpenTaskDetailWindow(t);
+                });
+            });
+        }
+
+        private void startFFPAVEncodingButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (videoInputTextBox.Text == "" || videoSaveTextBox.Text == "")
+            {
+                MessageBox.Show("输入和输出都不能为空");
+                return;
+            }
+            EncodingTask t;
+            t = encodingQueue.AddFFPWithAudioVideoEncodingTask(baseDir, videoInputTextBox.Text, videoSaveTextBox.Text, config);
+
+            startFFPAVEncodingButton.IsEnabled = false;
+            startFFPAVEncodingButton.Content = "请等待...";
+            Task.Run(() =>
+            {
+                Thread.Sleep(3000);
+                Dispatcher.Invoke(() =>
+                {
+                    startFFPAVEncodingButton.IsEnabled = true;
+                    startFFPAVEncodingButton.Content = "处理音频与视频";
+                    OpenTaskDetailWindow(t);
+                });
+            });
         }
     }
 }
