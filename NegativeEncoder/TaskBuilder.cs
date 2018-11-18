@@ -120,8 +120,8 @@ namespace NegativeEncoder
         public static string GetBaseEncoderFile(string baseDir, Config config)
         {
             string encodingPath;
-            if ((config.ActiveEncoder ?? Encoder.QSV) == Encoder.QSV) encodingPath = "Lib\\qsvenc\\QSVEncC64.exe";
-            else encodingPath = "Lib\\nvenc\\NVEncC64.exe";
+            if ((config.ActiveEncoder ?? Encoder.QSV) == Encoder.QSV) encodingPath = "Lib\\QSVEncC64.exe";
+            else encodingPath = "Lib\\NVEncC64.exe";
             return System.IO.Path.Combine(baseDir, encodingPath);
         }
 
@@ -179,7 +179,7 @@ namespace NegativeEncoder
 
             var batSb = new StringBuilder();
             batSb.Append("@echo off\n");
-            var avs2pipemodFile = System.IO.Path.Combine(baseDir, "Lib\\avstools\\avs2pipemod.exe");
+            var avs2pipemodFile = System.IO.Path.Combine(baseDir, "Lib\\avs2pipemod.exe");
             var avs2pipemodFirstArg = "";
             if (config.IsInterlaceSource)
             {

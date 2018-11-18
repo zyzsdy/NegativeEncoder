@@ -774,5 +774,10 @@ namespace NegativeEncoder
                 });
             });
         }
+
+        private void avsVsfilterModCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            avsTextBox.Text = AvsBuilder.BuildAvs(this);
+        }
     }
 }

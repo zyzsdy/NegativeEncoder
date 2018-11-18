@@ -25,17 +25,21 @@ namespace NegativeEncoder
             var sb = new StringBuilder();
 
             // 插入LoadPlugin
-            var lsmashPath = System.IO.Path.Combine(mw.baseDir, "Lib\\avstools\\plugins\\LSMASHSource.dll");
+            var lsmashPath = System.IO.Path.Combine(mw.baseDir, "Lib\\plugins\\LSMASHSource.dll");
             sb.AppendFormat("LoadPlugin(\"{0}\")\n", lsmashPath);
             if (mw.avsSubtitleTextBox.Text != "")
             {
-                var vsfiltermodPath = System.IO.Path.Combine(mw.baseDir, "Lib\\avstools\\plugins\\VSFilterMod.dll");
-                sb.AppendFormat("LoadPlugin(\"{0}\")\n", vsfiltermodPath);
+                var vsfilterPath = System.IO.Path.Combine(mw.baseDir, "Lib\\plugins\\vsfilter.dll");
+                if (mw.avsVsfilterModCheckBox.IsChecked == true)
+                {
+                    vsfilterPath = System.IO.Path.Combine(mw.baseDir, "Lib\\plugins\\VSFilterMod.dll");
+                } 
+                sb.AppendFormat("LoadPlugin(\"{0}\")\n", vsfilterPath);
             }
 
             if(mw.avsHighPrecisionConvertCheckBox.IsChecked == true)
             {
-                var ditherPath = System.IO.Path.Combine(mw.baseDir, "Lib\\avstools\\plugins\\dither.dll");
+                var ditherPath = System.IO.Path.Combine(mw.baseDir, "Lib\\plugins\\dither.dll");
                 sb.AppendFormat("LoadPlugin(\"{0}\")\n", ditherPath);
             }
 
@@ -67,7 +71,15 @@ namespace NegativeEncoder
             }
             if(mw.avsSubtitleTextBox.Text != "")
             {
-                sb.AppendFormat("TextSubMod(\"{0}\")\n", mw.avsSubtitleTextBox.Text);
+                if (mw.avsVsfilterModCheckBox.IsChecked == true)
+                {
+                    sb.AppendFormat("TextSubMod(\"{0}\")\n", mw.avsSubtitleTextBox.Text);
+                }
+                else
+                {
+                    sb.AppendFormat("TextSub(\"{0}\")\n", mw.avsSubtitleTextBox.Text);
+                }
+                    
             }
             return sb.ToString();
         }
