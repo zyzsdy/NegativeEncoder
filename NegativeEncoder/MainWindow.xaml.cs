@@ -182,6 +182,10 @@ namespace NegativeEncoder
             if(config != null) config.ActiveEncoder = (Encoder)Enum.ToObject(typeof(Encoder), encoderSelecter.SelectedIndex);
             if (windowIsLoaded)
             {
+                if(cqpRadioButton.IsChecked == false && cbrRadioButton.IsChecked == false && vbrRadioButton.IsChecked == false)
+                {
+                    cqpRadioButton.IsChecked = true;
+                }
                 changeDisableForEncodeMode(encoderSelecter.SelectedIndex);
             }
         }
