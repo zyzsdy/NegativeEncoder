@@ -76,11 +76,19 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="EncodingQueue.cs" />
+    <Compile Include="InputDialog.xaml.cs">
+      <DependentUpon>InputDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Preset.cs" />
     <Compile Include="TaskBuilder.cs" />
     <Compile Include="TaskDetail.xaml.cs">
       <DependentUpon>TaskDetail.xaml</DependentUpon>
     </Compile>
     <Compile Include="Version.cs" />
+    <Page Include="InputDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

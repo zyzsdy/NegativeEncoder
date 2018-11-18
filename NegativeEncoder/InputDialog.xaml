@@ -1,0 +1,15 @@
+﻿<Window x:Class="NegativeEncoder.InputDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NegativeEncoder"
+        mc:Ignorable="d"
+        Title="请输入" Height="145.28" Width="356.119" Icon="ne.ico" ResizeMode="NoResize" ShowInTaskbar="False" WindowStartupLocation="CenterOwner">
+    <Grid FocusManager.FocusedElement="{Binding ElementName=presetName}">
+        <Label Content="请在此输入保存的名称：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="presetName" Height="23" Margin="10,40,10,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Button Content="取消" HorizontalAlignment="Right" Margin="0,0,10,10" Width="75" Height="25" VerticalAlignment="Bottom" IsCancel="True"/>
+        <Button Content="确定" HorizontalAlignment="Right" Margin="0,0,100,10" Width="75" Height="25" VerticalAlignment="Bottom" IsDefault="True" Click="Button_Click"/>
+    </Grid>
+</Window>

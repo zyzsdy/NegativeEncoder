@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -27,6 +28,7 @@ namespace NegativeEncoder
         private Config config;
         public string baseDir;
         private EncodingQueue encodingQueue;
+        public PresetCollection presetcollection;
 
         public MainWindow()
         {
@@ -46,9 +48,12 @@ namespace NegativeEncoder
             }
             // 准备数据对象
             encodingQueue = new EncodingQueue();
+            presetcollection = PresetCollection.Load(baseDir);
             // 初始化界面
             InitializeComponent();
             config = new Config();
+
+            presetSelecter.ItemsSource = presetcollection.Presets;
         }
 
         private void changeDisableForEncodeMode(int encoder)
@@ -174,6 +179,7 @@ namespace NegativeEncoder
             changeDisableForEncodeMode(encoderSelecter.SelectedIndex);
             checkEncoderModeSelectAndSetDisable();
             encodingTaskListBox.ItemsSource = encodingQueue;
+            presetSelecter.SelectedIndex = presetcollection.ActiveIndex;
             windowIsLoaded = true;
         }
 
@@ -782,6 +788,122 @@ namespace NegativeEncoder
         private void avsVsfilterModCheckBox_Click(object sender, RoutedEventArgs e)
         {
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
+        }
+
+        private void addPreset_Click(object sender, RoutedEventArgs e)
+        {
+            var inputDialog = new InputDialog();
+            if(inputDialog.ShowDialog() == true)
+            {
+                var presetname = inputDialog.PresetName;
+                if(presetname != "")
+                {
+                    if(presetcollection.Presets.Any(s => s.Name == presetname))
+                    {
+                        MessageBox.Show("无法建立具有相同的名称的预设: " + presetname);
+                        return;
+                    }
+                    presetcollection.Presets.Add(Preset.GetPresentPreset(this, presetname));
+                    presetcollection.ActiveIndex = presetcollection.Presets.Count - 1;
+                    presetSelecter.SelectedIndex = presetcollection.ActiveIndex;
+                    PresetCollection.Save(presetcollection, baseDir);
+                }
+            }
+        }
+
+        private void presetSelecter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (windowIsLoaded)
+            {
+                presetcollection.ActiveIndex = presetSelecter.SelectedIndex;
+                PresetCollection.Save(presetcollection, baseDir);
+            }
+            if(presetcollection.ActiveIndex >= 0 && presetcollection.ActiveIndex < presetcollection.Presets.Count)
+                ApplyPresetItem(presetcollection.Presets[presetcollection.ActiveIndex]);
+        }
+
+        private void ApplyPresetItem(Preset preset)
+        {
+            encoderSelecter.SelectedIndex = (int)preset.Encoder;
+            if (config != null) config.ActiveEncoder = preset.Encoder;
+
+            isinterlaceCheckBox.IsChecked = preset.IsInterlaceSource;
+            if (config != null) config.IsInterlaceSource = preset.IsInterlaceSource;
+
+            tffOrBffComboBox.SelectedIndex = (int)preset.InterlacedMode;
+            if (config != null) config.ActiveInterlacedMode = preset.InterlacedMode;
+
+            deintOptionComboBox.SelectedIndex = (int)preset.DeintOption;
+            if (config != null) config.ActiveDeintOption = preset.DeintOption;
+
+            isSetDarCheckBox.IsChecked = preset.IsSetDar;
+            if (config != null) config.IsSetDar = preset.IsSetDar;
+
+            darValueBox.Text = preset.DarValue;
+            if (config != null) config.DarValue = preset.DarValue;
+
+            customParameterSwitcher.IsChecked = preset.IsSetCustomParams;
+            if (config != null) config.IsUseCustomParameter = preset.IsSetCustomParams;
+
+            customParameterInputBox.Text = preset.CustomParams;
+            if (config != null) config.CustomParameter = preset.CustomParams;
+
+            if (config != null) config.ActiveEncoderMode = preset.EncoderMode;
+            switch (preset.EncoderMode)
+            {
+                case EncoderMode.CQP:
+                    cqpRadioButton.IsChecked = true;
+                    cqpValueBox.Text = preset.EncoderParamValue;
+                    if (config != null) config.CqpValue = preset.EncoderParamValue;
+                    break;
+                case EncoderMode.VQP:
+                    vqpRadioButton.IsChecked = true;
+                    vqpValueBox.Text = preset.EncoderParamValue;
+                    if (config != null) config.VqpValue = preset.EncoderParamValue;
+                    break;
+                case EncoderMode.LA:
+                    laRadioButton.IsChecked = true;
+                    laValueBox.Text = preset.EncoderParamValue;
+                    if (config != null) config.LaValue = preset.EncoderParamValue;
+                    break;
+                case EncoderMode.CBR:
+                    cbrRadioButton.IsChecked = true;
+                    cbrValueBox.Text = preset.EncoderParamValue;
+                    if (config != null) config.CbrValue = preset.EncoderParamValue;
+                    break;
+                case EncoderMode.VBR:
+                    vbrRadioButton.IsChecked = true;
+                    vbrValueBox.Text = preset.EncoderParamValue;
+                    if (config != null) config.VbrValue = preset.EncoderParamValue;
+                    break;
+                case EncoderMode.ICQ:
+                    icqRadioButton.IsChecked = true;
+                    icqValueBox.Text = preset.EncoderParamValue;
+                    if (config != null) config.IcqValue = preset.EncoderParamValue;
+                    break;
+                case EncoderMode.LAICQ:
+                    laicqRadioButton.IsChecked = true;
+                    laicqValueBox.Text = preset.EncoderParamValue;
+                    if (config != null) config.LaicqValue = preset.EncoderParamValue;
+                    break;
+            }
+
+            if (windowIsLoaded)
+            {
+                changeDisableForEncodeMode(encoderSelecter.SelectedIndex);
+                checkEncoderModeSelectAndSetDisable();
+            }
+        }
+
+        private void deletePreset_Click(object sender, RoutedEventArgs e)
+        {
+            if(MessageBox.Show("确认删除 预设: " + presetcollection.Presets[presetcollection.ActiveIndex].Name + " 吗？\n删除后不可恢复",
+                "确认删除", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
+            {
+                presetcollection.Presets.RemoveAt(presetcollection.ActiveIndex);
+                presetcollection.ActiveIndex = 0;
+                presetSelecter.SelectedIndex = 0;
+            }
         }
     }
 }

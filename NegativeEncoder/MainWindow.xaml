@@ -110,10 +110,20 @@
             <TabItem Header="选项">
                 <Grid>
                     <Label Content="编码器" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-                    <ComboBox x:Name="encoderSelecter" Margin="61,14,10,0" VerticalAlignment="Top" SelectedIndex="0" SelectionChanged="encoderSelecter_SelectionChanged">
+                    <ComboBox x:Name="encoderSelecter" Margin="61,14,0,0" VerticalAlignment="Top" SelectedIndex="0" SelectionChanged="encoderSelecter_SelectionChanged" HorizontalAlignment="Left" Width="218">
                         <TextBlock>QuickSync</TextBlock>
                         <TextBlock>NVENC</TextBlock>
                     </ComboBox>
+                    <Label Content="预设" HorizontalAlignment="Left" Margin="284,10,0,0" VerticalAlignment="Top"/>
+                    <ComboBox x:Name="presetSelecter" Margin="323,14,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="192" SelectionChanged="presetSelecter_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button x:Name="deletePreset" Margin="521,14,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Content="-" Height="21" Width="15" ToolTip="删除预设" Click="deletePreset_Click"/>
+                    <Button x:Name="addPreset" Margin="541,14,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Content="+" Height="21" Width="15" ToolTip="保存预设" Click="addPreset_Click"/>
                     <RadioButton x:Name="cqpRadioButton" Content="CQP" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" GroupName="en_mode" IsChecked="True" Checked="cqpRadioButton_Checked"/>
                     <TextBox x:Name="cqpValueBox" HorizontalAlignment="Left" Height="23" Margin="61,48,0,0" Text="24:26:27" VerticalAlignment="Top" Width="70" TextChanged="cqpValueBox_TextChanged"/>
                     <RadioButton x:Name="vqpRadioButton" Content="VQP" HorizontalAlignment="Left" Margin="149,50,0,0" VerticalAlignment="Top" GroupName="en_mode" RenderTransformOrigin="-0.475,0.533" Checked="vqpRadioButton_Checked" Visibility="Hidden"/>
