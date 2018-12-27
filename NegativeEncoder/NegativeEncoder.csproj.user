@@ -14,7 +14,7 @@
     <RemoteDebugEnabled>false</RemoteDebugEnabled>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartArguments>--baseDir C:\Mywork\NegativeEncoder</StartArguments>
+    <StartArguments>--baseDir D:\xiangyang\mycache\NegativeEncoder</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartWorkingDirectory>

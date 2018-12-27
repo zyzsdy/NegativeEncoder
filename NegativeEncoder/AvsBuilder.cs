@@ -24,63 +24,55 @@ namespace NegativeEncoder
         {
             var sb = new StringBuilder();
 
-            // 插入LoadPlugin
-            var lsmashPath = System.IO.Path.Combine(mw.baseDir, "Lib\\plugins\\LSMASHSource.dll");
-            sb.AppendFormat("LoadPlugin(\"{0}\")\n", lsmashPath);
+            // 插入头部
+            sb.Append("from vapoursynth import core, YUV420P8\n");
+            if (mw.avsQTGMCCheckBox.IsChecked == true)
+            {
+                sb.Append("from havsfunc import QTGMC\n");
+            }
+            sb.Append("\n");
+
+            // 插入文件路径
+            sb.AppendFormat("VIDEO_PATH = r'{0}'\n", mw.avsVideoInputTextBox.Text);
             if (mw.avsSubtitleTextBox.Text != "")
             {
-                var vsfilterPath = System.IO.Path.Combine(mw.baseDir, "Lib\\plugins\\vsfilter.dll");
-                if (mw.avsVsfilterModCheckBox.IsChecked == true)
-                {
-                    vsfilterPath = System.IO.Path.Combine(mw.baseDir, "Lib\\plugins\\VSFilterMod.dll");
-                } 
-                sb.AppendFormat("LoadPlugin(\"{0}\")\n", vsfilterPath);
+                sb.AppendFormat("SUB_PATH = r'{0}'\n", mw.avsSubtitleTextBox.Text);
             }
-
-            if(mw.avsHighPrecisionConvertCheckBox.IsChecked == true)
-            {
-                var ditherPath = System.IO.Path.Combine(mw.baseDir, "Lib\\plugins\\dither.dll");
-                sb.AppendFormat("LoadPlugin(\"{0}\")\n", ditherPath);
-            }
+            sb.Append("\n");
 
             // 插入源
-            sb.AppendFormat("LWLibavVideoSource(\"{0}\"", mw.avsVideoInputTextBox.Text);
+            sb.Append("video = core.lsmas.LWLibavSource(VIDEO_PATH");
 
             if (mw.avsRepeatCheckBox.IsChecked == true)
             {
                 sb.Append(", repeat=True");
             }
-            if (mw.avsHighPrecisionConvertCheckBox.IsChecked == true)
-            {
-                sb.Append(", format=\"YUV420P16\",stacked=True");
-            }
             sb.Append(")\n");
 
-            if(mw.avsHighPrecisionConvertCheckBox.IsChecked == true)
+            if(mw.avsQTGMCCheckBox.IsChecked == true)
             {
-                sb.Append("ditherpost()\n");
+                sb.Append("video = QTGMC(video, Preset='fast', TFF=True)\n");
             }
-            else
+            sb.Append("video = core.resize.Bicubic(video, format=YUV420P8)\n");
+            if (mw.avsResizeCheckBox.IsChecked == true)
             {
-                sb.Append("ConvertToYV12()\n");
-            }
-            
-            if(mw.avsResizeCheckBox.IsChecked == true)
-            {
-                sb.AppendFormat("LanczosResize({0},{1})\n", mw.avsResizeX.Text, mw.avsResizeY.Text);
+                sb.AppendFormat("video = core.resize.Lanczos(video, {0}, {1})\n", mw.avsResizeX.Text, mw.avsResizeY.Text);
             }
             if(mw.avsSubtitleTextBox.Text != "")
             {
                 if (mw.avsVsfilterModCheckBox.IsChecked == true)
                 {
-                    sb.AppendFormat("TextSubMod(\"{0}\")\n", mw.avsSubtitleTextBox.Text);
+                    sb.Append("video = core.vsfm.TextSubMod(video, SUB_PATH.encode('gbk'))\n");
                 }
                 else
                 {
-                    sb.AppendFormat("TextSub(\"{0}\")\n", mw.avsSubtitleTextBox.Text);
+                    sb.Append("video = core.vsf.TextSub(video, SUB_PATH.encode('gbk'))\n");
                 }
                     
             }
+
+            // 插入输出
+            sb.Append("video.set_output()\n");
             return sb.ToString();
         }
     }

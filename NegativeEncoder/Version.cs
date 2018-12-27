@@ -8,7 +8,7 @@ namespace NegativeEncoder
 {
     class Version
     {
-        public const string VER = "0.3.0";
+        public const string VER = "0.4.0";
         public static string AboutText = "Negative Encoder (消极压制) v" + VER + @"
 By Zyzsdy
 
@@ -24,8 +24,7 @@ By Zyzsdy
 * QSVEnc（https://github.com/rigaya/QSVEnc）
 * NVEnc (https://github.com/rigaya/NVEnc)
 其他工具：
-* Avisynth
-* Avs2pipmod
+* VapourSynth
 * L-SMASH Works
 * VSFilterMod
 * FFMpeg
@@ -45,6 +44,9 @@ NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.en.md
 ---------------------------------------
 
 更新记录
+v0.4.0 (2019-1-1)
+* 使用VapourSynth替代AVS，移除了AVS的相关组件
+
 v0.3.0 (2018-11-18)
 * 增加FFmpeg Pipe模式的多个选项
 * 增加选项保存功能

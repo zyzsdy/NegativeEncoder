@@ -9,37 +9,40 @@
 
 请去[Releases](https://github.com/zyzsdy/NegativeEncoder/releases)找安装包。原有百度网盘的下载不再提供了。
 
+## VapourSynth相关
+
+Q: 没有自带的VS插件放在哪里？
+
+A: 请放在安装目录\Libs\vapoursynth64\plugins\中
+
+Q: vpy脚本中引用到的Python库或者脚本放在哪里？
+
+A: 请放在安装目录\Libs\PyLibs\中
+
 ## 关于Lib目录
 
 ```python
 Lib/
-    avstools/
-        plugins/  # 这里面放AVS插件
-            VSFilterMod.dll # 字幕
-            LSMASHSource.dll # 源
-            # ... 其他插件看喜好
-        avisynth.dll # AVS(32位)
-        avs2pipemod.exe # https://github.com/chikuzen/avs2pipemod
-        DevIL.dll # 是AVS本体依赖的dll
-    nvenc/ # https://github.com/rigaya/NVEnc
-    qsvenc/ # https://github.com/rigaya/QSVEnc
+    python 3.7 embed版本
+    vapoursynth portable版本
+    nvencc.exe及依赖dll # https://github.com/rigaya/NVEnc
+    qsvencc.exe及依赖dll # https://github.com/rigaya/QSVEnc
     ffmpeg.exe
     mkvmerge.exe
     neroAacEnc.exe
-    MP4Box.exe
-    js.dll # MP4Box的依赖dll
-    libeay32.dll # MP4Box的依赖dll
-    libgpac.dll # MP4Box的依赖dll
-    ssleay.dll # MP4Box的依赖dll
+    MP4Box.exe及依赖dll
 ```
 
 Q: 为什么源码不包含Lib目录
+
 A: 因为大（200多MB呢）
 
 Q: 为什么作者不在本代码里提供Build出Lib目录的简易方式？
+
 A: 因为懒
 
 Q: 这个工具的全部功能都可以用这些Lib实现，而且这个工具仅仅是调用了这些Lib而已，为什么还需要开发这个工具？
+
 A: 因为懒，麻烦一次受益终生。
 
 ## LICENSE

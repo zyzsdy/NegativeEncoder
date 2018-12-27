@@ -408,7 +408,7 @@ namespace NegativeEncoder
             {
                 avsVideoInputTextBox.Text = f;
             }
-            AutoSetSaveVideoPath(avsVideoInputTextBox, "_neavs.mp4", avsVideoSaveTextBox);
+            AutoSetSaveVideoPath(avsVideoInputTextBox, "_nevs.mp4", avsVideoSaveTextBox);
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
 
@@ -419,7 +419,7 @@ namespace NegativeEncoder
             {
                 avsVideoInputTextBox.Text = ofd.FileName;
             }
-            AutoSetSaveVideoPath(avsVideoInputTextBox, "_neavs.mp4", avsVideoSaveTextBox);
+            AutoSetSaveVideoPath(avsVideoInputTextBox, "_nevs.mp4", avsVideoSaveTextBox);
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
 
@@ -719,7 +719,7 @@ namespace NegativeEncoder
             if (windowIsLoaded) avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }
 
-        private void avsHighPrecisionConvertCheckBox_Click(object sender, RoutedEventArgs e)
+        private void avsQTGMCCheckBox_Click(object sender, RoutedEventArgs e)
         {
             avsTextBox.Text = AvsBuilder.BuildAvs(this);
         }

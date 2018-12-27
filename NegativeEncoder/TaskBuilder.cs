@@ -120,8 +120,8 @@ namespace NegativeEncoder
         public static string GetBaseEncoderFile(string baseDir, Config config)
         {
             string encodingPath;
-            if ((config.ActiveEncoder ?? Encoder.QSV) == Encoder.QSV) encodingPath = "Lib\\QSVEncC64.exe";
-            else encodingPath = "Lib\\NVEncC64.exe";
+            if ((config.ActiveEncoder ?? Encoder.QSV) == Encoder.QSV) encodingPath = "Libs\\QSVEncC64.exe";
+            else encodingPath = "Libs\\NVEncC64.exe";
             return System.IO.Path.Combine(baseDir, encodingPath);
         }
 
@@ -138,9 +138,9 @@ namespace NegativeEncoder
             }
             else
             {
-                var tempSw = new System.IO.StreamWriter(tempFs);
-                tempSw.Write(content);
-                tempSw.Close();
+                var unicodeByte = Encoding.Unicode.GetBytes(content);
+                byte[] tempContent = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, unicodeByte);
+                tempFs.Write(tempContent, 0, tempContent.Length);
             }
             tempFs.Close();
         }
@@ -163,15 +163,19 @@ namespace NegativeEncoder
             return new Tuple<string, string>(executableEncodingFileName, arguments);
         }
 
-        public static Tuple<string, string> AvsEncodingTaskBuilder(string baseDir, string avsText, string output, Config config)
+        public static Tuple<string, string> AvsEncodingTaskBuilder(string baseDir, string vpyText, string output, Config config)
         {
             //temp work dir
             string workDir = System.IO.Path.GetDirectoryName(output);
-            //save avs
-            string avsName = System.IO.Path.GetFileNameWithoutExtension(output) + "_avsTemp.avs";
-            string avsFullname = System.IO.Path.Combine(workDir, avsName);
+            //save vpy
+            string vpyName = System.IO.Path.GetFileNameWithoutExtension(output) + "_vpyTemp.vpy";
+            string vpyFullname = System.IO.Path.Combine(workDir, vpyName);
 
-            TempFileHelper(avsFullname, avsText, true);
+            string pyextralibName = System.IO.Path.Combine(baseDir, "Libs\\PyLibs");
+
+            string vpyFulltext = "import sys\nsys.path.append(r'" + pyextralibName + "')\n\n" + vpyText;
+
+            TempFileHelper(vpyFullname, vpyFulltext, false);
 
             //build bat
             string batName = System.IO.Path.GetFileNameWithoutExtension(output) + "_batTemp.bat";
@@ -179,29 +183,19 @@ namespace NegativeEncoder
 
             var batSb = new StringBuilder();
             batSb.Append("@echo off\n");
-            var avs2pipemodFile = System.IO.Path.Combine(baseDir, "Lib\\avs2pipemod.exe");
-            var avs2pipemodFirstArg = "";
-            if (config.IsInterlaceSource)
-            {
-                if (config.ActiveInterlacedMode == InterlacedMode.TFF) avs2pipemodFirstArg = "-y4mt";
-                else avs2pipemodFirstArg = "-y4mb";
-            }
-            else
-            {
-                avs2pipemodFirstArg = "-y4mp";
-            }
+
+            var vspipeFile = System.IO.Path.Combine(baseDir, "Libs\\VSPipe.exe");
 
             var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
             string gargs = GenericArgumentBuilder(config);
 
-            batSb.AppendFormat("\"{0}\" {1} \"{2}\" | \"{3}\" --y4m -i - -o \"{4}\" {5}\n",
-                avs2pipemodFile,
-                avs2pipemodFirstArg,
-                avsFullname,
+            batSb.AppendFormat("\"{0}\" --y4m \"{1}\" - | \"{2}\" --y4m -i - -o \"{3}\" {4}\n",
+                vspipeFile,
+                vpyFullname,
                 executableEncodingFileName,
                 output,
                 gargs);
-            batSb.AppendFormat("@del \"{0}\"\n", avsFullname);
+            batSb.AppendFormat("@del \"{0}\"\n", vpyFullname);
             batSb.AppendFormat("@del \"{0}\"\n", batFullname);
 
             //save bat
@@ -221,8 +215,8 @@ namespace NegativeEncoder
             var batSb = new StringBuilder();
             batSb.Append("@echo off\n");
 
-            var ffmpegFile = System.IO.Path.Combine(baseDir, "Lib\\ffmpeg.exe");
-            var neroaacFile = System.IO.Path.Combine(baseDir, "Lib\\neroAacEnc.exe");
+            var ffmpegFile = System.IO.Path.Combine(baseDir, "Libs\\ffmpeg.exe");
+            var neroaacFile = System.IO.Path.Combine(baseDir, "Libs\\neroAacEnc.exe");
             var bitrate = (int.Parse(config.BitrateValue ?? "128") * 1000).ToString();
 
             batSb.AppendFormat("\"{0}\" -i \"{1}\" -vn -sn -v 0 -c:a pcm_s16le -f wav pipe: | \"{2}\" -ignorelength -lc -br {3} -if - -of \"{4}\"\n",
@@ -300,8 +294,8 @@ namespace NegativeEncoder
             var batSb = new StringBuilder();
             batSb.Append("@echo off\n");
 
-            var ffmpegFile = System.IO.Path.Combine(baseDir, "Lib\\ffmpeg.exe");
-            var mp4boxFile = System.IO.Path.Combine(baseDir, "Lib\\MP4Box.exe");
+            var ffmpegFile = System.IO.Path.Combine(baseDir, "Libs\\ffmpeg.exe");
+            var mp4boxFile = System.IO.Path.Combine(baseDir, "Libs\\MP4Box.exe");
             var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
             string gargs = GenericArgumentBuilder(config);
 
@@ -374,9 +368,9 @@ namespace NegativeEncoder
             var batSb = new StringBuilder();
             batSb.Append("@echo off\n");
 
-            var ffmpegFile = System.IO.Path.Combine(baseDir, "Lib\\ffmpeg.exe");
-            var neroaacFile = System.IO.Path.Combine(baseDir, "Lib\\neroAacEnc.exe");
-            var mp4boxFile = System.IO.Path.Combine(baseDir, "Lib\\MP4Box.exe");
+            var ffmpegFile = System.IO.Path.Combine(baseDir, "Libs\\ffmpeg.exe");
+            var neroaacFile = System.IO.Path.Combine(baseDir, "Libs\\neroAacEnc.exe");
+            var mp4boxFile = System.IO.Path.Combine(baseDir, "Libs\\MP4Box.exe");
             var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
             var bitrate = (int.Parse(config.BitrateValue ?? "128") * 1000).ToString();
             string gargs = GenericArgumentBuilder(config);
@@ -432,7 +426,7 @@ namespace NegativeEncoder
             var batSb = new StringBuilder();
             batSb.Append("@echo off\n");
 
-            var ffmpegFile = System.IO.Path.Combine(baseDir, "Lib\\ffmpeg.exe");
+            var ffmpegFile = System.IO.Path.Combine(baseDir, "Libs\\ffmpeg.exe");
             var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
             string gargs = GenericArgumentBuilder(config);
 
@@ -480,7 +474,7 @@ namespace NegativeEncoder
 
         public static Tuple<string, string> MKVBoxTaskBuilder(string baseDir, string videoInput, string audioInput, string output, Config config)
         {
-            var mkvmergeFile = System.IO.Path.Combine(baseDir, "Lib\\mkvmerge.exe");
+            var mkvmergeFile = System.IO.Path.Combine(baseDir, "Libs\\mkvmerge.exe");
             var args = String.Format("-o \"{0}\" \"{1}\" \"{2}\"", output, videoInput, audioInput);
 
             return new Tuple<string, string>(mkvmergeFile, args);
@@ -488,7 +482,7 @@ namespace NegativeEncoder
 
         public static Tuple<string, string> MP4BoxTaskBuilder(string baseDir, string videoInput, string audioInput, string output, Config config)
         {
-            var mp4boxFile = System.IO.Path.Combine(baseDir, "Lib\\MP4Box.exe");
+            var mp4boxFile = System.IO.Path.Combine(baseDir, "Libs\\MP4Box.exe");
             var args = String.Format("-add \"{0}#trackID=1:par=1:1:name=\" -add \"{1}:name=\" -new \"{2}\"",
                 videoInput,
                 audioInput,
