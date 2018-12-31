@@ -8,9 +8,11 @@ namespace NegativeEncoder
 {
     class Version
     {
-        public const string VER = "0.4.0";
+        public const string VER = "0.4.1";
         public static string AboutText = "Negative Encoder (消极压制) v" + VER + @"
 By Zyzsdy
+
+Github页面: https://github.com/zyzsdy/NegativeEncoder
 
 “消极压制”的含义是什么？
 “消极压制”是指最大程度的节约系统资源，加快编码速度的一种压制方式。有时候视频质量并不是首要考虑因素，可以不用“积极的”进行一个精致的压制，何不“消极一把”呢？
@@ -29,21 +31,27 @@ By Zyzsdy
 * VSFilterMod
 * FFMpeg
 * neroAacEnc
-* MP4Box
 * MKVToolNix
-* 本软件的集成方式与界面皆参考了小丸工具箱，小丸也是本软件开发者非常喜欢用的软件，非常感谢小丸工具箱的开发者们为我们带来了这么好用的一款工具
+
+感谢：
+本软件的集成方式与界面皆参考了小丸工具箱。
 ---------------------------------------
 
 高级参数指南：
 QuickSync调用QSVEncC.exe，NVENC调用NVEncC.exe
 请分别参考原作者的选项指南：
 
-QSVEncC（日文）：http://rigaya34589.blog135.fc2.com/blog-entry-337.html
-NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.en.md
+QSVEncC：https://github.com/rigaya/QSVEnc/blob/master/QSVEncC_Options.en.md
+NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.zh-cn.md
 
 ---------------------------------------
 
 更新记录
+v0.4.1 (2019-1-1)
+* 2019相关标记修改
+* 移除MP4Box及相关依赖，使用ffmpeg进行MP4混流
+* 修复bug
+
 v0.4.0 (2019-1-1)
 * 使用VapourSynth替代AVS，移除了AVS的相关组件
 

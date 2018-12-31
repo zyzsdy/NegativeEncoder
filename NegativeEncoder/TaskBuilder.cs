@@ -295,7 +295,6 @@ namespace NegativeEncoder
             batSb.Append("@echo off\n");
 
             var ffmpegFile = System.IO.Path.Combine(baseDir, "Libs\\ffmpeg.exe");
-            var mp4boxFile = System.IO.Path.Combine(baseDir, "Libs\\MP4Box.exe");
             var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
             string gargs = GenericArgumentBuilder(config);
 
@@ -337,8 +336,8 @@ namespace NegativeEncoder
                 ffmpegFile,
                 input,
                 aacFullname);
-            batSb.AppendFormat("\"{0}\" -add \"{1}#trackID=1:par=1:1:name=\" -add \"{2}:name=\" -new \"{3}\"\n",
-                mp4boxFile,
+            batSb.AppendFormat("\"{0}\" -i \"{1}\" -i \"{2}\" -map 0:v -map 1:a -c copy -f mp4 \"{3}\"\n",
+                ffmpegFile,
                 videoFullname,
                 aacFullname,
                 output);
@@ -370,7 +369,6 @@ namespace NegativeEncoder
 
             var ffmpegFile = System.IO.Path.Combine(baseDir, "Libs\\ffmpeg.exe");
             var neroaacFile = System.IO.Path.Combine(baseDir, "Libs\\neroAacEnc.exe");
-            var mp4boxFile = System.IO.Path.Combine(baseDir, "Libs\\MP4Box.exe");
             var executableEncodingFileName = GetBaseEncoderFile(baseDir, config);
             var bitrate = (int.Parse(config.BitrateValue ?? "128") * 1000).ToString();
             string gargs = GenericArgumentBuilder(config);
@@ -398,8 +396,8 @@ namespace NegativeEncoder
                 neroaacFile,
                 bitrate,
                 aacFullname);
-            batSb.AppendFormat("\"{0}\" -add \"{1}#trackID=1:par=1:1:name=\" -add \"{2}:name=\" -new \"{3}\"\n",
-                mp4boxFile,
+            batSb.AppendFormat("\"{0}\" -i \"{1}\" -i \"{2}\" -map 0:v -map 1:a -c copy -f mp4 \"{3}\"\n",
+                ffmpegFile,
                 videoFullname,
                 aacFullname,
                 output);
@@ -482,13 +480,13 @@ namespace NegativeEncoder
 
         public static Tuple<string, string> MP4BoxTaskBuilder(string baseDir, string videoInput, string audioInput, string output, Config config)
         {
-            var mp4boxFile = System.IO.Path.Combine(baseDir, "Libs\\MP4Box.exe");
-            var args = String.Format("-add \"{0}#trackID=1:par=1:1:name=\" -add \"{1}:name=\" -new \"{2}\"",
+            var ffmpegFile = System.IO.Path.Combine(baseDir, "Libs\\ffmpeg.exe");
+            var args = String.Format("-i \"{0}\" -i \"{1}\" -map 0:v -map 1:a -c copy -f mp4 \"{2}\"",
                 videoInput,
                 audioInput,
                 output);
 
-            return new Tuple<string, string>(mp4boxFile, args);
+            return new Tuple<string, string>(ffmpegFile, args);
         }
     }
 }

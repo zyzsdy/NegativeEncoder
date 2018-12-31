@@ -180,6 +180,7 @@ namespace NegativeEncoder
             checkEncoderModeSelectAndSetDisable();
             encodingTaskListBox.ItemsSource = encodingQueue;
             presetSelecter.SelectedIndex = presetcollection.ActiveIndex;
+            Title = "消极压制 v" + Version.VER;
             windowIsLoaded = true;
         }
 
@@ -507,7 +508,7 @@ namespace NegativeEncoder
         {
             if(windowIsLoaded && boxFormatComboBox.SelectedIndex == (int)BoxFormat.MP4)
             {
-                var result = MessageBox.Show("8102年了，B站都支持MKV直传了，居然还有人要用MP4格式。", "我看看日历", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                var result = MessageBox.Show("9102年了，B站都支持MKV直传了，居然还有人要用MP4格式。", "我看看日历", MessageBoxButton.OK, MessageBoxImage.Asterisk);
             }
             if (config != null)
             {
@@ -890,7 +891,7 @@ namespace NegativeEncoder
 
         private void deletePreset_Click(object sender, RoutedEventArgs e)
         {
-            if(MessageBox.Show("确认删除 预设: " + presetcollection.Presets[presetcollection.ActiveIndex].Name + " 吗？\n删除后不可恢复",
+            if(presetcollection.Presets.Count > 0 && MessageBox.Show("确认删除 预设: " + presetcollection.Presets[presetcollection.ActiveIndex].Name + " 吗？\n删除后不可恢复",
                 "确认删除", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
             {
                 presetcollection.Presets.RemoveAt(presetcollection.ActiveIndex);

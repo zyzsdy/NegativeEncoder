@@ -30,7 +30,6 @@ Lib/
     ffmpeg.exe
     mkvmerge.exe
     neroAacEnc.exe
-    MP4Box.exe及依赖dll
 ```
 
 Q: 为什么源码不包含Lib目录
