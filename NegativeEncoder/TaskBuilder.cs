@@ -481,7 +481,7 @@ namespace NegativeEncoder
         public static Tuple<string, string> MP4BoxTaskBuilder(string baseDir, string videoInput, string audioInput, string output, Config config)
         {
             var ffmpegFile = System.IO.Path.Combine(baseDir, "Libs\\ffmpeg.exe");
-            var args = String.Format("-i \"{0}\" -i \"{1}\" -map 0:v -map 1:a -c copy -f mp4 \"{2}\"",
+            var args = String.Format("-i \"{0}\" -i \"{1}\" -map 0:v -map 1:a -c copy -movflags faststart -f mp4 \"{2}\"",
                 videoInput,
                 audioInput,
                 output);
