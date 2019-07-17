@@ -29,8 +29,8 @@ namespace NegativeEncoder
     }
     public enum BoxFormat
     {
-        MKV,
-        MP4
+        MP4,
+        MKV        
     }
 
     public enum DeintOption

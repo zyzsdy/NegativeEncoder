@@ -93,8 +93,8 @@
                     <Button x:Name="boxSaveBrowseButton" Content="浏览..." Margin="0,70,10,0" VerticalAlignment="Top" Height="22" HorizontalAlignment="Right" Width="74" Click="boxSaveBrowseButton_Click"/>
                     <Label Content="封装格式" HorizontalAlignment="Left" Margin="10,112,0,0" VerticalAlignment="Top"/>
                     <ComboBox x:Name="boxFormatComboBox" HorizontalAlignment="Left" Margin="73,116,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="0" SelectionChanged="boxFormatComboBox_SelectionChanged">
-                        <TextBlock>MKV</TextBlock>
                         <TextBlock>MP4</TextBlock>
+                        <TextBlock>MKV</TextBlock>
                     </ComboBox>
                     <Button x:Name="boxStartButton" Content="开始封装" Margin="0,115,10,0" VerticalAlignment="Top" Height="22" HorizontalAlignment="Right" Width="74" Click="boxStartButton_Click"/>
 

@@ -8,7 +8,7 @@ namespace NegativeEncoder
 {
     class Version
     {
-        public const string VER = "0.4.1";
+        public const string VER = "0.4.2";
         public static string AboutText = "Negative Encoder (消极压制) v" + VER + @"
 By Zyzsdy
 
@@ -47,6 +47,8 @@ NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.zh-cn.md
 ---------------------------------------
 
 更新记录
+v0.4.2 pre-release
+
 v0.4.1 (2019-1-1)
 * 2019相关标记修改
 * 移除MP4Box及相关依赖，使用ffmpeg进行MP4混流

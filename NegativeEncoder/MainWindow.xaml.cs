@@ -506,22 +506,18 @@ namespace NegativeEncoder
 
         private void boxFormatComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(windowIsLoaded && boxFormatComboBox.SelectedIndex == (int)BoxFormat.MP4)
-            {
-                var result = MessageBox.Show("9102年了，B站都支持MKV直传了，居然还有人要用MP4格式。", "我看看日历", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-            }
             if (config != null)
             {
                 config.ActiveBoxFormat = (BoxFormat)Enum.ToObject(typeof(BoxFormat), boxFormatComboBox.SelectedIndex);
                 if (boxVideoInputTextBox.Text != "")
                 {
-                    if (config.ActiveBoxFormat == BoxFormat.MKV)
+                    if (config.ActiveBoxFormat == BoxFormat.MP4)
                     {
-                        AutoSetSaveVideoPath(boxVideoInputTextBox, "_mux.mkv", boxSaveTextBox);
+                        AutoSetSaveVideoPath(boxVideoInputTextBox, "_mux.mp4", boxSaveTextBox);
                     }
                     else
                     {
-                        AutoSetSaveVideoPath(boxVideoInputTextBox, "_mux.mp4", boxSaveTextBox);
+                        AutoSetSaveVideoPath(boxVideoInputTextBox, "_mux.mkv", boxSaveTextBox);
                     }
                 }
             }
