@@ -60,8 +60,9 @@
                     <TextBox x:Name="avsResizeY" HorizontalAlignment="Right" Height="22" Margin="0,106,104,0" TextWrapping="Wrap" Text="720" VerticalAlignment="Top" Width="60" TextChanged="avsResizeY_TextChanged"/>
                     <Label Content="x" Margin="0,102,164,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="16"/>
                     <Button x:Name="avsStartEncodingButton" Content="开始压制" Margin="0,106,10,0" VerticalAlignment="Top" Height="22" HorizontalAlignment="Right" Width="74" Click="avsStartEncodingButton_Click"/>
-                    <TextBox x:Name="avsTextBox" Margin="10,143,10,9.5" TextWrapping="Wrap" AcceptsReturn="True"/>
+                    <TextBox x:Name="avsTextBox" Margin="10,160,10,10" TextWrapping="Wrap" AcceptsReturn="True"/>
                     <CheckBox x:Name="avsRepeatCheckBox" Content="Repeat" HorizontalAlignment="Left" Margin="10,108,0,0" VerticalAlignment="Top" ToolTip="勾选后可使LWLVS在处理输入时自动插入一些重复帧。" Click="avsRepeatCheckBox_Click"/>
+                    <CheckBox x:Name="avsIvtcCheckBox" Content="IVTC" HorizontalAlignment="Left" Margin="10,130,0,0" VerticalAlignment="Top" ToolTip="使用vivtc处理24t视频" Click="AvsIvtcCheckBox_Click"/>
                     <CheckBox x:Name="avsQTGMCCheckBox" Content="QTGMC" HorizontalAlignment="Left" Margin="75,108,0,0" VerticalAlignment="Top" ToolTip="使用QTGMC反交错（缓慢）。" Click="avsQTGMCCheckBox_Click"/>
                     <CheckBox x:Name="avsVsfilterModCheckBox" Content="使用vsfmod" HorizontalAlignment="Left" Margin="146,108,0,0" VerticalAlignment="Top" ToolTip="使用VsfilterMod处理字幕而不是Vsfilter" Click="avsVsfilterModCheckBox_Click"/>
                 </Grid>

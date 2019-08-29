@@ -49,6 +49,12 @@ namespace NegativeEncoder
             }
             sb.Append(")\n");
 
+            if(mw.avsIvtcCheckBox.IsChecked == true)
+            {
+                sb.Append("video = core.vivtc.VFM(video, 1, mode=3, cthresh=8, mi=64)\n");
+                sb.Append("video = core.vivtc.VDecimate(video)\n");
+            }
+
             if(mw.avsQTGMCCheckBox.IsChecked == true)
             {
                 sb.Append("video = QTGMC(video, Preset='fast', TFF=True)\n");
