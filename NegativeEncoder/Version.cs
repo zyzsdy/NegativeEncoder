@@ -47,8 +47,10 @@ NVEncC：https://github.com/rigaya/NVEnc/blob/master/NVEncC_Options.zh-cn.md
 ---------------------------------------
 
 更新记录
-v0.4.2 pre-release
+v0.4.2 (2019-8-29)
 * MP4作为默认混流格式，增加movflags faststart标识
+* 更新相关依赖库以及vs插件
+* 增加vs ivtc选项
 
 v0.4.1 (2019-1-1)
 * 2019相关标记修改
