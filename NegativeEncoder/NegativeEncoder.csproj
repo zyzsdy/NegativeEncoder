@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Version>5.0.0</Version>
+    <Authors>Ted Zyzsdy</Authors>
+    <Company>MeowSound Idols</Company>
+    <Description>一个可爱的NVENC/QSVENC/VCEENC的外壳</Description>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/zyzsdy/NegativeEncoder</PackageProjectUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <Product>消极压制</Product>
+    <Copyright>Copyright © 2018-2020 MeowSound Idols</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <ApplicationIcon>ne.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\baseline_add_black_18dp.png" />
+    <None Remove="Resources\baseline_remove_black_18dp.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\images\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </Content>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\baseline_add_black_18dp.png" />
+    <Resource Include="Resources\baseline_remove_black_18dp.png" />
+  </ItemGroup>
+
+</Project>
