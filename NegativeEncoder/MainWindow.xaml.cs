@@ -50,7 +50,7 @@ namespace NegativeEncoder
             //初始化（阶段1）
             var asm = Assembly.GetEntryAssembly();
             var asmVersion = (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(asm, typeof(AssemblyInformationalVersionAttribute));
-            AppContext.Version = asmVersion?.InformationalVersion ?? "";
+            AppContext.Version.CurrentVersion = asmVersion?.InformationalVersion ?? "";
 
             AppContext.FileSelector = new FileSelector.FileSelector();
 
@@ -60,13 +60,19 @@ namespace NegativeEncoder
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             //初始化（阶段2）
-            Title = "消极压制 v" + AppContext.Version;
+            Title = "消极压制 v" + AppContext.Version.CurrentVersion;
             StatusBar.DataContext = AppContext.Status;
 
             AppContext.Status.MainStatus = "载入系统配置...";
             AppContext.Config = SystemOptions.SystemOption.ReadOption<SystemOptions.Config>().GetAwaiter().GetResult();
 
             AutoCheckUpdateAfterStartupMenuItem.IsChecked = AppContext.Config.AutoCheckUpdate;
+
+            OpenNewVersionReleasePageMenuItem.DataContext = AppContext.Version;
+            if (AppContext.Config.AutoCheckUpdate)
+            {
+                CheckUpdateMenuItem_Click(sender, e);
+            }
 
             AppContext.Status.MainStatus = "就绪";
         }
@@ -90,6 +96,33 @@ namespace NegativeEncoder
         {
             AppContext.Config.AutoCheckUpdate = AutoCheckUpdateAfterStartupMenuItem.IsChecked;
             SystemOptions.SystemOption.SaveOption(AppContext.Config).GetAwaiter().GetResult();
+        }
+
+        private void CheckUpdateMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Task.Run(async () =>
+            {
+                await About.CheckUpdate.Check();
+            });
+        }
+
+        private void OpenNewVersionReleasePageMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var url = AppContext.Version.UpdateVersionLinkUrl;
+            if (!string.IsNullOrEmpty(url))
+            {
+                Utils.OpenBrowserViewLink.OpenUrl(url);
+            }
+        }
+
+        private void OpenAboutWindowMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var aboutWindow = new About.AboutWindow
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this
+            };
+            aboutWindow.Show();
         }
     }
 }

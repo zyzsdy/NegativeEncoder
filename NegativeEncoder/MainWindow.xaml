@@ -9,6 +9,7 @@
         Title="消极压制" Height="700" Width="1200" Loaded="Window_Loaded">
     <Window.Resources>
         <localStatusConverter:ProgressToVisibilityValueConverter x:Key="ProgressToVisibilityValueConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
@@ -22,10 +23,11 @@
                 
             </MenuItem>
             <MenuItem Header="帮助(_H)">
-                <MenuItem Header="检查更新(_U)..."/>
+                <MenuItem x:Name="CheckUpdateMenuItem" Header="检查更新(_U)..." Click="CheckUpdateMenuItem_Click"/>
+                <MenuItem x:Name="OpenNewVersionReleasePageMenuItem" Header="{Binding NewVersionMenuHeader}" Visibility="{Binding IsShowMenuItem, Converter={StaticResource BoolToVisibilityConverter}}" Click="OpenNewVersionReleasePageMenuItem_Click"/>
                 <MenuItem x:Name="AutoCheckUpdateAfterStartupMenuItem" Header="启动时自动检查更新" IsCheckable="True" Click="AutoCheckUpdateAfterStartupMenuItem_Click"/>
                 <Separator/>
-                <MenuItem Header="关于(_A)"/>
+                <MenuItem Header="关于(_A)" Click="OpenAboutWindowMenuItem_Click"/>
             </MenuItem>
         </Menu>
         <StatusBar x:Name="StatusBar" DockPanel.Dock="Bottom">

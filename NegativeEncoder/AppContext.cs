@@ -14,7 +14,7 @@ namespace NegativeEncoder
         /// <summary>
         /// 当前程序版本
         /// </summary>
-        public static string Version { get; set; } = string.Empty;
+        public static About.Version Version { get; set; } = new About.Version();
 
         /// <summary>
         /// 状态栏显示对象
