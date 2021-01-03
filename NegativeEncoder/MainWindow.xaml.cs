@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -52,8 +53,6 @@ namespace NegativeEncoder
             var asmVersion = (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(asm, typeof(AssemblyInformationalVersionAttribute));
             AppContext.Version.CurrentVersion = asmVersion?.InformationalVersion ?? "";
 
-            AppContext.FileSelector = new FileSelector.FileSelector();
-
             InitializeComponent();
         }
 
@@ -62,9 +61,13 @@ namespace NegativeEncoder
             //初始化（阶段2）
             Title = "消极压制 v" + AppContext.Version.CurrentVersion;
             StatusBar.DataContext = AppContext.Status;
+            FunctionTabs.DataContext = AppContext.PresetContext;
 
             AppContext.Status.MainStatus = "载入系统配置...";
-            AppContext.Config = SystemOptions.SystemOption.ReadOption<SystemOptions.Config>().GetAwaiter().GetResult();
+            AppContext.Config = SystemOptions.SystemOption.ReadOption<SystemOptions.Config>().GetAwaiter().GetResult(); //读取全局配置
+            Presets.PresetProvider.LoadPresetAutoSave().GetAwaiter().GetResult(); //读取当前预设
+
+            Presets.PresetProvider.InitPresetAutoSave(); //初始化预设自动保存
 
             AutoCheckUpdateAfterStartupMenuItem.IsChecked = AppContext.Config.AutoCheckUpdate;
 
@@ -123,6 +126,12 @@ namespace NegativeEncoder
                 Owner = this
             };
             aboutWindow.Show();
+        }
+
+        private void TestPresetPreview_Click(object sender, RoutedEventArgs e)
+        {
+            var presetJsonStr = JsonConvert.SerializeObject(AppContext.PresetContext.CurrentPreset, Formatting.Indented);
+            MessageBox.Show(presetJsonStr, "预设预览");
         }
     }
 }

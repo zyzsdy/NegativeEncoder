@@ -1,0 +1,168 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NegativeEncoder.Presets.Converters"
+             x:Class="NegativeEncoder.FunctionTabs.FunctionTabs"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="690" Background="#FFFFFFFF">
+    <UserControl.Resources>
+        <local:EncodeModeConverter x:Key="EncodeModeConverter"/>
+        <local:QSVEnableConverter x:Key="QSVEnableConverter"/>
+        <local:NVENCEnableConverter x:Key="NVENCEnableConverter"/>
+        <local:VCEDisableConverter x:Key="VCEDisableConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <Label Content="输入" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25"/>
+        <TextBox Margin="55,10,20,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center" IsReadOnly="True"/>
+        <Label Content="输出" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Height="25"/>
+        <TextBox Margin="55,40,90,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center"/>
+        <Button Content="浏览..." HorizontalAlignment="Right" Margin="0,40,20,0" VerticalAlignment="Top" Height="25" Width="65"/>
+
+        <TabControl Margin="10,79,20,10">
+            <TabItem Header="编码器">
+                <Grid>
+                    <Label Content="编码器" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25"/>
+                    <ComboBox HorizontalAlignment="Left" Margin="61,10,0,0" VerticalAlignment="Top" Width="200" Height="25"
+                              ItemsSource="{Binding PresetOption.EncoderOptions}" SelectedValue="{Binding CurrentPreset.Encoder}" SelectedValuePath="Value">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Label Content="输出编码" HorizontalAlignment="Left" Margin="273,10,0,0" VerticalAlignment="Top" Height="25"/>
+                    <ComboBox HorizontalAlignment="Left" Margin="336,10,0,0" VerticalAlignment="Top" Width="140" Height="25"
+                              ItemsSource="{Binding PresetOption.CodecOptions}" SelectedValue="{Binding CurrentPreset.Codec}" SelectedValuePath="Value">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <GroupBox Header="编码模式" Height="119" VerticalAlignment="Top" Margin="10,40,10,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1*"/>
+                                <RowDefinition Height="1*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <RadioButton Content="VBR" HorizontalAlignment="Left" Width="70" Height="25" VerticalAlignment="Center" Margin="10,0,0,0" VerticalContentAlignment="Center" Grid.Column="0" Grid.Row="0"
+                                         GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EncodeModeConverter},ConverterParameter=2}"/>
+                            <TextBox VerticalAlignment="Center" Margin="85,0,10,0" Height="25" VerticalContentAlignment="Center" TextWrapping="NoWrap" Grid.Column="0" Grid.Row="0"
+                                     Text="{Binding CurrentPreset.VbrParam}"/>
+                            <RadioButton Content="CBR" HorizontalAlignment="Left" Width="70" Height="25" VerticalAlignment="Center" Margin="10,0,0,0" VerticalContentAlignment="Center" Grid.Column="1" Grid.Row="0"
+                                         GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EncodeModeConverter},ConverterParameter=1}"/>
+                            <TextBox VerticalAlignment="Center" Margin="85,0,10,0" Height="25" VerticalContentAlignment="Center" TextWrapping="NoWrap" Grid.Column="1" Grid.Row="0"
+                                     Text="{Binding CurrentPreset.CbrParam}"/>
+                            <RadioButton Content="CQP" HorizontalAlignment="Left" Width="70" Height="25" VerticalAlignment="Center" Margin="10,0,0,0" VerticalContentAlignment="Center" Grid.Column="2" Grid.Row="0"
+                                         GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EncodeModeConverter},ConverterParameter=0}"/>
+                            <TextBox VerticalAlignment="Center" Margin="85,0,10,0" Height="25" VerticalContentAlignment="Center" TextWrapping="NoWrap" Grid.Column="2" Grid.Row="0"
+                                     Text="{Binding CurrentPreset.CqpParam}"/>
+                            <RadioButton Content="LA" HorizontalAlignment="Left" Width="70" Height="25" VerticalAlignment="Center" Margin="10,0,0,0" VerticalContentAlignment="Center" Grid.Column="0" Grid.Row="1"
+                                         GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EncodeModeConverter},ConverterParameter=3}"
+                                         IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource QSVEnableConverter}}"/>
+                            <TextBox VerticalAlignment="Center" Margin="85,0,10,0" Height="25" VerticalContentAlignment="Center" TextWrapping="NoWrap" Grid.Column="0" Grid.Row="1"
+                                     Text="{Binding CurrentPreset.LaParam}" IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource QSVEnableConverter}}"/>
+                            <RadioButton Content="LA-ICQ" HorizontalAlignment="Left" Width="70" Height="25" VerticalAlignment="Center" Margin="10,0,0,0" VerticalContentAlignment="Center" Grid.Column="1" Grid.Row="1"
+                                         GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EncodeModeConverter},ConverterParameter=4}"
+                                         IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource QSVEnableConverter}}"/>
+                            <TextBox VerticalAlignment="Center" Margin="85,0,10,0" Height="25" VerticalContentAlignment="Center" TextWrapping="NoWrap" Grid.Column="1" Grid.Row="1"
+                                     Text="{Binding CurrentPreset.LaicqParam}" IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource QSVEnableConverter}}"/>
+                            <RadioButton Content="QVBR" HorizontalAlignment="Left" Width="70" Height="25" VerticalAlignment="Center" Margin="10,0,0,0" VerticalContentAlignment="Center" Grid.Column="2" Grid.Row="1"
+                                         GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EncodeModeConverter},ConverterParameter=5}"
+                                         IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource QSVEnableConverter}}"/>
+                            <TextBox VerticalAlignment="Center" Margin="85,0,10,0" Height="25" VerticalContentAlignment="Center" TextWrapping="NoWrap" Grid.Column="2" Grid.Row="1"
+                                     Text="{Binding CurrentPreset.QvbrParam}" IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource QSVEnableConverter}}"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="编码选项" Height="105" VerticalAlignment="Top" Margin="10,164,10,0">
+                        <Grid>
+                            <Label Content="质量预设" HorizontalAlignment="Left" Margin="10,10,0,0" Height="25" VerticalAlignment="Top"/>
+                            <ComboBox HorizontalAlignment="Left" Margin="73,10,0,0" VerticalAlignment="Top" Height="25" Width="169"
+                                      ItemsSource="{Binding PresetOption.QualityPresetOptions}" SelectedValue="{Binding CurrentPreset.QualityPreset}" SelectedValuePath="Value">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Label Content="色深" HorizontalAlignment="Left" Margin="247,10,0,0" Height="25" VerticalAlignment="Top"/>
+                            <ComboBox HorizontalAlignment="Left" Margin="286,10,0,0" VerticalAlignment="Top" Height="25" Width="120"
+                                      ItemsSource="{Binding PresetOption.ColorDepthOptions}" SelectedValue="{Binding CurrentPreset.ColorDepth}" SelectedValuePath="Value"
+                                      IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource NVENCEnableConverter}}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Label Content="VBR质量" HorizontalAlignment="Left" Margin="419,10,0,0" Height="25" VerticalAlignment="Top" ToolTip="当使用VBR模式(NVENC)/QVBR模式(QSV)时，可以指定目标质量（0~51，默认23）"/>
+                            <TextBox HorizontalAlignment="Left" Margin="481,10,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" Width="131" VerticalContentAlignment="Center"
+                                     Text="{Binding CurrentPreset.VbrQuailty}" IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource QSVEnableConverter}}"/>
+                            <CheckBox Content="最大GOP" HorizontalAlignment="Left" Margin="10,50,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
+                                      IsChecked="{Binding CurrentPreset.IsSetMaxGop}"/>
+                            <TextBox HorizontalAlignment="Left" Margin="85,50,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" Width="120" VerticalContentAlignment="Center"
+                                     Text="{Binding CurrentPreset.MaxGop}" IsEnabled="{Binding CurrentPreset.IsSetMaxGop}"/>
+                            <CheckBox Content="固定GOP" HorizontalAlignment="Left" Margin="211,50,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
+                                      IsChecked="{Binding CurrentPreset.IsStrictGop}" IsEnabled="{Binding CurrentPreset.IsSetMaxGop}"/>
+                            <CheckBox Content="DAR" HorizontalAlignment="Left" Margin="300,50,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" ToolTip="勾选后可设定回放时播放器的显示比例"
+                                      IsChecked="{Binding CurrentPreset.IsSetDar}"/>
+                            <TextBox HorizontalAlignment="Left" Margin="350,50,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" Width="60" VerticalContentAlignment="Center"
+                                     Text="{Binding CurrentPreset.Dar}" IsEnabled="{Binding CurrentPreset.IsSetDar}"/>
+                            <CheckBox Content="限制最大码率" HorizontalAlignment="Left" Margin="419,50,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
+                                      IsChecked="{Binding CurrentPreset.IsSetMaxBitrate}"/>
+                            <TextBox HorizontalAlignment="Left" Margin="516,50,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" Width="96" VerticalContentAlignment="Center"
+                                     Text="{Binding CurrentPreset.MaxBitrate}" IsEnabled="{Binding CurrentPreset.IsSetMaxBitrate}"/>
+
+                        </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="高级选项" Height="100" VerticalAlignment="Top" Margin="10,274,10,0">
+                        <Grid>
+                            <Label Content="解码模式" HorizontalAlignment="Left" Margin="10,10,0,0" Height="25" VerticalAlignment="Top" ToolTip="VPP处理滤镜仅能在硬件解码时使用"/>
+                            <ComboBox HorizontalAlignment="Left" Margin="73,10,0,0" VerticalAlignment="Top" Width="120" Height="25"
+                                      ItemsSource="{Binding PresetOption.DecoderOptions}" SelectedValue="{Binding CurrentPreset.Decoder}" SelectedValuePath="Value">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Label Content="D3D" HorizontalAlignment="Left" Margin="207,10,0,0" Height="25" VerticalAlignment="Top" ToolTip="D3D显存模式（仅QSV）"/>
+                            <ComboBox HorizontalAlignment="Left" Margin="247,10,0,0" VerticalAlignment="Top" Width="120" Height="25"
+                                      ItemsSource="{Binding PresetOption.D3DModeOptions}" SelectedValue="{Binding CurrentPreset.D3DMode}" SelectedValuePath="Value"
+                                      IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource QSVEnableConverter}}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="VS">
+                <Grid/>
+            </TabItem>
+            <TabItem Header="音频">
+                <Grid/>
+            </TabItem>
+            <TabItem Header="封装">
+                <Grid/>
+            </TabItem>
+            <TabItem Header="常用">
+                <Grid/>
+            </TabItem>
+        </TabControl>
+
+
+    </Grid>
+</UserControl>

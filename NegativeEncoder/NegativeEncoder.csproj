@@ -12,7 +12,7 @@
     <PackageProjectUrl>https://github.com/zyzsdy/NegativeEncoder</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
     <Product>消极压制</Product>
-    <Copyright>Copyright © 2018-2020 MeowSound Idols</Copyright>
+    <Copyright>Copyright © 2018-2021 MeowSound Idols</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <ApplicationIcon>ne.ico</ApplicationIcon>
   </PropertyGroup>

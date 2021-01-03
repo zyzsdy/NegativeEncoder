@@ -9,7 +9,7 @@ namespace NegativeEncoder
         /// <summary>
         /// 文件选择器
         /// </summary>
-        public static FileSelector.FileSelector FileSelector { get; set; }
+        public static FileSelector.FileSelector FileSelector { get; set; } = new FileSelector.FileSelector();
 
         /// <summary>
         /// 当前程序版本
@@ -25,5 +25,10 @@ namespace NegativeEncoder
         /// 全局系统设置
         /// </summary>
         public static SystemOptions.Config Config { get; set; } = new SystemOptions.Config();
+
+        /// <summary>
+        /// 预设全局对象
+        /// </summary>
+        public static Presets.PresetContext PresetContext { get; set; } = new Presets.PresetContext();
     }
 }

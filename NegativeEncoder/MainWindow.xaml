@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:localFileSelector="clr-namespace:NegativeEncoder.FileSelector"
+        xmlns:local="clr-namespace:NegativeEncoder.FunctionTabs"
         xmlns:localStatusConverter="clr-namespace:NegativeEncoder.StatusBar"
         mc:Ignorable="d"
         Title="消极压制" Height="700" Width="1200" Loaded="Window_Loaded">
@@ -20,7 +21,7 @@
                 <MenuItem Header="退出(_X)" InputGestureText="Alt+F4" Click="ExitAppMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="预设(_P)">
-                
+                <MenuItem Header="预览预设..." Click="TestPresetPreview_Click"/>
             </MenuItem>
             <MenuItem Header="帮助(_H)">
                 <MenuItem x:Name="CheckUpdateMenuItem" Header="检查更新(_U)..." Click="CheckUpdateMenuItem_Click"/>
@@ -65,7 +66,7 @@
             </Grid.ColumnDefinitions>
 
             <localFileSelector:FileList x:Name="MainFileList" Grid.Row="0" Grid.Column="0"/>
-            <TextBlock Grid.Row="0" Grid.Column="1">一些内容</TextBlock>
+            <local:FunctionTabs x:Name="FunctionTabs" Grid.Row="0" Grid.Column="1"/>
             <TextBlock Grid.Row="0" Grid.Column="2">另一些内容</TextBlock>
 
             <GridSplitter Grid.Row="0" Grid.Column="0" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
