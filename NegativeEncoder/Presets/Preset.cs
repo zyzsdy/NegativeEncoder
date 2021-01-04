@@ -100,6 +100,57 @@ namespace NegativeEncoder.Presets
         /// </summary>
         public D3DMode D3DMode { get; set; } = D3DMode.Auto;
 
+        /// <summary>
+        /// 是否设置音频同步
+        /// </summary>
+        public bool IsSetAvSync { get; set; } = false;
+
+        /// <summary>
+        /// 音频同步
+        /// </summary>
+        public AVSync AVSync { get; set; } = AVSync.Cfr;
+
+        /// <summary>
+        /// 是否启用反交错
+        /// </summary>
+        public bool IsUseDeInterlace { get; set; } = false;
+
+        /// <summary>
+        /// 交错源场顺序
+        /// </summary>
+        public FieldOrder FieldOrder { get; set; } = FieldOrder.TFF;
+
+        /// <summary>
+        /// 硬件反交错模式
+        /// </summary>
+        public DeInterlaceMethodPreset DeInterlaceMethodPreset { get; set; } = DeInterlaceMethodPreset.HwNormal;
+
+        /// <summary>
+        /// 是否设置输出分辨率（调整大小）
+        /// </summary>
+        public bool IsSetOutputRes { get; set; } = false;
+        public string OutputResWidth { get; set; } = "1920";
+        public string OUtputResHeight { get; set; } = "1080";
+
+        /// <summary>
+        /// 音频编码选项
+        /// </summary>
+        public AudioEncode AudioEncode { get; set; } = AudioEncode.Copy;
+        public string AudioBitrate { get; set; } = "192";
+
+        /// <summary>
+        /// 输出格式
+        /// </summary>
+        public OutputFormat OutputFormat { get; set; } = OutputFormat.MP4;
+
+        /// <summary>
+        /// 使用自定义参数
+        /// </summary>
+        public bool IsUseCustomParameters { get; set; } = false;
+        public string CustomParameters { get; set; } = "";
+
+
+
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

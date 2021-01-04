@@ -45,6 +45,53 @@ namespace NegativeEncoder.Presets
             new EnumOption<D3DMode> { Value = D3DMode.D3D9, Name = "d3d9" },
             new EnumOption<D3DMode> { Value = D3DMode.D3D11, Name = "d3d11" }
         };
+
+        public ObservableCollection<EnumOption<AVSync>> AVSyncOptions { get; set; } = new ObservableCollection<EnumOption<AVSync>>
+        {
+            new EnumOption<AVSync> { Value = AVSync.Cfr, Name = "CFR（默认）" },
+            new EnumOption<AVSync> { Value = AVSync.ForceCfr, Name = "Force CFR（强制转换）" },
+            new EnumOption<AVSync> { Value = AVSync.Vfr, Name = "VFR（使用时间码）" }
+        };
+
+        public ObservableCollection<EnumOption<FieldOrder>> FieldOrderOptions { get; set; } = new ObservableCollection<EnumOption<FieldOrder>>
+        {
+            new EnumOption<FieldOrder> { Value = FieldOrder.TFF, Name = "TFF" },
+            new EnumOption<FieldOrder> { Value = FieldOrder.BFF, Name = "BFF" }
+        };
+
+        public ObservableCollection<EnumOption<DeInterlaceMethodPreset>> DeInterlaceMethodPresetOptions { get; set; } = new ObservableCollection<EnumOption<DeInterlaceMethodPreset>>
+        {
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.HwNormal, Name = "硬件反交错 普通模式（NVENC/QuickSync)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.HwBob, Name = "硬件反交错 Double（NVENC/QuickSync)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.HwIt, Name = "硬件反交错 IVTC (QuickSync)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.AfsDefault, Name = "AFS Default (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.AfsTriple, Name = "AFS Triple (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.AfsDouble, Name = "AFS Double (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.AfsAnime, Name = "AFS Anime (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.AfsAnime24fps, Name = "AFS Anime 24fps IVTC (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.Afs24fps, Name = "AFS 24fps IVTC (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.Afs30fps, Name = "AFS 30fps (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.Nnedi64NoPre, Name = "nnedi 64(32x6) no prescreen slow (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.Nnedi64Fast, Name = "nnedi 64(32x6) fast (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.Nnedi32Fast, Name = "nnedi 32(32x4) fast (NVENC/VCE)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.YadifTff, Name = "Yadif TFF (NVENC)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.YadifBff, Name = "Yadif BFF (NVENC)" },
+            new EnumOption<DeInterlaceMethodPreset> { Value = DeInterlaceMethodPreset.YadifBob, Name = "Yadif Double (NVENC)" }
+        };
+
+        public ObservableCollection<EnumOption<AudioEncode>> AudioEncodeOptions { get; set; } = new ObservableCollection<EnumOption<AudioEncode>>
+        {
+            new EnumOption<AudioEncode> { Value = AudioEncode.None, Name = "无音频流" },
+            new EnumOption<AudioEncode> { Value = AudioEncode.Copy, Name = "复制音频流" },
+            new EnumOption<AudioEncode> { Value = AudioEncode.Encode, Name = "编码音频" }
+        };
+
+        public ObservableCollection<EnumOption<OutputFormat>> OutputFormatOptions { get; set; } = new ObservableCollection<EnumOption<OutputFormat>>
+        {
+            new EnumOption<OutputFormat> { Value = OutputFormat.MP4, Name = "MP4" },
+            new EnumOption<OutputFormat> { Value = OutputFormat.MPEGTS, Name = "MPEG TS" },
+            new EnumOption<OutputFormat> { Value = OutputFormat.FLV, Name = "FLV" }
+        };
     }
 
     [AddINotifyPropertyChangedInterface]

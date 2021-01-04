@@ -12,6 +12,9 @@
         <local:QSVEnableConverter x:Key="QSVEnableConverter"/>
         <local:NVENCEnableConverter x:Key="NVENCEnableConverter"/>
         <local:VCEDisableConverter x:Key="VCEDisableConverter"/>
+        <local:AudioEncodeEnableModeConverter x:Key="AudioEncodeEnableModeConverter"/>
+        <local:CustomVisibilityConverter x:Key="CustomVisibilityConverter"/>
+        <local:CustomVisibilityNotConverter x:Key="CustomVisibilityNotConverter"/>
     </UserControl.Resources>
     <Grid>
         <Label Content="输入" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25"/>
@@ -32,16 +35,28 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <Label Content="输出编码" HorizontalAlignment="Left" Margin="273,10,0,0" VerticalAlignment="Top" Height="25"/>
+                    <Label Content="输出编码" HorizontalAlignment="Left" Margin="273,10,0,0" VerticalAlignment="Top" Height="25"
+                           Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}"/>
                     <ComboBox HorizontalAlignment="Left" Margin="336,10,0,0" VerticalAlignment="Top" Width="140" Height="25"
-                              ItemsSource="{Binding PresetOption.CodecOptions}" SelectedValue="{Binding CurrentPreset.Codec}" SelectedValuePath="Value">
+                              ItemsSource="{Binding PresetOption.CodecOptions}" SelectedValue="{Binding CurrentPreset.Codec}" SelectedValuePath="Value"
+                              Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <GroupBox Header="编码模式" Height="119" VerticalAlignment="Top" Margin="10,40,10,0">
+                    <CheckBox Content="使用自定义参数" HorizontalAlignment="Left" Margin="500,10,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
+                              IsChecked="{Binding CurrentPreset.IsUseCustomParameters}"/>
+
+                    <Label Content="自定义参数" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Height="25"
+                           Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityNotConverter}}"/>
+                    <TextBox Margin="10,70,10,210" Text="{Binding CurrentPreset.CustomParameters}" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityNotConverter}}"/>
+
+                    <GroupBox Header="编码模式" Height="119" VerticalAlignment="Top" Margin="10,40,10,0"
+                              Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="1*"/>
@@ -82,7 +97,8 @@
                         </Grid>
                     </GroupBox>
 
-                    <GroupBox Header="编码选项" Height="105" VerticalAlignment="Top" Margin="10,164,10,0">
+                    <GroupBox Header="编码选项" Height="105" VerticalAlignment="Top" Margin="10,164,10,0"
+                              Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}">
                         <Grid>
                             <Label Content="质量预设" HorizontalAlignment="Left" Margin="10,10,0,0" Height="25" VerticalAlignment="Top"/>
                             <ComboBox HorizontalAlignment="Left" Margin="73,10,0,0" VerticalAlignment="Top" Height="25" Width="169"
@@ -105,7 +121,7 @@
                             </ComboBox>
                             <Label Content="VBR质量" HorizontalAlignment="Left" Margin="419,10,0,0" Height="25" VerticalAlignment="Top" ToolTip="当使用VBR模式(NVENC)/QVBR模式(QSV)时，可以指定目标质量（0~51，默认23）"/>
                             <TextBox HorizontalAlignment="Left" Margin="481,10,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" Width="131" VerticalContentAlignment="Center"
-                                     Text="{Binding CurrentPreset.VbrQuailty}" IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource QSVEnableConverter}}"/>
+                                     Text="{Binding CurrentPreset.VbrQuailty}" IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource VCEDisableConverter}}"/>
                             <CheckBox Content="最大GOP" HorizontalAlignment="Left" Margin="10,50,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
                                       IsChecked="{Binding CurrentPreset.IsSetMaxGop}"/>
                             <TextBox HorizontalAlignment="Left" Margin="85,50,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" Width="120" VerticalContentAlignment="Center"
@@ -124,7 +140,8 @@
                         </Grid>
                     </GroupBox>
 
-                    <GroupBox Header="高级选项" Height="100" VerticalAlignment="Top" Margin="10,274,10,0">
+                    <GroupBox Header="高级选项" Height="100" VerticalAlignment="Top" Margin="10,274,10,0"
+                              Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}">
                         <Grid>
                             <Label Content="解码模式" HorizontalAlignment="Left" Margin="10,10,0,0" Height="25" VerticalAlignment="Top" ToolTip="VPP处理滤镜仅能在硬件解码时使用"/>
                             <ComboBox HorizontalAlignment="Left" Margin="73,10,0,0" VerticalAlignment="Top" Width="120" Height="25"
@@ -145,9 +162,90 @@
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
+                            <CheckBox Content="音频同步" HorizontalAlignment="Left" Margin="381,10,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
+                                      IsChecked="{Binding CurrentPreset.IsSetAvSync}"/>
+                            <ComboBox HorizontalAlignment="Left" Margin="454,10,0,0" VerticalAlignment="Top" Width="158" Height="25"
+                                      ItemsSource="{Binding PresetOption.AVSyncOptions}" SelectedValue="{Binding CurrentPreset.AVSync}" SelectedValuePath="Value"
+                                      IsEnabled="{Binding CurrentPreset.IsSetAvSync}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </Grid>
                     </GroupBox>
+
+                    <CheckBox Content="反交错" HorizontalAlignment="Left" Margin="10,0,0,85" VerticalContentAlignment="Center" Height="25" VerticalAlignment="Bottom"
+                              IsChecked="{Binding CurrentPreset.IsUseDeInterlace}"
+                              Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}"/>
+                    <ComboBox HorizontalAlignment="Left" Margin="71,0,0,85" Width="55" Height="25" VerticalAlignment="Bottom"
+                              ItemsSource="{Binding PresetOption.FieldOrderOptions}" SelectedValue="{Binding CurrentPreset.FieldOrder}" SelectedValuePath="Value"
+                              IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}"
+                              Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <ComboBox HorizontalAlignment="Left" Margin="134,0,0,85" Width="383" Height="25" VerticalAlignment="Bottom"
+                              ItemsSource="{Binding PresetOption.DeInterlaceMethodPresetOptions}" SelectedValue="{Binding CurrentPreset.DeInterlaceMethodPreset}" SelectedValuePath="Value"
+                              IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}"
+                              Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <CheckBox Content="调整分辨率" HorizontalAlignment="Left" Margin="10,0,0,55" VerticalContentAlignment="Center" Height="25" VerticalAlignment="Bottom"
+                              IsChecked="{Binding CurrentPreset.IsSetOutputRes}"
+                              Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}"/>
+                    <TextBox HorizontalAlignment="Left" Margin="95,0,0,55" TextWrapping="NoWrap" Width="60" Height="25" VerticalAlignment="Bottom" VerticalContentAlignment="Center"
+                             Text="{Binding CurrentPreset.OutputResWidth}" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}"
+                             Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}"/>
+                    <Label Content="x" HorizontalAlignment="Left" Margin="155,0,0,55" Height="25" VerticalAlignment="Bottom" Width="10" Padding="2,0,2,0" VerticalContentAlignment="Center"
+                           Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}"/>
+                    <TextBox HorizontalAlignment="Left" Margin="165,0,0,55" TextWrapping="NoWrap" Width="60" Height="25" VerticalAlignment="Bottom" VerticalContentAlignment="Center"
+                             Text="{Binding CurrentPreset.OUtputResHeight}" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}"
+                             Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}"/>
+
+                    <Label Content="音频" HorizontalAlignment="Left" Margin="297,0,0,55" Height="25" VerticalAlignment="Bottom"
+                           Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}"/>
+                    <ComboBox HorizontalAlignment="Left" Margin="331,0,0,55" Width="108" Height="25" VerticalAlignment="Bottom"
+                              ItemsSource="{Binding PresetOption.AudioEncodeOptions}" SelectedValue="{Binding CurrentPreset.AudioEncode}" SelectedValuePath="Value"
+                              Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBox HorizontalAlignment="Left" Margin="444,0,0,55" TextWrapping="NoWrap" Width="57" VerticalContentAlignment="Center" Height="25" VerticalAlignment="Bottom"
+                             Text="{Binding CurrentPreset.AudioBitrate}" IsEnabled="{Binding CurrentPreset.AudioEncode,Converter={StaticResource AudioEncodeEnableModeConverter}}"
+                             Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}"/>
+                    <Label Content="(kbps)" HorizontalAlignment="Left" Margin="501,0,0,55" Height="25" VerticalAlignment="Bottom"
+                           Visibility="{Binding CurrentPreset.IsUseCustomParameters, Converter={StaticResource CustomVisibilityConverter}}"/>
+
+
+
+                    <Label Content="输出格式" HorizontalAlignment="Right" Margin="0,0,300,10" Height="25" VerticalAlignment="Bottom"/>
+                    <ComboBox HorizontalAlignment="Right" Margin="0,0,137,10" Width="158" Height="25" VerticalAlignment="Bottom"
+                              ItemsSource="{Binding PresetOption.OutputFormatOptions}" SelectedValue="{Binding CurrentPreset.OutputFormat}" SelectedValuePath="Value">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Content="添加到编码队列" HorizontalAlignment="Right" Margin="0,0,10,10" Height="25" VerticalAlignment="Bottom" Width="105"/>
+
+
                 </Grid>
+            </TabItem>
+            <TabItem Header="HDR">
+                <Grid/>
             </TabItem>
             <TabItem Header="VS">
                 <Grid/>
