@@ -100,4 +100,20 @@ namespace NegativeEncoder.Presets
         MPEGTS,
         FLV
     }
+
+    public enum HdrType
+    {
+        SDR,
+        HDR10,
+        HLG
+    }
+
+    public enum Hdr2Sdr
+    {
+        None,
+        Hable,
+        Mobius,
+        Reinhard,
+        Bt2390
+    }
 }

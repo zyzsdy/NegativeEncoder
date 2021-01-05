@@ -15,6 +15,7 @@
         <local:AudioEncodeEnableModeConverter x:Key="AudioEncodeEnableModeConverter"/>
         <local:CustomVisibilityConverter x:Key="CustomVisibilityConverter"/>
         <local:CustomVisibilityNotConverter x:Key="CustomVisibilityNotConverter"/>
+        <local:SDREnableConverter x:Key="SDREnableConverter"/>
     </UserControl.Resources>
     <Grid>
         <Label Content="输入" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25"/>
@@ -245,7 +246,68 @@
                 </Grid>
             </TabItem>
             <TabItem Header="HDR">
-                <Grid/>
+                <Grid>
+                    <CheckBox Content="输出带有HDR标记的视频" HorizontalAlignment="Left" Margin="10,10,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
+                              IsChecked="{Binding CurrentPreset.IsOutputHdr}"/>
+                    <ComboBox Margin="169,10,0,0" Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"
+                              ItemsSource="{Binding PresetOption.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.OutputHdrType}" SelectedValuePath="Value">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <CheckBox Content="每个IDR帧重复输出Header" HorizontalAlignment="Right" Margin="0,10,10,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
+                              IsChecked="{Binding CurrentPreset.IsRepeatHeaders}" IsEnabled="{Binding CurrentPreset.Encoder, Converter={StaticResource NVENCEnableConverter}}"/>
+                    <CheckBox Content="HDR格式转换" HorizontalAlignment="Left" Margin="10,50,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
+                              IsChecked="{Binding CurrentPreset.IsConvertHdrType}" IsEnabled="{Binding CurrentPreset.Encoder, Converter={StaticResource NVENCEnableConverter}}"/>
+                    <ComboBox Margin="121,50,0,0" Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"
+                              ItemsSource="{Binding PresetOption.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.OldHdrType}" SelectedValuePath="Value"
+                              IsEnabled="{Binding CurrentPreset.Encoder, Converter={StaticResource NVENCEnableConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Label Content="to" Margin="251,50,0,0" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <ComboBox Margin="275,50,0,0" Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"
+                              ItemsSource="{Binding PresetOption.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.NewHdrType}" SelectedValuePath="Value"
+                              IsEnabled="{Binding CurrentPreset.Encoder, Converter={StaticResource NVENCEnableConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Label Content="HDR转SDR算法" Margin="28,92,0,0" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <ComboBox Margin="129,92,0,0" Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" Width="165"
+                              ItemsSource="{Binding PresetOption.Hdr2SdrOptions}" SelectedValue="{Binding CurrentPreset.Hdr2SdrMethod}" SelectedValuePath="Value"
+                              IsEnabled="{Binding CurrentPreset.NewHdrType, Converter={StaticResource SDREnableConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Label Content="去饱和强度 (0.0~1.0)" Margin="311,92,0,0" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top"
+                           ToolTip="设置为0.0将禁用去饱和，设置为1.0将所有超过亮度的颜色指定为纯白"/>
+                    <TextBox HorizontalAlignment="Left" Margin="437,92,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="120" Height="25" VerticalContentAlignment="Center"
+                             Text="{Binding CurrentPreset.Hdr2SdrDeSatStrength}" IsEnabled="{Binding CurrentPreset.NewHdrType, Converter={StaticResource SDREnableConverter}}"/>
+                    <Button Content="添加到编码队列（HDR）" HorizontalAlignment="Right" Margin="0,142,10,0" Width="148" Height="25" VerticalAlignment="Top"/>
+                    <GroupBox Header="覆盖HDR标记（ffmpeg）" VerticalAlignment="Top" Margin="10,185,10,0" Height="72"
+                              ToolTip="本功能是不重新编码的前提下，直接修改HDR metadata中的色彩矩阵、传输特征和色彩基准，以修复部分数据正确但metadata错误的视频。">
+                        <Grid>
+                            <Button Content="标记为SDR" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
+                            <Button Content="标记为HDR10" HorizontalAlignment="Left" Margin="115,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
+                            <Button Content="标记为HLG" HorizontalAlignment="Left" Margin="220,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
+
+                        </Grid>
+                    </GroupBox>
+
+
+                </Grid>
             </TabItem>
             <TabItem Header="VS">
                 <Grid/>

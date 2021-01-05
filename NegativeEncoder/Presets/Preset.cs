@@ -149,6 +149,37 @@ namespace NegativeEncoder.Presets
         public bool IsUseCustomParameters { get; set; } = false;
         public string CustomParameters { get; set; } = "";
 
+        /// <summary>
+        /// 是否输出带有HDR标记的视频
+        /// </summary>
+        public bool IsOutputHdr { get; set; } = false;
+
+        /// <summary>
+        /// 输出HDR格式
+        /// </summary>
+        public HdrType OutputHdrType { get; set; } = HdrType.HLG;
+
+        /// <summary>
+        /// 是否在每个IDR帧重复输出Header
+        /// </summary>
+        public bool IsRepeatHeaders { get; set; } = false;
+
+        /// <summary>
+        /// 是否进行HDR格式转换
+        /// </summary>
+        public bool IsConvertHdrType { get; set; } = false;
+
+        public HdrType OldHdrType { get; set; } = HdrType.HLG;
+        public HdrType NewHdrType { get; set; } = HdrType.HDR10;
+
+
+        /// <summary>
+        /// HDR转SDR算法
+        /// </summary>
+        public Hdr2Sdr Hdr2SdrMethod { get; set; } = Hdr2Sdr.None;
+
+        public string Hdr2SdrDeSatStrength { get; set; } = "0.75";
+
 
 
         public event PropertyChangedEventHandler PropertyChanged;

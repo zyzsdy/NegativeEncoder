@@ -92,6 +92,22 @@ namespace NegativeEncoder.Presets
             new EnumOption<OutputFormat> { Value = OutputFormat.MPEGTS, Name = "MPEG TS" },
             new EnumOption<OutputFormat> { Value = OutputFormat.FLV, Name = "FLV" }
         };
+
+        public ObservableCollection<EnumOption<HdrType>> HdrTypeOptions { get; set; } = new ObservableCollection<EnumOption<HdrType>>
+        {
+            new EnumOption<HdrType> { Value = HdrType.SDR, Name = "SDR" },
+            new EnumOption<HdrType> { Value = HdrType.HDR10, Name = "HDR10" },
+            new EnumOption<HdrType> { Value = HdrType.HLG, Name = "HLG" }
+        };
+
+        public ObservableCollection<EnumOption<Hdr2Sdr>> Hdr2SdrOptions { get; set; } = new ObservableCollection<EnumOption<Hdr2Sdr>>
+        {
+            new EnumOption<Hdr2Sdr> { Value = Hdr2Sdr.None, Name = "不转换" },
+            new EnumOption<Hdr2Sdr> { Value = Hdr2Sdr.Hable, Name = "hable" },
+            new EnumOption<Hdr2Sdr> { Value = Hdr2Sdr.Mobius, Name = "mobius" },
+            new EnumOption<Hdr2Sdr> { Value = Hdr2Sdr.Reinhard, Name = "reinhard" },
+            new EnumOption<Hdr2Sdr> { Value = Hdr2Sdr.Bt2390, Name = "bt2390" }
+        };
     }
 
     [AddINotifyPropertyChangedInterface]

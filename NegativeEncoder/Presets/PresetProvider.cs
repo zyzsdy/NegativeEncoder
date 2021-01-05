@@ -40,6 +40,15 @@ namespace NegativeEncoder.Presets
                     }
                 }
 
+                //目标HDR格式不为SDR时，SDR转换只能是None
+                if (preset.NewHdrType != HdrType.SDR)
+                {
+                    if (preset.Hdr2SdrMethod != Hdr2Sdr.None)
+                    {
+                        AppContext.PresetContext.CurrentPreset.Hdr2SdrMethod = Hdr2Sdr.None;
+                    }
+                }
+
                 //存储预设到文件
                 await SystemOptions.SystemOption.SaveOption(AppContext.PresetContext.CurrentPreset);
             };
