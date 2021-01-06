@@ -7,9 +7,12 @@ using System.Windows;
 
 namespace NegativeEncoder.FileSelector
 {
+    public delegate void FileListChangeEvent();
     public class FileSelector
     {
         public ObservableCollection<FileInfo> Files { get; set; } = new ObservableCollection<FileInfo>();
+
+        public event FileListChangeEvent OnFileListChange;
 
         public int BrowseImportFiles()
         {
@@ -91,6 +94,11 @@ namespace NegativeEncoder.FileSelector
                     }
                 }
             }
+        }
+
+        public void NotifyChanged()
+        {
+            OnFileListChange?.Invoke();
         }
 
         public void Clear()

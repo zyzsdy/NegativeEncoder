@@ -14,7 +14,7 @@
         <Button Margin="0,10,40,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="25" Height="25" Click="ImportVideoButton_Click">
             <Image Source="/Resources/baseline_add_black_18dp.png"/>
         </Button>
-        <ListBox x:Name="FileListBox" Margin="10,40,10,40" SelectionMode="Extended" AllowDrop="True" DragOver="FileListBox_DragOver" Drop="FileListBox_Drop">
+        <ListBox x:Name="FileListBox" Margin="10,40,10,40" SelectionMode="Extended" AllowDrop="True" DragOver="FileListBox_DragOver" Drop="FileListBox_Drop" SelectionChanged="FileListBox_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>

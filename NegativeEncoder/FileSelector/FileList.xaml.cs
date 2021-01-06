@@ -25,7 +25,13 @@ namespace NegativeEncoder.FileSelector
             if (AppContext.FileSelector != null)
             {
                 FileListBox.ItemsSource = AppContext.FileSelector.Files;
+                AppContext.FileSelector.OnFileListChange += FileSelector_OnFileListChange;
             }
+        }
+
+        private void FileSelector_OnFileListChange()
+        {
+            CheckSelectAllOrSelectPos(0);
         }
 
         private void FileListControl_Loaded(object sender, RoutedEventArgs e)
@@ -103,6 +109,17 @@ namespace NegativeEncoder.FileSelector
         public void ClearFileList(object sender, RoutedEventArgs e)
         {
             AppContext.FileSelector.Clear();
+        }
+
+        private void FileListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (FileListBox.SelectedIndex >= 0)
+            {
+                var nowSelectFile = AppContext.FileSelector.Files[FileListBox.SelectedIndex];
+
+                AppContext.PresetContext.InputFile = nowSelectFile.Path;
+                AppContext.PresetContext.NotifyInputFileChange(sender, e);
+            }
         }
     }
 }

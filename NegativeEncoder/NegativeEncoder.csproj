@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.0.1" />
     <PackageReference Include="Fody" Version="6.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -49,6 +50,10 @@
   <ItemGroup>
     <Resource Include="Resources\baseline_add_black_18dp.png" />
     <Resource Include="Resources\baseline_remove_black_18dp.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="VsScriptBuilder\" />
   </ItemGroup>
 
 </Project>

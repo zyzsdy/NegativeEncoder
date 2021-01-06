@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Windows.Controls;
 
 namespace NegativeEncoder.Presets
 {
@@ -13,6 +14,20 @@ namespace NegativeEncoder.Presets
         /// 当前使用的预设（保存编辑中状态）
         /// </summary>
         public Preset CurrentPreset { get; set; } = new Preset();
+
+        /// <summary>
+        /// 输入文件路径
+        /// </summary>
+        public string InputFile { get; set; } = string.Empty;
+        public event SelectionChangedEventHandler InputFileChanged;
+        public void NotifyInputFileChange(object sender, SelectionChangedEventArgs e)
+        {
+            InputFileChanged?.Invoke(sender, e);
+        }
+        /// <summary>
+        /// 输出文件路径
+        /// </summary>
+        public string OutputFile { get; set; } = string.Empty;
 
         /// <summary>
         /// 已存储的预设
