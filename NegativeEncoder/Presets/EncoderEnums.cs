@@ -98,7 +98,8 @@ namespace NegativeEncoder.Presets
     {
         MP4,
         MPEGTS,
-        FLV
+        FLV,
+        MKV
     }
 
     public enum HdrType

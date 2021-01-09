@@ -28,6 +28,9 @@ namespace NegativeEncoder.Presets
         /// 输出文件路径
         /// </summary>
         public string OutputFile { get; set; } = string.Empty;
+        public string AudioOutputFile { get; set; } = string.Empty;
+        public string MuxAudioInputFile { get; set; } = string.Empty;
+        public string MuxOutputFile { get; set; } = string.Empty;
 
         /// <summary>
         /// 已存储的预设
@@ -38,5 +41,10 @@ namespace NegativeEncoder.Presets
         /// 下拉框可选项列表
         /// </summary>
         public PresetOption PresetOption { get; set; } = new PresetOption();
+
+        /// <summary>
+        /// VS脚本生成器界面元素
+        /// </summary>
+        public VsScriptBuilder.VsScript VsScript { get; set; } = new VsScriptBuilder.VsScript();
     }
 }

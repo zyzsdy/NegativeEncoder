@@ -316,29 +316,31 @@
                     <Grid DockPanel.Dock="Top" Height="65">
                         <Border BorderBrush="#FFD0D0D0" BorderThickness="0,0,0,1"/>
                         <Label Content="字幕" Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,5,0,0"/>
-                        <TextBox Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" Width="516" Margin="44,5,0,0" VerticalContentAlignment="Center" TextWrapping="NoWrap"
-                                 Text="dd"/>
-                        <Button Content="浏览..." VerticalAlignment="Top" HorizontalAlignment="Right" Width="80" Height="25" Margin="0,5,5,0"/>
+                        <TextBox Height="25" VerticalAlignment="Top" Margin="44,5,94,0" VerticalContentAlignment="Center" TextWrapping="NoWrap"
+                                 PreviewDragOver="VsSubTextBox_PreviewDragOver" PreviewDrop="VsSubTextBox_PreviewDragDrop"
+                                 Text="{Binding VsScript.SubFile}"/>
+                        <Button Content="浏览..." VerticalAlignment="Top" HorizontalAlignment="Right" Width="80" Height="25" Margin="0,5,5,0" Click="VsSubBrowseButton_Click"/>
 
                         <Menu Width="90" Margin="5,0,0,5" HorizontalAlignment="Left" Height="25" VerticalAlignment="Bottom" Background="#FFDDDDDD" BorderBrush="#FFA6A6A6" BorderThickness="1">
                             <MenuItem Header="VS代码生成器" Height="23">
-                                <MenuItem Header="生成"/>
+                                <MenuItem Header="生成" Click="GenVsMenuItem_Click"/>
                                 <Separator/>
-                                <MenuItem Header="使用VSFilterMod"/>
-                                <MenuItem Header="Repeat"/>
-                                <MenuItem Header="QTGMC"/>
-                                <MenuItem Header="IVTC"/>
-                                <MenuItem Header="Yadif Double"/>
-                                <MenuItem Header="Yadif Normal"/>
+                                <MenuItem Header="使用VSFilterMod" IsCheckable="True" IsChecked="{Binding VsScript.UseVsfmod}"/>
+                                <MenuItem Header="Repeat" IsCheckable="True" IsChecked="{Binding VsScript.UseRepeat}"/>
+                                <MenuItem Header="QTGMC" IsCheckable="True" IsChecked="{Binding VsScript.UseQTGMC}"/>
+                                <MenuItem Header="IVTC" IsCheckable="True" IsChecked="{Binding VsScript.UseIVTC}"/>
+                                <MenuItem Header="Yadif Double" IsCheckable="True" IsChecked="{Binding VsScript.UseYadifDouble}"/>
+                                <MenuItem Header="Yadif Normal" IsCheckable="True" IsChecked="{Binding VsScript.UseYadifNormal}"/>
                             </MenuItem>
                         </Menu>
 
-                        <CheckBox Content="调整大小" Height="25" HorizontalAlignment="Left" VerticalAlignment="Bottom" VerticalContentAlignment="Center" Margin="361,0,0,5"/>
-                        <TextBox HorizontalAlignment="Left" Width="55" Margin="434,0,0,5" Height="25" VerticalAlignment="Bottom" VerticalContentAlignment="Center" TextWrapping="NoWrap"
-                                 Text="1920"/>
-                        <Label Content="x" HorizontalAlignment="Left" Margin="489,0,0,5" Height="25" VerticalAlignment="Bottom"/>
-                        <TextBox HorizontalAlignment="Left" Width="55" Margin="505,0,0,5" Height="25" VerticalAlignment="Bottom" VerticalContentAlignment="Center" TextWrapping="NoWrap"
-                                 Text="1080"/>
+                        <CheckBox Content="调整大小" Height="25" VerticalAlignment="Bottom" VerticalContentAlignment="Center" Margin="0,0,225,5"
+                                  IsChecked="{Binding VsScript.IsResize}" HorizontalAlignment="Right" Width="68"/>
+                        <TextBox Margin="0,0,165,5" Height="25" VerticalAlignment="Bottom" VerticalContentAlignment="Center" TextWrapping="NoWrap"
+                                 Text="{Binding VsScript.ResizeWidth}" HorizontalAlignment="Right" Width="55"/>
+                        <Label Content="x" Margin="0,0,149,5" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="16"/>
+                        <TextBox Margin="0,0,94,5" Height="25" VerticalAlignment="Bottom" VerticalContentAlignment="Center" TextWrapping="NoWrap"
+                                 Text="{Binding VsScript.ResizeHeight}" HorizontalAlignment="Right" Width="55"/>
                         <Button Content="开始压制" Height="25" Width="80" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,5,5"/>
                     </Grid>
                     <avalonEdit:TextEditor
@@ -355,13 +357,56 @@
                 </DockPanel>
             </TabItem>
             <TabItem Header="音频">
-                <Grid/>
+                <Grid>
+                    <Label Content="音频输出" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25"/>
+                    <TextBox Margin="73,10,81,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center"
+                             Text="{Binding AudioOutputFile}"/>
+                    <Button Content="浏览..." Margin="0,10,10,0" VerticalAlignment="Top" Height="25" Click="AudioOutputBrowseButton_Click" HorizontalAlignment="Right" Width="66"/>
+                    <Label Content="音频编码（qaac）比特率" HorizontalAlignment="Left" Margin="10,55,0,0" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center"/>
+                    <TextBox HorizontalAlignment="Left" Margin="160,55,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="87" Height="25" VerticalContentAlignment="Center"
+                             Text="{Binding CurrentPreset.AudioBitrate}"/>
+                    <Label Content="(Kbps)" HorizontalAlignment="Left" Margin="247,55,0,0" VerticalAlignment="Top" Height="25"/>
+                    <Button Content="编码音频" Margin="0,55,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="88"/>
+                    <Button Content="提取音频" Margin="0,93,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="88"/>
+                </Grid>
             </TabItem>
             <TabItem Header="封装">
-                <Grid/>
+                <Grid>
+                    <Label Content="音频输入" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25"/>
+                    <TextBox Margin="73,10,81,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center"
+                             PreviewDragOver="MuxAudioTextBox_PreviewDragOver" PreviewDrop="MuxAudioTextBox_PreviewDragDrop"
+                             Text="{Binding MuxAudioInputFile}"/>
+                    <Button Content="浏览..." Margin="0,10,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="66" Click="MuxAudioBrowseButton_Click"/>
+                    <Label Content="封装输出" HorizontalAlignment="Left" Margin="10,48,0,0" VerticalAlignment="Top" Height="25"/>
+                    <TextBox Margin="73,48,81,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center"
+                             Text="{Binding MuxOutputFile}"/>
+                    <Button Content="浏览..." Margin="0,48,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="66" Click="MuxOutputBrowseButton_Click"/>
+                    <Label Content="封装格式" HorizontalAlignment="Left" Margin="10,104,0,0" VerticalAlignment="Top" Height="25"/>
+                    <ComboBox Margin="73,104,0,0" Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"
+                              ItemsSource="{Binding PresetOption.OutputFormatOptions}" SelectedValue="{Binding CurrentPreset.MuxFormat}" SelectedValuePath="Value"
+                              SelectionChanged="MuxFormatComboBox_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Content="开始封装" Margin="0,104,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="88"/>
+
+                </Grid>
             </TabItem>
             <TabItem Header="常用">
-                <Grid/>
+                <Grid>
+                    <GroupBox Header="ffmpeg pipe" VerticalAlignment="Top" Margin="10,10,10,0" Height="72"
+                              ToolTip="使用FFMPEG解码并处理视频，并尝试修复音画同步。">
+                        <Grid>
+                            <Button Content="无音频" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
+                            <Button Content="复制音频" HorizontalAlignment="Left" Margin="115,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
+                            <Button Content="处理音频与视频" HorizontalAlignment="Left" Margin="220,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
+
+                        </Grid>
+                    </GroupBox>
+                </Grid>
             </TabItem>
         </TabControl>
 

@@ -52,8 +52,4 @@
     <Resource Include="Resources\baseline_remove_black_18dp.png" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="VsScriptBuilder\" />
-  </ItemGroup>
-
 </Project>

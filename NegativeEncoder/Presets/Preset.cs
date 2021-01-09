@@ -180,6 +180,11 @@ namespace NegativeEncoder.Presets
 
         public string Hdr2SdrDeSatStrength { get; set; } = "0.75";
 
+        /// <summary>
+        /// 封装格式
+        /// </summary>
+        public OutputFormat MuxFormat { get; set; } = OutputFormat.MP4;
+
 
 
         public event PropertyChangedEventHandler PropertyChanged;

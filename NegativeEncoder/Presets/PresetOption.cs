@@ -90,7 +90,8 @@ namespace NegativeEncoder.Presets
         {
             new EnumOption<OutputFormat> { Value = OutputFormat.MP4, Name = "MP4" },
             new EnumOption<OutputFormat> { Value = OutputFormat.MPEGTS, Name = "MPEG TS" },
-            new EnumOption<OutputFormat> { Value = OutputFormat.FLV, Name = "FLV" }
+            new EnumOption<OutputFormat> { Value = OutputFormat.FLV, Name = "FLV" },
+            new EnumOption<OutputFormat> { Value = OutputFormat.MKV, Name = "MKV" }
         };
 
         public ObservableCollection<EnumOption<HdrType>> HdrTypeOptions { get; set; } = new ObservableCollection<EnumOption<HdrType>>
