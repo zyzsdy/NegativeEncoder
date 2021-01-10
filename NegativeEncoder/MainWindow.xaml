@@ -6,12 +6,21 @@
         xmlns:localFileSelector="clr-namespace:NegativeEncoder.FileSelector"
         xmlns:local="clr-namespace:NegativeEncoder.FunctionTabs"
         xmlns:localStatusConverter="clr-namespace:NegativeEncoder.StatusBar"
+        xmlns:preset="clr-namespace:NegativeEncoder.Presets.Converters"
         mc:Ignorable="d"
-        Title="消极压制" Height="700" Width="1200" Loaded="Window_Loaded">
+        Height="700" Width="1200" Loaded="Window_Loaded">
     <Window.Resources>
         <localStatusConverter:ProgressToVisibilityValueConverter x:Key="ProgressToVisibilityValueConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <preset:TitleConverter x:Key="TitleConverter"/>
     </Window.Resources>
+    <Window.Title>
+        <MultiBinding Converter="{StaticResource TitleConverter}">
+            <Binding Path="Version.CurrentVersion"/>
+            <Binding Path="PresetContext.CurrentPreset.PresetName"/>
+            <Binding Path="PresetContext.IsPresetEdit"/>
+        </MultiBinding>
+    </Window.Title>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="文件(_F)">
@@ -20,8 +29,15 @@
                 <Separator/>
                 <MenuItem Header="退出(_X)" InputGestureText="Alt+F4" Click="ExitAppMenuItem_Click"/>
             </MenuItem>
-            <MenuItem Header="预设(_P)">
-                <MenuItem Header="预览预设..." Click="TestPresetPreview_Click"/>
+            <MenuItem x:Name="PresetMenuItems" Header="预设(_P)">
+                <MenuItem Header="新建" Click="NewPresetMenuItem_Click"/>
+                <MenuItem Header="保存预设" Click="SavePresetMenuItem_Click"/>
+                <MenuItem Header="另存为..." Click="SaveAsPresetMenuItem_Click"/>
+                <MenuItem Header="重命名"/>
+                <MenuItem Header="删除"/>
+                <MenuItem Header="导出预设集合..."/>
+                <MenuItem Header="导入预设集合..."/>
+                <Separator/>
             </MenuItem>
             <MenuItem Header="帮助(_H)">
                 <MenuItem x:Name="CheckUpdateMenuItem" Header="检查更新(_U)..." Click="CheckUpdateMenuItem_Click"/>

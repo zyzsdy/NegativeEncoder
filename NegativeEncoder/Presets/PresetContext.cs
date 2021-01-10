@@ -35,7 +35,12 @@ namespace NegativeEncoder.Presets
         /// <summary>
         /// 已存储的预设
         /// </summary>
-        public ObservableCollection<Preset> PresetList { get; set; }
+        public List<Preset> PresetList { get; set; } = new List<Preset>();
+
+        /// <summary>
+        /// 当前预设相对于已存储的预设是否有编辑
+        /// </summary>
+        public bool IsPresetEdit { get; set; } = true;
 
         /// <summary>
         /// 下拉框可选项列表

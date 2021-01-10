@@ -9,6 +9,11 @@ namespace NegativeEncoder.Presets
     [AddINotifyPropertyChangedInterface]
     public class Preset : INotifyPropertyChanged
     {
+        public Preset()
+        {
+            PropertyChanged += PresetProvider.CurrentPreset_PropertyChanged;
+        }
+
         /// <summary>
         /// 预设标题
         /// </summary>

@@ -1,0 +1,16 @@
+﻿<Window x:Class="NegativeEncoder.Presets.PresetReName"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NegativeEncoder.Presets"
+        mc:Ignorable="d"
+        Title="输入新名称" Height="160" Width="320" ResizeMode="CanMinimize">
+    <Grid>
+        <TextBox x:Name="NameBox" Margin="10,25,10,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center"
+                 Text="TextBox"/>
+        <Button Content="确定" HorizontalAlignment="Right" Margin="0,0,85,10" VerticalAlignment="Bottom" Height="25" Width="60" IsDefault="True" Click="Button_Click"/>
+        <Button Content="取消" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="25" Width="60" IsCancel="True"/>
+
+    </Grid>
+</Window>

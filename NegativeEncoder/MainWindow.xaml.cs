@@ -59,7 +59,11 @@ namespace NegativeEncoder
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             //初始化（阶段2）
-            Title = "消极压制 v" + AppContext.Version.CurrentVersion;
+            DataContext = new
+            {
+                AppContext.Version,
+                AppContext.PresetContext
+            };
             StatusBar.DataContext = AppContext.Status;
             FunctionTabs.DataContext = AppContext.PresetContext;
 
@@ -67,11 +71,12 @@ namespace NegativeEncoder
             AppContext.Config = SystemOptions.SystemOption.ReadOption<SystemOptions.Config>().GetAwaiter().GetResult(); //读取全局配置
             Presets.PresetProvider.LoadPresetAutoSave().GetAwaiter().GetResult(); //读取当前预设
 
-            Presets.PresetProvider.InitPresetAutoSave(); //初始化预设自动保存
+            Presets.PresetProvider.InitPresetAutoSave(PresetMenuItems); //初始化预设自动保存
 
             AutoCheckUpdateAfterStartupMenuItem.IsChecked = AppContext.Config.AutoCheckUpdate;
 
             OpenNewVersionReleasePageMenuItem.DataContext = AppContext.Version;
+
             if (AppContext.Config.AutoCheckUpdate)
             {
                 CheckUpdateMenuItem_Click(sender, e);
@@ -128,10 +133,31 @@ namespace NegativeEncoder
             aboutWindow.Show();
         }
 
-        private void TestPresetPreview_Click(object sender, RoutedEventArgs e)
+        private void NewPresetMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            var presetJsonStr = JsonConvert.SerializeObject(AppContext.PresetContext.CurrentPreset, Formatting.Indented);
-            MessageBox.Show(presetJsonStr, "预设预览");
+            Presets.PresetProvider.NewPreset(this);
+        }
+
+        private void SavePresetMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            _ = Presets.PresetProvider.SavePreset(PresetMenuItems);
+        }
+
+        private void SaveAsPresetMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var oldName = AppContext.PresetContext.CurrentPreset.PresetName;
+
+            var newNameWindow = new Presets.PresetReName(oldName)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this
+            };
+            if (newNameWindow.ShowDialog() == true)
+            {
+                var newName = newNameWindow.NameBox.Text;
+
+                _ = Presets.PresetProvider.SaveAsPreset(PresetMenuItems, newName);
+            }
         }
     }
 }
