@@ -276,5 +276,23 @@ namespace NegativeEncoder.FunctionTabs
                 AppContext.PresetContext.MuxAudioInputFile = f;
             }
         }
+
+        private void InputTextBox_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Copy;
+            e.Handled = true;
+        }
+
+        private void InputTextBox_PreviewDragDrop(object sender, DragEventArgs e)
+        {
+            var dropedFiles = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            var firstNewFilePos = AppContext.FileSelector.AddFiles(dropedFiles);
+
+            if (firstNewFilePos >= 0)
+            {
+                AppContext.FileSelector.NotifyChanged(firstNewFilePos);
+            }
+        }
     }
 }

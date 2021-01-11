@@ -29,9 +29,9 @@ namespace NegativeEncoder.FileSelector
             }
         }
 
-        private void FileSelector_OnFileListChange()
+        private void FileSelector_OnFileListChange(int pos)
         {
-            CheckSelectAllOrSelectPos(0);
+            CheckSelectAllOrSelectPos(pos);
         }
 
         private void FileListControl_Loaded(object sender, RoutedEventArgs e)

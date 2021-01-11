@@ -68,6 +68,42 @@ namespace NegativeEncoder.SystemOptions
             return jsonOption;
         }
 
+        public static async Task<List<T>> ReadListOption<T>(string filePath) where T : class, new()
+        {
+            var defaultOption = new List<T>();
+
+            //判断文件是否存在
+            if (!System.IO.File.Exists(filePath))
+            {
+                return defaultOption;
+            }
+
+            var configFileString = "";
+            try
+            {
+                using (var configFileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open))
+                {
+                    using (var sr = new System.IO.StreamReader(configFileStream))
+                    {
+                        configFileString = sr.ReadToEnd();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                System.Windows.MessageBox.Show(e.ToString(), e.Message);
+            }
+
+            if (string.IsNullOrEmpty(configFileString))
+            {
+                return defaultOption;
+            }
+
+            var jsonOption = JsonConvert.DeserializeObject<List<T>>(configFileString);
+
+            return jsonOption;
+        }
+
         public static async Task SaveOption(object config)
         {
             var configName = config.GetType().Name;
@@ -104,6 +140,20 @@ namespace NegativeEncoder.SystemOptions
 
             var jsonString = JsonConvert.SerializeObject(configs);
             await System.IO.File.WriteAllTextAsync(configPath, jsonString);
+        }
+
+        public static async Task SaveListOption<T>(List<T> configs, string filePath)
+        {
+            var fileBase = System.IO.Path.GetDirectoryName(filePath);
+
+            //判断目录是否存在
+            if (!System.IO.Directory.Exists(fileBase))
+            {
+                System.IO.Directory.CreateDirectory(fileBase);
+            }
+
+            var jsonString = JsonConvert.SerializeObject(configs);
+            await System.IO.File.WriteAllTextAsync(filePath, jsonString);
         }
     }
 }

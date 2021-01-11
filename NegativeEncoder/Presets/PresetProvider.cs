@@ -173,6 +173,99 @@ namespace NegativeEncoder.Presets
             AppContext.PresetContext.IsPresetEdit = true;
         }
 
+        public static async Task RenamePreset(MenuItem presetMenuItems, string newName)
+        {
+            var oldName = AppContext.PresetContext.CurrentPreset.PresetName;
+            AppContext.PresetContext.CurrentPreset.PresetName = newName;
+
+            if (AppContext.PresetContext.PresetList.Count(p => p.PresetName == oldName) > 0)
+            {
+                for (var p = 0; p < AppContext.PresetContext.PresetList.Count; p++)
+                {
+                    if (AppContext.PresetContext.PresetList[p].PresetName == oldName)
+                    {
+                        AppContext.PresetContext.PresetList[p].PresetName = newName;
+                        await SystemOptions.SystemOption.SaveListOption(AppContext.PresetContext.PresetList);
+                        break;
+                    }
+                }
+            }
+
+            ReBuildPresetMenu(presetMenuItems);
+        }
+
+        public static async Task ExportPreset(string fileName)
+        {
+            await SystemOptions.SystemOption.SaveListOption(AppContext.PresetContext.PresetList, fileName);
+        }
+
+        public static async Task ImportPreset(MenuItem presetMenuItems, string fileName)
+        {
+            var configList = await SystemOptions.SystemOption.ReadListOption<Preset>(fileName);
+
+            foreach (var config in configList)
+            {
+                var cName = config.PresetName;
+                if (AppContext.PresetContext.PresetList.Count(p => p.PresetName == cName) > 0)
+                {
+                    if (MessageBox.Show($"正在导入的预设 {cName} 存在同名预设，要覆盖吗？", "导入预设冲突", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    {
+                        for (var p = 0; p < AppContext.PresetContext.PresetList.Count; p++)
+                        {
+                            if (AppContext.PresetContext.PresetList[p].PresetName == cName)
+                            {
+                                AppContext.PresetContext.PresetList[p] = config;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    AppContext.PresetContext.PresetList.Add(config);
+                }
+            }
+
+            await SystemOptions.SystemOption.SaveListOption(AppContext.PresetContext.PresetList);
+            ReBuildPresetMenu(presetMenuItems);
+        }
+
+        public static async Task DeletePreset(MenuItem presetMenuItems)
+        {
+            var presetName = AppContext.PresetContext.CurrentPreset.PresetName;
+            Preset deletePreset = null;
+            if (AppContext.PresetContext.PresetList.Count(p => p.PresetName == presetName) > 0)
+            {
+                for (var p = 0; p < AppContext.PresetContext.PresetList.Count; p++)
+                {
+                    if (AppContext.PresetContext.PresetList[p].PresetName == presetName)
+                    {
+                        deletePreset = AppContext.PresetContext.PresetList[p];
+                        break;
+                    }
+                }
+            }
+
+            if (deletePreset != null)
+            {
+                AppContext.PresetContext.PresetList.Remove(deletePreset);
+                await SystemOptions.SystemOption.SaveListOption(AppContext.PresetContext.PresetList);
+            }
+
+            if (AppContext.PresetContext.PresetList.Count > 0)
+            {
+                AppContext.PresetContext.CurrentPreset = Utils.DeepCompare.CloneDeep1(AppContext.PresetContext.PresetList[0]);
+                AppContext.PresetContext.IsPresetEdit = false;
+            }
+            else
+            {
+                AppContext.PresetContext.CurrentPreset = new Preset();
+                AppContext.PresetContext.IsPresetEdit = true;
+            }
+
+            ReBuildPresetMenu(presetMenuItems);
+        }
+
         public static async Task SavePreset(MenuItem presetMenuItems)
         {
             var presetName = AppContext.PresetContext.CurrentPreset.PresetName;

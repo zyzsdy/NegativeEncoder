@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace NegativeEncoder.FileSelector
 {
-    public delegate void FileListChangeEvent();
+    public delegate void FileListChangeEvent(int pos);
     public class FileSelector
     {
         public ObservableCollection<FileInfo> Files { get; set; } = new ObservableCollection<FileInfo>();
@@ -96,9 +96,9 @@ namespace NegativeEncoder.FileSelector
             }
         }
 
-        public void NotifyChanged()
+        public void NotifyChanged(int pos)
         {
-            OnFileListChange?.Invoke();
+            OnFileListChange?.Invoke(pos);
         }
 
         public void Clear()

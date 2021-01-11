@@ -20,7 +20,8 @@
     <Grid>
         <Label Content="输入" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25"/>
         <TextBox Margin="55,10,20,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center" IsReadOnly="True"
-                 Text="{Binding InputFile}"/>
+                 PreviewDragOver="InputTextBox_PreviewDragOver" PreviewDrop="InputTextBox_PreviewDragDrop"
+                 Text="{Binding InputFile}" />
         <Label Content="输出" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Height="25"/>
         <TextBox Margin="55,40,90,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25" VerticalContentAlignment="Center"
                  Text="{Binding OutputFile}"/>

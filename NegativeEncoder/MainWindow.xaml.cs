@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -158,6 +159,60 @@ namespace NegativeEncoder
 
                 _ = Presets.PresetProvider.SaveAsPreset(PresetMenuItems, newName);
             }
+        }
+
+        private void RenamePresetMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var oldName = AppContext.PresetContext.CurrentPreset.PresetName;
+
+            var newNameWindow = new Presets.PresetReName(oldName)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this
+            };
+            if (newNameWindow.ShowDialog() == true)
+            {
+                var newName = newNameWindow.NameBox.Text;
+
+                _ = Presets.PresetProvider.RenamePreset(PresetMenuItems, newName);
+            }
+        }
+
+        private void DeletePresetMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            _ = Presets.PresetProvider.DeletePreset(PresetMenuItems);
+        }
+
+        private void ExportPresetMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var sfd = new SaveFileDialog
+            {
+                DefaultExt = "json",
+                Filter = "预设配置文件（JSON） (*.json)|*.json|所有文件(*.*)|*.*"
+            };
+
+            if (sfd.ShowDialog() == true)
+            {
+                _ = Presets.PresetProvider.ExportPreset(sfd.FileName);
+            }
+        }
+
+        private void ImportPresetMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog
+            {
+                Filter = "预设配置文件（JSON） (*.json)|*.json|所有文件(*.*)|*.*"
+            };
+
+            if (ofd.ShowDialog() == true)
+            {
+                _ = Presets.PresetProvider.ImportPreset(PresetMenuItems, ofd.FileName);
+            }
+        }
+
+        private void ListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            
         }
     }
 }

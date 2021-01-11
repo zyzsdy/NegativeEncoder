@@ -33,10 +33,10 @@
                 <MenuItem Header="新建" Click="NewPresetMenuItem_Click"/>
                 <MenuItem Header="保存预设" Click="SavePresetMenuItem_Click"/>
                 <MenuItem Header="另存为..." Click="SaveAsPresetMenuItem_Click"/>
-                <MenuItem Header="重命名"/>
-                <MenuItem Header="删除"/>
-                <MenuItem Header="导出预设集合..."/>
-                <MenuItem Header="导入预设集合..."/>
+                <MenuItem Header="重命名" Click="RenamePresetMenuItem_Click"/>
+                <MenuItem Header="删除" Click="DeletePresetMenuItem_Click"/>
+                <MenuItem Header="导出预设集合..." Click="ExportPresetMenuItem_Click"/>
+                <MenuItem Header="导入预设集合..." Click="ImportPresetMenuItem_Click"/>
                 <Separator/>
             </MenuItem>
             <MenuItem Header="帮助(_H)">
@@ -83,7 +83,25 @@
 
             <localFileSelector:FileList x:Name="MainFileList" Grid.Row="0" Grid.Column="0"/>
             <local:FunctionTabs x:Name="FunctionTabs" Grid.Row="0" Grid.Column="1"/>
-            <TextBlock Grid.Row="0" Grid.Column="2">另一些内容</TextBlock>
+            <ListBox Grid.Row="0" Grid.Column="2">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                        <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Content="{Binding TaskName}" Grid.Column="0"/>
+                            <ProgressBar Value="{Binding Progress}" HorizontalAlignment="Stretch" Grid.Column="1" Maximum="1000"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
 
             <GridSplitter Grid.Row="0" Grid.Column="0" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
             <GridSplitter Grid.Row="0" Grid.Column="1" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
