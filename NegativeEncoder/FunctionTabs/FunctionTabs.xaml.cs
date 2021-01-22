@@ -2,7 +2,9 @@
 using NegativeEncoder.Presets;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -47,99 +49,29 @@ namespace NegativeEncoder.FunctionTabs
         private void RecalcOutputPath()
         {
             var input = AppContext.PresetContext.InputFile;
-            if (string.IsNullOrEmpty(input))
-            {
-                AppContext.PresetContext.OutputFile = "";
-                return;
-            }
+            var (ext, _) = FileSelector.FileName.GetOutputExt(AppContext.PresetContext.CurrentPreset.OutputFormat);
 
-            var (ext, _) = GetOutputExt(AppContext.PresetContext.CurrentPreset.OutputFormat);
-
-            var oldOutput = AppContext.PresetContext.OutputFile;
-            var outputPath = System.IO.Path.GetDirectoryName(oldOutput);
-
-            var inputWithoutExt = System.IO.Path.GetFileNameWithoutExtension(input);
-            var outputName = System.IO.Path.ChangeExtension($"{inputWithoutExt}_neenc", ext);
-            if (!string.IsNullOrEmpty(outputPath))
-            {
-                var output = System.IO.Path.Combine(outputPath, outputName);
-                AppContext.PresetContext.OutputFile = output;
-            }
-            else
-            {
-                var basePath = System.IO.Path.GetDirectoryName(input);
-                var output = System.IO.Path.Combine(basePath, outputName);
-                AppContext.PresetContext.OutputFile = output;
-            }
+            var output = FileSelector.FileName.RecalcOutputPath(input, "_neenc", ext);
+            AppContext.PresetContext.OutputFile = output;
         }
 
         private void RecalcAudioOutputPath()
         {
             var input = AppContext.PresetContext.InputFile;
-            if (string.IsNullOrEmpty(input))
-            {
-                AppContext.PresetContext.AudioOutputFile = "";
-                return;
-            }
-
-            var oldOutput = AppContext.PresetContext.AudioOutputFile;
-            var outputPath = System.IO.Path.GetDirectoryName(oldOutput);
-
-            var inputWithoutExt = System.IO.Path.GetFileNameWithoutExtension(input);
-            var outputName = System.IO.Path.ChangeExtension($"{inputWithoutExt}_neAAC", "aac");
-            if (!string.IsNullOrEmpty(outputPath))
-            {
-                var output = System.IO.Path.Combine(outputPath, outputName);
-                AppContext.PresetContext.AudioOutputFile = output;
-            }
-            else
-            {
-                var basePath = System.IO.Path.GetDirectoryName(input);
-                var output = System.IO.Path.Combine(basePath, outputName);
-                AppContext.PresetContext.AudioOutputFile = output;
-            }
+            var output = FileSelector.FileName.RecalcOutputPath(input, "_neAAC", "aac");
+            AppContext.PresetContext.AudioOutputFile = output;
         }
 
         private void RecalcMuxOutputPath()
         {
             var input = AppContext.PresetContext.InputFile;
-            if (string.IsNullOrEmpty(input))
-            {
-                AppContext.PresetContext.MuxOutputFile = "";
-                return;
-            }
+            var (ext, _) = FileSelector.FileName.GetOutputExt(AppContext.PresetContext.CurrentPreset.MuxFormat);
 
-            var (ext, _) = GetOutputExt(AppContext.PresetContext.CurrentPreset.MuxFormat);
-
-            var oldOutput = AppContext.PresetContext.MuxOutputFile;
-            var outputPath = System.IO.Path.GetDirectoryName(oldOutput);
-
-            var inputWithoutExt = System.IO.Path.GetFileNameWithoutExtension(input);
-            var outputName = System.IO.Path.ChangeExtension($"{inputWithoutExt}_mux", ext);
-            if (!string.IsNullOrEmpty(outputPath))
-            {
-                var output = System.IO.Path.Combine(outputPath, outputName);
-                AppContext.PresetContext.MuxOutputFile = output;
-            }
-            else
-            {
-                var basePath = System.IO.Path.GetDirectoryName(input);
-                var output = System.IO.Path.Combine(basePath, outputName);
-                AppContext.PresetContext.MuxOutputFile = output;
-            }
+            var output = FileSelector.FileName.RecalcOutputPath(input, "_mux", ext);
+            AppContext.PresetContext.MuxOutputFile = output;
         }
 
-        private static (string ext, string filter) GetOutputExt(OutputFormat outputFormat)
-        {
-            return outputFormat switch
-            {
-                OutputFormat.MP4 => ("mp4", "MP4 Video(*.mp4)|*.mp4|所有文件(*.*)|*.*"),
-                OutputFormat.MPEGTS => ("ts", "MPEG TS文件(*.ts)|*.ts|所有文件(*.*)|*.*"),
-                OutputFormat.FLV => ("flv", "Flash Video(*.flv)|*.flv|所有文件(*.*)|*.*"),
-                OutputFormat.MKV => ("mkv", "Matroska Video(*.mkv)|*.mkv|所有文件(*.*)|*.*"),
-                _ => ("mp4", "MP4 Video(*.mp4)|*.mp4|所有文件(*.*)|*.*")
-            };
-        }
+        
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -149,7 +81,7 @@ namespace NegativeEncoder.FunctionTabs
                 return;
             }
 
-            var (ext, _) = GetOutputExt(AppContext.PresetContext.CurrentPreset.OutputFormat);
+            var (ext, _) = FileSelector.FileName.GetOutputExt(AppContext.PresetContext.CurrentPreset.OutputFormat);
             var newOutput = System.IO.Path.ChangeExtension(output, ext);
 
             AppContext.PresetContext.OutputFile = newOutput;
@@ -157,7 +89,7 @@ namespace NegativeEncoder.FunctionTabs
 
         private void OutputBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var (defaultExt, filter) = GetOutputExt(AppContext.PresetContext.CurrentPreset.OutputFormat);
+            var (defaultExt, filter) = FileSelector.FileName.GetOutputExt(AppContext.PresetContext.CurrentPreset.OutputFormat);
 
             var sfd = new SaveFileDialog
             {
@@ -225,7 +157,7 @@ namespace NegativeEncoder.FunctionTabs
 
         private void MuxOutputBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var (defaultExt, filter) = GetOutputExt(AppContext.PresetContext.CurrentPreset.MuxFormat);
+            var (defaultExt, filter) = FileSelector.FileName.GetOutputExt(AppContext.PresetContext.CurrentPreset.MuxFormat);
 
             var sfd = new SaveFileDialog
             {
@@ -247,7 +179,7 @@ namespace NegativeEncoder.FunctionTabs
                 return;
             }
 
-            var (ext, _) = GetOutputExt(AppContext.PresetContext.CurrentPreset.MuxFormat);
+            var (ext, _) = FileSelector.FileName.GetOutputExt(AppContext.PresetContext.CurrentPreset.MuxFormat);
             var newOutput = System.IO.Path.ChangeExtension(output, ext);
 
             AppContext.PresetContext.MuxOutputFile = newOutput;
@@ -293,6 +225,73 @@ namespace NegativeEncoder.FunctionTabs
             {
                 AppContext.FileSelector.NotifyChanged(firstNewFilePos);
             }
+        }
+
+        private void SimpleEncButton_Click(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.Simple, "Normal");
+        }
+
+        private void SimpleHDREncButton_Click(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.Simple, "HDR");
+        }
+
+        private void HDRTagEncButton_Click_SDR(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.HDRTagUseFFMpeg, "SDR");
+        }
+
+        private void HDRTagEncButton_Click_HDR10(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.HDRTagUseFFMpeg, "HDR10");
+        }
+
+        private void HDRTagEncButton_Click_HLG(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.HDRTagUseFFMpeg, "HLG");
+        }
+
+        private void VSPipeEncButton_Click(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.VSPipe, "Normal");
+        }
+
+        private void AudioEncButton_Click(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.AudioEncoding, "Normal");
+        }
+
+        private void AudioExtractButton_Click(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.AudioExtract, "Normal");
+        }
+
+        private void MuxButton_Click(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.Muxer, "Normal");
+        }
+
+        private void FfmpegPipe_Click_NoAudio(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "NoAudio");
+        }
+
+        private void FfmpegPipe_Click_CopyAudio(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "CopyAudio");
+        }
+
+        private void FfmpegPipe_Click_ProcessAudio(object sender, RoutedEventArgs e)
+        {
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "ProcessAudio");
+        }
+
+        private void BuildTaskAndAddEncodingQueueAction(EncodingAction action, string param)
+        {
+            var mainWindow = (MainWindow)Window.GetWindow(this);
+            var selectPaths = mainWindow.MainFileList.GetAndRemoveAllSelectFilePath();
+            EncodingTask.TaskBuilder.AddEncodingTask(action, param, AppContext.PresetContext.CurrentPreset, selectPaths);
         }
     }
 }

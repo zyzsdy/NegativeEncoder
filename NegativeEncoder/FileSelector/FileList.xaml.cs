@@ -83,9 +83,7 @@ namespace NegativeEncoder.FileSelector
 
         private void RemoveVideoItemButton_Click(object sender, RoutedEventArgs e)
         {
-            AppContext.FileSelector.RemoveFiles(FileListBox.SelectedItems);
-
-            CheckSelectAllOrSelectPos(0);
+            GetAndRemoveAllSelectFilePath();
         }
 
         private void FileListBox_DragOver(object sender, DragEventArgs e)
@@ -120,6 +118,15 @@ namespace NegativeEncoder.FileSelector
                 AppContext.PresetContext.InputFile = nowSelectFile.Path;
                 AppContext.PresetContext.NotifyInputFileChange(sender, e);
             }
+        }
+
+        public List<FileInfo> GetAndRemoveAllSelectFilePath()
+        {
+            var result = AppContext.FileSelector.RemoveFiles(FileListBox.SelectedItems);
+
+            CheckSelectAllOrSelectPos(0);
+
+            return result;
         }
     }
 }

@@ -30,5 +30,10 @@ namespace NegativeEncoder
         /// 预设全局对象
         /// </summary>
         public static Presets.PresetContext PresetContext { get; set; } = new Presets.PresetContext();
+
+        /// <summary>
+        /// 编码任务队列
+        /// </summary>
+        public static EncodingTask.EncodingContext EncodingContext { get; set; } = new EncodingTask.EncodingContext();
     }
 }

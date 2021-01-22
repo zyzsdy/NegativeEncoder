@@ -76,11 +76,12 @@ namespace NegativeEncoder.FileSelector
             else return -1;
         }
 
-        public void RemoveFiles(System.Collections.IList files)
+        public List<FileInfo> RemoveFiles(System.Collections.IList files)
         {
+            var tempRemoveList = new List<FileInfo>();
+
             if (files != null && files.Count > 0)
             {
-                var tempRemoveList = new List<FileInfo>();
                 foreach (var f in files)
                 {
                     tempRemoveList.Add(f as FileInfo);
@@ -94,6 +95,8 @@ namespace NegativeEncoder.FileSelector
                     }
                 }
             }
+
+            return tempRemoveList;
         }
 
         public void NotifyChanged(int pos)

@@ -243,7 +243,8 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <Button Content="添加到编码队列" HorizontalAlignment="Right" Margin="0,0,10,10" Height="25" VerticalAlignment="Bottom" Width="105"/>
+                    <Button Content="添加到编码队列" HorizontalAlignment="Right" Margin="0,0,10,10" Height="25" VerticalAlignment="Bottom" Width="105"
+                            Click="SimpleEncButton_Click"/>
 
 
                 </Grid>
@@ -298,13 +299,17 @@
                            ToolTip="设置为0.0将禁用去饱和，设置为1.0将所有超过亮度的颜色指定为纯白"/>
                     <TextBox HorizontalAlignment="Left" Margin="437,92,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="120" Height="25" VerticalContentAlignment="Center"
                              Text="{Binding CurrentPreset.Hdr2SdrDeSatStrength}" IsEnabled="{Binding CurrentPreset.NewHdrType, Converter={StaticResource SDREnableConverter}}"/>
-                    <Button Content="添加到编码队列（HDR）" HorizontalAlignment="Right" Margin="0,142,10,0" Width="148" Height="25" VerticalAlignment="Top"/>
+                    <Button Content="添加到编码队列（HDR）" HorizontalAlignment="Right" Margin="0,142,10,0" Width="148" Height="25" VerticalAlignment="Top"
+                            Click="SimpleHDREncButton_Click"/>
                     <GroupBox Header="覆盖HDR标记（ffmpeg）" VerticalAlignment="Top" Margin="10,185,10,0" Height="72"
                               ToolTip="本功能是不重新编码的前提下，直接修改HDR metadata中的色彩矩阵、传输特征和色彩基准，以修复部分数据正确但metadata错误的视频。">
                         <Grid>
-                            <Button Content="标记为SDR" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
-                            <Button Content="标记为HDR10" HorizontalAlignment="Left" Margin="115,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
-                            <Button Content="标记为HLG" HorizontalAlignment="Left" Margin="220,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
+                            <Button Content="标记为SDR" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25" Width="100"
+                                    Click="HDRTagEncButton_Click_SDR"/>
+                            <Button Content="标记为HDR10" HorizontalAlignment="Left" Margin="115,10,0,0" VerticalAlignment="Top" Height="25" Width="100"
+                                    Click="HDRTagEncButton_Click_HDR10"/>
+                            <Button Content="标记为HLG" HorizontalAlignment="Left" Margin="220,10,0,0" VerticalAlignment="Top" Height="25" Width="100"
+                                    Click="HDRTagEncButton_Click_HLG"/>
 
                         </Grid>
                     </GroupBox>
@@ -342,7 +347,8 @@
                         <Label Content="x" Margin="0,0,149,5" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="16"/>
                         <TextBox Margin="0,0,94,5" Height="25" VerticalAlignment="Bottom" VerticalContentAlignment="Center" TextWrapping="NoWrap"
                                  Text="{Binding VsScript.ResizeHeight}" HorizontalAlignment="Right" Width="55"/>
-                        <Button Content="开始压制" Height="25" Width="80" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,5,5"/>
+                        <Button Content="开始压制" Height="25" Width="80" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,5,5"
+                                Click="VSPipeEncButton_Click"/>
                     </Grid>
                     <avalonEdit:TextEditor
                         xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
@@ -367,8 +373,10 @@
                     <TextBox HorizontalAlignment="Left" Margin="160,55,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="87" Height="25" VerticalContentAlignment="Center"
                              Text="{Binding CurrentPreset.AudioBitrate}"/>
                     <Label Content="(Kbps)" HorizontalAlignment="Left" Margin="247,55,0,0" VerticalAlignment="Top" Height="25"/>
-                    <Button Content="编码音频" Margin="0,55,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="88"/>
-                    <Button Content="提取音频" Margin="0,93,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="88"/>
+                    <Button Content="编码音频" Margin="0,55,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="88"
+                            Click="AudioEncButton_Click"/>
+                    <Button Content="提取音频" Margin="0,93,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="88"
+                            Click="AudioExtractButton_Click"/>
                 </Grid>
             </TabItem>
             <TabItem Header="封装">
@@ -392,7 +400,8 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <Button Content="开始封装" Margin="0,104,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="88"/>
+                    <Button Content="开始封装" Margin="0,104,10,0" VerticalAlignment="Top" Height="25" HorizontalAlignment="Right" Width="88"
+                            Click="MuxButton_Click"/>
 
                 </Grid>
             </TabItem>
@@ -401,9 +410,12 @@
                     <GroupBox Header="ffmpeg pipe" VerticalAlignment="Top" Margin="10,10,10,0" Height="72"
                               ToolTip="使用FFMPEG解码并处理视频，并尝试修复音画同步。">
                         <Grid>
-                            <Button Content="无音频" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
-                            <Button Content="复制音频" HorizontalAlignment="Left" Margin="115,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
-                            <Button Content="处理音频与视频" HorizontalAlignment="Left" Margin="220,10,0,0" VerticalAlignment="Top" Height="25" Width="100"/>
+                            <Button Content="无音频" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25" Width="100"
+                                    Click="FfmpegPipe_Click_NoAudio"/>
+                            <Button Content="复制音频" HorizontalAlignment="Left" Margin="115,10,0,0" VerticalAlignment="Top" Height="25" Width="100"
+                                    Click="FfmpegPipe_Click_CopyAudio"/>
+                            <Button Content="处理音频与视频" HorizontalAlignment="Left" Margin="220,10,0,0" VerticalAlignment="Top" Height="25" Width="100"
+                                    Click="FfmpegPipe_Click_ProcessAudio"/>
 
                         </Grid>
                     </GroupBox>

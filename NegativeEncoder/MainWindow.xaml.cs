@@ -24,12 +24,12 @@ namespace NegativeEncoder
     /// </summary>
     public partial class MainWindow : Window
     {
-        public string BaseDir { get; set; }
         public MainWindow()
         {
-            string[] pargs = Environment.GetCommandLineArgs();
-            BaseDir = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            var runName = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            AppContext.EncodingContext.BaseDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(runName, ".."));
 
+            string[] pargs = Environment.GetCommandLineArgs();
             if (pargs.Length > 1)
             {
                 if (pargs[1] != "--baseDir")
@@ -38,9 +38,9 @@ namespace NegativeEncoder
                 }
                 else
                 {
-                    if (pargs.Length > 2 && string.IsNullOrEmpty(pargs[2]))
+                    if (pargs.Length > 2 && !string.IsNullOrEmpty(pargs[2]))
                     {
-                        BaseDir = pargs[2];
+                        AppContext.EncodingContext.BaseDir = pargs[2];
                     }
                     else
                     {
@@ -67,6 +67,7 @@ namespace NegativeEncoder
             };
             StatusBar.DataContext = AppContext.Status;
             FunctionTabs.DataContext = AppContext.PresetContext;
+            TaskQueueListBox.ItemsSource = AppContext.EncodingContext.TaskQueue;
 
             AppContext.Status.MainStatus = "载入系统配置...";
             AppContext.Config = SystemOptions.SystemOption.ReadOption<SystemOptions.Config>().GetAwaiter().GetResult(); //读取全局配置
@@ -212,7 +213,19 @@ namespace NegativeEncoder
 
         private void ListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            
+            var source = ((ListBoxItem)sender).Content as EncodingTask.EncodingTask;
+
+            var taskDetailWindow = new EncodingTask.TaskDetailWindow
+            {
+                DataContext = source
+            };
+
+            taskDetailWindow.Show();
+        }
+
+        private void TaskScheduleMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            EncodingTask.TaskProvider.Schedule();
         }
     }
 }

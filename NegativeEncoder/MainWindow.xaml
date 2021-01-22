@@ -26,6 +26,7 @@
             <MenuItem Header="文件(_F)">
                 <MenuItem Header="导入视频(_I)..." Click="ImportVideoMenuItem_Click"/>
                 <MenuItem Header="清空待处理列表(_C)" Click="ClearFilesMenuItem_Click"/>
+                <MenuItem Header="强制开始任务调度(_S)" Click="TaskScheduleMenuItem_Click"/>
                 <Separator/>
                 <MenuItem Header="退出(_X)" InputGestureText="Alt+F4" Click="ExitAppMenuItem_Click"/>
             </MenuItem>
@@ -83,7 +84,7 @@
 
             <localFileSelector:FileList x:Name="MainFileList" Grid.Row="0" Grid.Column="0"/>
             <local:FunctionTabs x:Name="FunctionTabs" Grid.Row="0" Grid.Column="1"/>
-            <ListBox Grid.Row="0" Grid.Column="2">
+            <ListBox x:Name="TaskQueueListBox" Grid.Row="0" Grid.Column="2" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
                         <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
@@ -91,14 +92,10 @@
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Content="{Binding TaskName}" Grid.Column="0"/>
-                            <ProgressBar Value="{Binding Progress}" HorizontalAlignment="Stretch" Grid.Column="1" Maximum="1000"/>
-                        </Grid>
+                        <StackPanel Orientation="Vertical" Height="50">
+                            <Label Content="{Binding TaskName}" Grid.Column="0" Height="25"/>
+                            <ProgressBar Value="{Binding Progress}" HorizontalAlignment="Stretch" Grid.Column="1" Maximum="1000" Height="20"/>
+                        </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
