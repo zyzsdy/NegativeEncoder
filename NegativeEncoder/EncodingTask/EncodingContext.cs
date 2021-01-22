@@ -16,7 +16,6 @@ namespace NegativeEncoder.EncodingTask
         /// <summary>
         /// 任务队列
         /// </summary>
-
         public ObservableCollection<EncodingTask> TaskQueue { get; set; } = new ObservableCollection<EncodingTask>();
     }
 }

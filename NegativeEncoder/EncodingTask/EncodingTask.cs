@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NegativeEncoder.EncodingTask
 {
-    public delegate void DestoryEncodingTaskHandle(object sender);
+    public delegate void EncodingTaskHandle(object sender);
 
 
     [AddINotifyPropertyChangedInterface]
@@ -35,8 +35,8 @@ namespace NegativeEncoder.EncodingTask
         private string exeFile;
         private string exeArgs;
 
-        public event DestoryEncodingTaskHandle Destroyed;
-        public event DestoryEncodingTaskHandle ProcessStop;
+        public event EncodingTaskHandle Destroyed;
+        public event EncodingTaskHandle ProcessStop;
 
         public EncodingTask() { }
 
