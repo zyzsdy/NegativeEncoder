@@ -51,14 +51,14 @@ namespace NegativeEncoder.FunctionTabs
             var input = AppContext.PresetContext.InputFile;
             var (ext, _) = FileSelector.FileName.GetOutputExt(AppContext.PresetContext.CurrentPreset.OutputFormat);
 
-            var output = FileSelector.FileName.RecalcOutputPath(input, "_neenc", ext);
+            var output = FileSelector.FileName.RecalcOutputPath(input, AppContext.PresetContext.OutputFile, "_neenc", ext);
             AppContext.PresetContext.OutputFile = output;
         }
 
         private void RecalcAudioOutputPath()
         {
             var input = AppContext.PresetContext.InputFile;
-            var output = FileSelector.FileName.RecalcOutputPath(input, "_neAAC", "aac");
+            var output = FileSelector.FileName.RecalcOutputPath(input, AppContext.PresetContext.AudioOutputFile, "_neAAC", "m4a");
             AppContext.PresetContext.AudioOutputFile = output;
         }
 
@@ -67,7 +67,7 @@ namespace NegativeEncoder.FunctionTabs
             var input = AppContext.PresetContext.InputFile;
             var (ext, _) = FileSelector.FileName.GetOutputExt(AppContext.PresetContext.CurrentPreset.MuxFormat);
 
-            var output = FileSelector.FileName.RecalcOutputPath(input, "_mux", ext);
+            var output = FileSelector.FileName.RecalcOutputPath(input, AppContext.PresetContext.MuxOutputFile, "_mux", ext);
             AppContext.PresetContext.MuxOutputFile = output;
         }
 
@@ -254,7 +254,8 @@ namespace NegativeEncoder.FunctionTabs
 
         private void VSPipeEncButton_Click(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.VSPipe, "Normal");
+            var vsScript = VsEditor.Document.Text;
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.VSPipe, vsScript);
         }
 
         private void AudioEncButton_Click(object sender, RoutedEventArgs e)

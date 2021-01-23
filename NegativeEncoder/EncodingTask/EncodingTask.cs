@@ -4,6 +4,7 @@ using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -101,7 +102,10 @@ namespace NegativeEncoder.EncodingTask
             {
                 mainProcess.Start();
                 Running = true;
-                using (var reader = mainProcess.StandardError)
+
+                var codePage = Console.OutputEncoding.CodePage;
+                var ansi = Encoding.GetEncoding(codePage);
+                using (var reader = new StreamReader(mainProcess.StandardError.BaseStream, ansi))
                 {
                     var thisline = reader.ReadLine();
 
@@ -113,7 +117,7 @@ namespace NegativeEncoder.EncodingTask
 
                             //进度条处理
                             var tempP = new Regex(@"(?<=\[)(.*)(?=%\])").Match(thisline).Value;
-                            if (tempP != "")
+                            if (!string.IsNullOrEmpty(tempP))
                             {
                                 try
                                 {

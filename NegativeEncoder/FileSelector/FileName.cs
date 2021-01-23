@@ -8,15 +8,15 @@ namespace NegativeEncoder.FileSelector
 {
     public static class FileName
     {
-        public static string RecalcOutputPath(string input, string suffix, string ext)
+        public static string RecalcOutputPath(string input, string oldOutput, string suffix, string ext)
         {
             if (string.IsNullOrEmpty(input))
             {
                 return "";
             }
 
-            var oldOutput = AppContext.PresetContext.OutputFile;
             var outputPath = Path.GetDirectoryName(oldOutput);
+            var basicOutputPath = Path.GetDirectoryName(AppContext.PresetContext.OutputFile);
 
             var inputWithoutExt = Path.GetFileNameWithoutExtension(input);
             var outputName = Path.ChangeExtension($"{inputWithoutExt}{suffix}", ext);
@@ -24,6 +24,10 @@ namespace NegativeEncoder.FileSelector
             if (!string.IsNullOrEmpty(outputPath))
             {
                 return Path.Combine(outputPath, outputName);
+            }
+            else if (!string.IsNullOrEmpty(basicOutputPath))
+            {
+                return Path.Combine(basicOutputPath, outputName);
             }
             else
             {

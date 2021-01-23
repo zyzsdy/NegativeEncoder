@@ -26,6 +26,9 @@ namespace NegativeEncoder
     {
         public MainWindow()
         {
+            //使用CodePagesEncodingProvider去注册扩展编码。
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             var runName = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
             AppContext.EncodingContext.BaseDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(runName, ".."));
 

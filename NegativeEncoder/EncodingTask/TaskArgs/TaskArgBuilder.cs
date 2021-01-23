@@ -319,9 +319,11 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 
         public static string GetIOArgs(string input, string output, Preset preset)
         {
+            if (input != "-") input = $"\"{input}\"";
+            if (output != "-") output = $"\"{output}\"";
             var format = GetFormat(preset.OutputFormat);
 
-            return $"-i \"{input}\" -f {format} -o \"{output}\"";
+            return $"-i {input} -f {format} -o {output}";
         }
     }
 }
