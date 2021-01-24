@@ -45,6 +45,12 @@
                 <MenuItem x:Name="OpenNewVersionReleasePageMenuItem" Header="{Binding NewVersionMenuHeader}" Visibility="{Binding IsShowMenuItem, Converter={StaticResource BoolToVisibilityConverter}}" Click="OpenNewVersionReleasePageMenuItem_Click"/>
                 <MenuItem x:Name="AutoCheckUpdateAfterStartupMenuItem" Header="启动时自动检查更新" IsCheckable="True" Click="AutoCheckUpdateAfterStartupMenuItem_Click"/>
                 <Separator/>
+                <MenuItem Header="启动消极压制工具包命令行(_T)..." Click="OpenNEENCToolsCmdMenuItem_Click"/>
+                <MenuItem Header="资源管理器右键菜单">
+                    <MenuItem Header="在右键菜单注册" Click="NEToolsInstallMenuItem_Click"/>
+                    <MenuItem Header="取消右键菜单注册" Click="NEToolsRemoveMenuItem_Click"/>
+                </MenuItem>
+                <Separator/>
                 <MenuItem Header="关于(_A)" Click="OpenAboutWindowMenuItem_Click"/>
             </MenuItem>
         </Menu>
@@ -85,6 +91,15 @@
             <localFileSelector:FileList x:Name="MainFileList" Grid.Row="0" Grid.Column="0"/>
             <local:FunctionTabs x:Name="FunctionTabs" Grid.Row="0" Grid.Column="1"/>
             <ListBox x:Name="TaskQueueListBox" Grid.Row="0" Grid.Column="2" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.Resources>
+                    <ContextMenu x:Key="encodeListContextMenu">
+                        <MenuItem Header="打开详情窗口..." Click="EncodeContextMenuOpenDetailMenuItem_Click"/>
+                        <MenuItem Header="打开输出目标目录..." Click="EncodeContextMenuBrowseOutputDirMenuItem_Click"/>
+                    </ContextMenu>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="ContextMenu" Value="{StaticResource encodeListContextMenu}"/>
+                    </Style>
+                </ListBox.Resources>
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
                         <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>

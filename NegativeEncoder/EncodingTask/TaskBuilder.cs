@@ -60,10 +60,11 @@ namespace NegativeEncoder.EncodingTask
                 var (exeFile, exeArgs) = taskArgBuilder.Invoke(param, thisInput, thisOutput, currentPreset, useHdr);
 
                 newTask.RegTask(exeFile, exeArgs);
+                newTask.RegInputOutput(thisInput, thisOutput);
                 newTask.RunLog += $"{exeFile} {exeArgs}\n";
                 newTask.ProcessStop += async sender =>
                 {
-                    AppContext.Status.MainStatus = "任务完成，0.5s 后开始下一个任务调度";
+                    AppContext.Status.MainStatus = $"{name} 任务完成";
                     await Task.Delay(500);
                     TaskProvider.Schedule();
                 };

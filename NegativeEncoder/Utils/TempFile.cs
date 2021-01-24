@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace NegativeEncoder.Utils
@@ -27,6 +28,15 @@ namespace NegativeEncoder.Utils
                 tempFs.Write(tempContent, 0, tempContent.Length);
             }
             tempFs.Close();
+        }
+
+        public static void SaveTempFileUTF16LE(string fullFilename, string content)
+        {
+            content = content.Replace("\n", "\r\n");
+
+            using var tempFs = new FileStream(fullFilename, FileMode.Create);
+            using var saveStream = new StreamWriter(tempFs, Encoding.Unicode);
+            saveStream.Write(content);
         }
     }
 }

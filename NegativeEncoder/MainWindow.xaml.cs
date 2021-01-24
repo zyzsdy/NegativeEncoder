@@ -230,5 +230,46 @@ namespace NegativeEncoder
         {
             EncodingTask.TaskProvider.Schedule();
         }
+
+        private void EncodeContextMenuOpenDetailMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var source = TaskQueueListBox.SelectedItem as EncodingTask.EncodingTask;
+            var taskDetailWindow = new EncodingTask.TaskDetailWindow
+            {
+                DataContext = source
+            };
+
+            taskDetailWindow.Show();
+        }
+
+        private void EncodeContextMenuBrowseOutputDirMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var source = TaskQueueListBox.SelectedItem as EncodingTask.EncodingTask;
+
+            if (!string.IsNullOrEmpty(source.Output))
+            {
+                var psi = new ProcessStartInfo("explorer.exe")
+                {
+                    Arguments = "/e,/select," + source.Output
+                };
+                Process.Start(psi);
+            }
+        }
+
+        private void OpenNEENCToolsCmdMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Utils.CmdTools.SaveCmdTools.SaveOpenBat();
+            Utils.CmdTools.SaveCmdTools.OpenCmdTools();
+        }
+
+        private void NEToolsInstallMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Utils.CmdTools.InstallReg.Install();
+        }
+
+        private void NEToolsRemoveMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Utils.CmdTools.InstallReg.Remove();
+        }
     }
 }

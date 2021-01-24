@@ -12,10 +12,17 @@ namespace NegativeEncoder.EncodingTask
         {
             var queue = AppContext.EncodingContext.TaskQueue;
             var runningCount = queue.Where(x => x.Running == true && x.IsFinished == false).Count();
+            var restCount = queue.Where(x => x.IsFinished == false).Count();
+
+            AppContext.Status.EncoderStatus = $"{runningCount} 编码中，还剩 {restCount} 个";
+            if (runningCount == 0)
+            {
+                AppContext.Status.EncoderStatus = "空闲";
+            }
 
             if (runningCount >= AppContext.Config.MaxEncodingTaskNumber)
             {
-                AppContext.Status.MainStatus = $"已有任务 {runningCount} 个，超出最大同时执行上限 {AppContext.Config.MaxEncodingTaskNumber} 个，等待任务完成。";
+                AppContext.Status.MainStatus = $"已有任务 {runningCount} 个，超出最大同时执行上限 {AppContext.Config.MaxEncodingTaskNumber} 个，等待现有任务完成。";
                 return;
             }
 
@@ -24,16 +31,15 @@ namespace NegativeEncoder.EncodingTask
 
             if (firstTask != default)
             {
-                AppContext.Status.MainStatus = $"任务 {firstTask.TaskName} 开始执行，0.5s后开始下一个任务调度";
+                AppContext.Status.MainStatus = $"任务 {firstTask.TaskName} 开始执行。";
                 firstTask.Start();
                 Task.Run(async () =>
                 {
                     await Task.Delay(500);
                     Schedule();
                 });
+                return;
             }
-
-            AppContext.Status.MainStatus = "没有待调度任务。（如果存在未运行的任务，可通过「文件」-「强制开始任务调度」重新检测。）";
         }
     }
 }

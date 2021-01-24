@@ -53,4 +53,10 @@
     <Resource Include="Resources\baseline_remove_black_18dp.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="ne.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

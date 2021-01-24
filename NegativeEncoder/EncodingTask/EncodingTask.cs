@@ -28,6 +28,8 @@ namespace NegativeEncoder.EncodingTask
         public string RunLog { get; set; }
         public EncodingAction EncodingAction { get; set; }
         public string EncodingParam { get; set; }
+        public string Input { get; set; }
+        public string Output { get; set; }
 
         //=================================================
 
@@ -74,6 +76,12 @@ namespace NegativeEncoder.EncodingTask
         {
             this.exeFile = exefile;
             this.exeArgs = args;
+        }
+
+        public void RegInputOutput(string input, string output)
+        {
+            Input = input;
+            Output = output;
         }
 
         public void Start()
