@@ -26,37 +26,6 @@ namespace NegativeEncoder
     {
         public MainWindow()
         {
-            //使用CodePagesEncodingProvider去注册扩展编码。
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            var runName = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-            AppContext.EncodingContext.BaseDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(runName, ".."));
-
-            string[] pargs = Environment.GetCommandLineArgs();
-            if (pargs.Length > 1)
-            {
-                if (pargs[1] != "--baseDir")
-                {
-                    MessageBox.Show("不支持的启动参数！", "初始化警告", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-                else
-                {
-                    if (pargs.Length > 2 && !string.IsNullOrEmpty(pargs[2]))
-                    {
-                        AppContext.EncodingContext.BaseDir = pargs[2];
-                    }
-                    else
-                    {
-                        MessageBox.Show("--baseDir后指定的参数无效。", "初始化警告", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                }
-            }
-
-            //初始化（阶段1）
-            var asm = Assembly.GetEntryAssembly();
-            var asmVersion = (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(asm, typeof(AssemblyInformationalVersionAttribute));
-            AppContext.Version.CurrentVersion = asmVersion?.InformationalVersion ?? "";
-
             InitializeComponent();
         }
 
@@ -258,18 +227,48 @@ namespace NegativeEncoder
 
         private void OpenNEENCToolsCmdMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            Utils.CmdTools.SaveCmdTools.SaveOpenBat();
-            Utils.CmdTools.SaveCmdTools.OpenCmdTools();
+            try
+            {
+                Utils.CmdTools.SaveCmdTools.SaveOpenBat();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                var psi = new ProcessStartInfo(AppContext.EncodingContext.AppSelf)
+                {
+                    Arguments = $"--runFunc SaveCmdTools --baseDir \"{AppContext.EncodingContext.BaseDir}\"",
+                    UseShellExecute = true,
+                    Verb = "RunAs"
+                };
+                Process.Start(psi);
+            }
+            finally
+            {
+                Utils.CmdTools.SaveCmdTools.OpenCmdTools();
+            }
+
+
         }
 
         private void NEToolsInstallMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            Utils.CmdTools.InstallReg.Install();
+            var psi = new ProcessStartInfo(AppContext.EncodingContext.AppSelf)
+            {
+                Arguments = $"--runFunc InstallCmdTools --baseDir \"{AppContext.EncodingContext.BaseDir}\"",
+                UseShellExecute = true,
+                Verb = "RunAs"
+            };
+            Process.Start(psi);
         }
 
         private void NEToolsRemoveMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            Utils.CmdTools.InstallReg.Remove();
+            var psi = new ProcessStartInfo(AppContext.EncodingContext.AppSelf)
+            {
+                Arguments = $"--runFunc UninstallCmdTools --baseDir \"{AppContext.EncodingContext.BaseDir}\"",
+                UseShellExecute = true,
+                Verb = "RunAs"
+            };
+            Process.Start(psi);
         }
     }
 }

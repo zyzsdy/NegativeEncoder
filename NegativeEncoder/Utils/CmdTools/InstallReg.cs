@@ -26,22 +26,21 @@ namespace NegativeEncoder.Utils.CmdTools
                 "\"Icon\"=\"" + DoubleSlash(iconName) + "\"\n" +
                 "\n" +
                 "[HKEY_CLASSES_ROOT\\Directory\\shell\\NegativeEncoder\\command]\n" +
-                "@=\"cmd.exe /s /k " + DoubleSlash(batFullName) + " \\\"%V\\\"\"\n" +
+                "@=\"cmd.exe /s /k \\\"\\\"" + DoubleSlash(batFullName) + "\\\" \\\"%V\\\"\\\"\"\n" +
                 "\n" +
                 "[HKEY_CLASSES_ROOT\\Directory\\Background\\shell\\NegativeEncoder]\n" +
                 "@=\"启动消极压制工具包命令行\"\n" +
                 "\"Icon\"=\"" + DoubleSlash(iconName) + "\"\n" +
                 "\n" +
                 "[HKEY_CLASSES_ROOT\\Directory\\Background\\shell\\NegativeEncoder\\command]\n" +
-                "@=\"cmd.exe /s /k " + DoubleSlash(batFullName) + " \\\"%V\\\"\"\n";
+                "@=\"cmd.exe /s /k \\\"\\\"" + DoubleSlash(batFullName) + "\\\" \\\"%V\\\"\\\"\"\n";
 
             TempFile.SaveTempFileUTF16LE(regFullName, regContent);
 
             var psi = new ProcessStartInfo("regedit.exe")
             {
-                Arguments = "/s " + regFullName,
-                UseShellExecute = true,
-                Verb = "runas"
+                Arguments = "/s \"" + regFullName + "\"",
+                UseShellExecute = true
             };
             Process.Start(psi);
         }
@@ -66,9 +65,8 @@ namespace NegativeEncoder.Utils.CmdTools
 
             var psi = new ProcessStartInfo("regedit.exe")
             {
-                Arguments = "/s " + regFullName,
-                UseShellExecute = true,
-                Verb = "runas"
+                Arguments = "/s \"" + regFullName + "\"",
+                UseShellExecute = true
             };
             Process.Start(psi);
         }

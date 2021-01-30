@@ -32,7 +32,7 @@ namespace NegativeEncoder.Utils.CmdTools
 
             var psi = new ProcessStartInfo("cmd.exe")
             {
-                Arguments = "/s /k " + batFullName
+                Arguments = "/s /k \"\"" + batFullName + "\"\""
             };
             Process.Start(psi);
         }

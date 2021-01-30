@@ -15,6 +15,7 @@
     <Copyright>Copyright © 2018-2021 MeowSound Idols</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <ApplicationIcon>ne.ico</ApplicationIcon>
+    <StartupObject>NegativeEncoder.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +37,7 @@
 
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.0.1" />
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Fody" Version="6.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
