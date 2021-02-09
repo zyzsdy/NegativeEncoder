@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 
 namespace NegativeEncoder.EncodingTask
 {
+    public delegate (string exefile, string args) BuildAction(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extraOutput);
+
     public static class TaskBuilder
     {
-        private static Dictionary<EncodingAction, Func<string, string, string, Preset, bool, (string exefile, string args)>> TaskArgBuilders =
-            new Dictionary<EncodingAction, Func<string, string, string, Preset, bool, (string exefile, string args)>>
+        private static Dictionary<EncodingAction, BuildAction> TaskArgBuilders =
+            new Dictionary<EncodingAction, BuildAction>
             {
                 { EncodingAction.Simple, TaskArgs.SimpleEncoding.Build },
                 { EncodingAction.HDRTagUseFFMpeg, TaskArgs.HDRTagUseFFMpeg.Build },
@@ -23,7 +25,9 @@ namespace NegativeEncoder.EncodingTask
 
         
 
-        public static void AddEncodingTask(EncodingAction action, string param, Preset currentPreset, List<FileSelector.FileInfo> selectPaths)
+        public static void AddEncodingTask(EncodingAction action, string param,
+            Preset currentPreset, List<FileSelector.FileInfo> selectPaths,
+            string input, string output, string extraOutput)
         {
             if (!TaskArgBuilders.ContainsKey(action))
             {
@@ -38,8 +42,6 @@ namespace NegativeEncoder.EncodingTask
                 useHdr = true;
             }
 
-            var input = AppContext.PresetContext.InputFile;
-            var output = AppContext.PresetContext.OutputFile;
             var (ext, _) = FileSelector.FileName.GetOutputExt(currentPreset.OutputFormat);
 
             //为每个选中的项目生成任务并推入任务队列
@@ -57,7 +59,7 @@ namespace NegativeEncoder.EncodingTask
                     thisOutput = output;
                 }
 
-                var (exeFile, exeArgs) = taskArgBuilder.Invoke(param, thisInput, thisOutput, currentPreset, useHdr);
+                var (exeFile, exeArgs) = taskArgBuilder.Invoke(param, thisInput, thisOutput, currentPreset, useHdr, input, extraOutput);
 
                 newTask.RegTask(exeFile, exeArgs);
                 newTask.RegInputOutput(thisInput, thisOutput);

@@ -6,18 +6,29 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 {
     public class Muxer
     {
-        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr)
+        /// <summary>
+        /// 生成混流任务
+        /// </summary>
+        /// <param name="param">音频输入地址</param>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        /// <param name="preset"></param>
+        /// <param name="useHdr"></param>
+        /// <param name="originInput"></param>
+        /// <param name="extraOutput">混流目标输出地址</param>
+        /// <returns></returns>
+        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extraOutput)
         {
             var baseDir = AppContext.EncodingContext.BaseDir;
 
             var (ext, _) = FileSelector.FileName.GetOutputExt(preset.MuxFormat);
-            var muxOutput = FileSelector.FileName.RecalcOutputPath(input, AppContext.PresetContext.MuxOutputFile, "_mux", ext);
-            if (input == AppContext.PresetContext.InputFile)
+            var muxOutput = FileSelector.FileName.RecalcOutputPath(input, extraOutput, "_mux", ext);
+            if (input == originInput)
             {
-                muxOutput = AppContext.PresetContext.MuxOutputFile;
+                muxOutput = extraOutput;
             }
 
-            var audioInput = AppContext.PresetContext.MuxAudioInputFile;
+            var audioInput = param;
 
             if (preset.MuxFormat == OutputFormat.MKV)
             {

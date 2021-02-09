@@ -6,7 +6,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 {
     public class HDRTagUseFFMpeg
     {
-        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr)
+        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extraOutput)
         {
             var exeFileName = Path.Combine(AppContext.EncodingContext.BaseDir, "Libs\\ffmpeg.exe");
             int transfer;

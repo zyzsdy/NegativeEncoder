@@ -229,70 +229,80 @@ namespace NegativeEncoder.FunctionTabs
 
         private void SimpleEncButton_Click(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.Simple, "Normal");
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.Simple, "Normal", null);
         }
 
         private void SimpleHDREncButton_Click(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.Simple, "HDR");
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.Simple, "HDR", null);
         }
 
         private void HDRTagEncButton_Click_SDR(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.HDRTagUseFFMpeg, "SDR");
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.HDRTagUseFFMpeg, "SDR", null);
         }
 
         private void HDRTagEncButton_Click_HDR10(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.HDRTagUseFFMpeg, "HDR10");
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.HDRTagUseFFMpeg, "HDR10", null);
         }
 
         private void HDRTagEncButton_Click_HLG(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.HDRTagUseFFMpeg, "HLG");
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.HDRTagUseFFMpeg, "HLG", null);
         }
 
         private void VSPipeEncButton_Click(object sender, RoutedEventArgs e)
         {
             var vsScript = VsEditor.Document.Text;
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.VSPipe, vsScript);
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.VSPipe, vsScript, null);
         }
 
         private void AudioEncButton_Click(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.AudioEncoding, "Normal");
+            var audioOutput = AppContext.PresetContext.AudioOutputFile;
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.AudioEncoding, "Normal", audioOutput);
         }
 
         private void AudioExtractButton_Click(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.AudioExtract, "Normal");
+            var audioOutput = AppContext.PresetContext.AudioOutputFile;
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.AudioExtract, "Normal", audioOutput);
         }
 
         private void MuxButton_Click(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.Muxer, "Normal");
+            var muxAudioInput = AppContext.PresetContext.MuxAudioInputFile;
+            var muxOutput = AppContext.PresetContext.MuxOutputFile;
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.Muxer, muxAudioInput, muxOutput);
         }
 
         private void FfmpegPipe_Click_NoAudio(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "NoAudio");
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "NoAudio", null);
         }
 
         private void FfmpegPipe_Click_CopyAudio(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "CopyAudio");
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "CopyAudio", null);
         }
 
         private void FfmpegPipe_Click_ProcessAudio(object sender, RoutedEventArgs e)
         {
-            BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "ProcessAudio");
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "ProcessAudio", null);
         }
 
-        private void BuildTaskAndAddEncodingQueueAction(EncodingAction action, string param)
+        private void BuildTaskAndAddEncodingQueueAction(EncodingAction action, string param, string extraOutput)
         {
+            var input = AppContext.PresetContext.InputFile;
+            var output = AppContext.PresetContext.OutputFile;
+            var preset = Utils.DeepCompare.CloneDeep1(AppContext.PresetContext.CurrentPreset);
+
+            //调用GetAndRemoveAllSelectFilePath后会引起列表改变，进而修改input和output的值，因此必须在获取input和output值后再调用
             var mainWindow = (MainWindow)Window.GetWindow(this);
             var selectPaths = mainWindow.MainFileList.GetAndRemoveAllSelectFilePath();
-            EncodingTask.TaskBuilder.AddEncodingTask(action, param, AppContext.PresetContext.CurrentPreset, selectPaths);
+
+            EncodingTask.TaskBuilder.AddEncodingTask(action, param, preset, selectPaths, input, output, extraOutput);
         }
     }
 }

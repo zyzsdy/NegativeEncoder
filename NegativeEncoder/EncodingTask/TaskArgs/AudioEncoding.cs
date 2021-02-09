@@ -8,15 +8,15 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 {
     public class AudioEncoding
     {
-        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr)
+        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extraOutput)
         {
             var baseDir = AppContext.EncodingContext.BaseDir;
             var workDir = Path.GetDirectoryName(output);
 
-            var audioOutput = FileSelector.FileName.RecalcOutputPath(input, AppContext.PresetContext.AudioOutputFile, "_neAAC", "m4a");
-            if (input == AppContext.PresetContext.InputFile)
+            var audioOutput = FileSelector.FileName.RecalcOutputPath(input, extraOutput, "_neAAC", "m4a");
+            if (input == originInput)
             {
-                audioOutput = AppContext.PresetContext.AudioOutputFile;
+                audioOutput = extraOutput;
             }
 
             //build bat

@@ -7,7 +7,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 {
     public static class SimpleEncoding
     {
-        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr)
+        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extraOutput)
         {
             var exeFileName = TaskArgBuilder.GetBaseEncoderFile(preset);
 

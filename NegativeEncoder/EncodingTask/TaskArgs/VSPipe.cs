@@ -9,7 +9,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 {
     public class VSPipe
     {
-        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr)
+        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extraOutput)
         {
             var tempFileList = new List<string>(); //临时文件
 
