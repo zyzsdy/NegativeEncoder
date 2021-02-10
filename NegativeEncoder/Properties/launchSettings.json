@@ -1,8 +1,7 @@
 {
   "profiles": {
     "NegativeEncoder": {
-      "commandName": "Project",
-      "commandLineArgs": "--baseDir D:\\NegativeEncoderDevenv"
+      "commandName": "Project"
     }
   }
 }

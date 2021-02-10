@@ -189,6 +189,7 @@ namespace NegativeEncoder
 
             var taskDetailWindow = new EncodingTask.TaskDetailWindow
             {
+                Owner = this,
                 DataContext = source
             };
 
@@ -205,6 +206,7 @@ namespace NegativeEncoder
             var source = TaskQueueListBox.SelectedItem as EncodingTask.EncodingTask;
             var taskDetailWindow = new EncodingTask.TaskDetailWindow
             {
+                Owner = this,
                 DataContext = source
             };
 
