@@ -97,7 +97,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                 argList.Add("--vbr-quality");
                 argList.Add(preset.VbrQuailty);
             }
-            else if (preset.Encoder == Presets.Encoder.QSV)
+            else if (preset.Encoder == Presets.Encoder.QSV && preset.EncodeMode == EncodeMode.QVBR && preset.Codec == Codec.AVC)
             {
                 argList.Add("--qvbr-quality");
                 argList.Add(preset.VbrQuailty);
