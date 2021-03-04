@@ -8,7 +8,9 @@
         xmlns:localStatusConverter="clr-namespace:NegativeEncoder.StatusBar"
         xmlns:preset="clr-namespace:NegativeEncoder.Presets.Converters"
         mc:Ignorable="d"
-        Height="700" Width="1200" Loaded="Window_Loaded">
+        Height="700" Width="1200"
+        MinHeight="700" MinWidth="1200"
+        Loaded="Window_Loaded">
     <Window.Resources>
         <localStatusConverter:ProgressToVisibilityValueConverter x:Key="ProgressToVisibilityValueConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
