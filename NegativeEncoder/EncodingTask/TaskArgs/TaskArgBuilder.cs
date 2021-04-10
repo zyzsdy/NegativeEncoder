@@ -69,7 +69,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                     {
                         Presets.Encoder.NVENC => "default",
                         Presets.Encoder.QSV => "balanced",
-                        Presets.Encoder.VCE => "default",
+                        Presets.Encoder.VCE => "balanced",
                     });
                     break;
                 case QualityPreset.Quality:

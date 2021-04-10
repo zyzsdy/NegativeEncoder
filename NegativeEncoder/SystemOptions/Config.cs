@@ -14,7 +14,7 @@ namespace NegativeEncoder.SystemOptions
         /// <summary>
         /// 最大同时编码任务数量
         /// </summary>
-        public int MaxEncodingTaskNumber { get; set; } = 4;
+        public int MaxEncodingTaskNumber { get; set; } = 3;
 
         /// <summary>
         /// 强制所有模式都使用HDR参数

@@ -53,7 +53,7 @@ namespace NegativeEncoder.EncodingTask
                 AppContext.Status.MainStatus = $"生成任务 {name}";
 
                 var thisInput = filePath.Path;
-                var thisOutput = FileSelector.FileName.RecalcOutputPath(input, output, "_neenc", ext);
+                var thisOutput = FileSelector.FileName.RecalcOutputPath(thisInput, output, "_neenc", ext);
                 if (thisInput == input)
                 {
                     thisOutput = output;
