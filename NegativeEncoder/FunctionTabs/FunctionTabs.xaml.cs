@@ -127,6 +127,19 @@ namespace NegativeEncoder.FunctionTabs
             }
         }
 
+        private void SubBrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog
+            {
+                Filter = "ASS 字幕文件(*.ass)|*.ass"
+            };
+
+            if (ofd.ShowDialog() == true)
+            {
+                AppContext.PresetContext.CurrentPreset.SubFile = ofd.FileName;
+            }
+        }
+
         private void VsSubTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
@@ -138,6 +151,20 @@ namespace NegativeEncoder.FunctionTabs
             foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop))
             {
                 AppContext.PresetContext.VsScript.SubFile = f;
+            }
+        }
+
+        private void SubTextBox_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Copy;
+            e.Handled = true;
+        }
+
+        private void SubTextBox_PreviewDragDrop(object sender, DragEventArgs e)
+        {
+            foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop))
+            {
+                AppContext.PresetContext.CurrentPreset.SubFile = f;
             }
         }
 

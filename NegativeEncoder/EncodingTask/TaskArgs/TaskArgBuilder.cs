@@ -289,7 +289,10 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 
             }
 
-
+            if (preset.IsSetSub)
+            {
+                argList.Add("--vpp-subburn filename=\"" + preset.SubFile + "\"");
+            }
 
             return string.Join(" ", argList);
         }

@@ -12,6 +12,7 @@ namespace NegativeEncoder.VsScriptBuilder
 
             // 插入头部
             sb.Append("from vapoursynth import core, YUV420P8\n");
+            sb.Append("import sys\n");
             if (vsOption.UseQTGMC == true)
             {
                 sb.Append("from havsfunc import QTGMC\n");
@@ -67,10 +68,18 @@ namespace NegativeEncoder.VsScriptBuilder
             {
                 if (vsOption.UseVsfmod == true)
                 {
+                    sb.Append("try:\n");
+                    sb.Append("    core.std.LoadPlugin(r\"" + AppContext.EncodingContext.BaseDir + "\\Libs\\vapoursynth64\\plugins\\VSFilterMod.dll\")\n");
+                    sb.Append("except:\n");
+                    sb.Append("    sys.stderr.write(\"Unexpected error: \" + str(sys.exc_info()))\n");
                     sb.Append("video = core.vsfm.TextSubMod(video, SUB_PATH)\n");
                 }
                 else
                 {
+                    sb.Append("try:\n");
+                    sb.Append("    core.std.LoadPlugin(r\"" + AppContext.EncodingContext.BaseDir + "\\Libs\\vapoursynth64\\plugins\\VSFilter.dll\")\n");
+                    sb.Append("except:\n");
+                    sb.Append("    sys.stderr.write(\"Unexpected error: \" + str(sys.exc_info()))\n");
                     sb.Append("video = core.vsf.TextSub(video, SUB_PATH)\n");
                 }
 

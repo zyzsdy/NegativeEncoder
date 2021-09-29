@@ -190,7 +190,11 @@ namespace NegativeEncoder.Presets
         /// </summary>
         public OutputFormat MuxFormat { get; set; } = OutputFormat.MP4;
 
-
+        /// <summary>
+        /// 是否设置压制字幕
+        /// </summary>
+        public bool IsSetSub { get; set; } = false;
+        public string SubFile { get; set; } = "";
 
         public event PropertyChangedEventHandler PropertyChanged;
     }
