@@ -419,6 +419,18 @@
 
                         </Grid>
                     </GroupBox>
+                    <GroupBox Header="字幕压制" VerticalAlignment="Top" Margin="10,92,10,0" Height="64"
+                        ToolTip="使用libass压制字幕">
+                        <Grid>
+                            <CheckBox Content="字幕" HorizontalAlignment="Left" Margin="5,10,0,0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center"
+                                      IsChecked="{Binding CurrentPreset.IsSetSub}"/>
+                            <TextBox Height="25" VerticalAlignment="Top" Margin="57,10,94,0" VerticalContentAlignment="Center" TextWrapping="NoWrap"
+                                     PreviewDragOver="SubTextBox_PreviewDragOver" PreviewDrop="SubTextBox_PreviewDragDrop"
+                                     Text="{Binding CurrentPreset.SubFile}" IsEnabled="{Binding CurrentPreset.IsSetSub}"/>
+                            <Button Content="浏览..." VerticalAlignment="Top" HorizontalAlignment="Right" Width="80" Height="25" Margin="0,10,5,0"
+                                    Click="SubBrowseButton_Click" IsEnabled="{Binding CurrentPreset.IsSetSub}"/>
+                        </Grid>
+                    </GroupBox>
                 </Grid>
             </TabItem>
         </TabControl>
