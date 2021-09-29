@@ -136,7 +136,7 @@ namespace NegativeEncoder.FunctionTabs
 
             if (ofd.ShowDialog() == true)
             {
-                AppContext.PresetContext.CurrentPreset.SubFile = ofd.FileName;
+                AppContext.PresetContext.SubBurnAssFile = ofd.FileName;
             }
         }
 
@@ -164,7 +164,7 @@ namespace NegativeEncoder.FunctionTabs
         {
             foreach (string f in (string[])e.Data.GetData(DataFormats.FileDrop))
             {
-                AppContext.PresetContext.CurrentPreset.SubFile = f;
+                AppContext.PresetContext.SubBurnAssFile = f;
             }
         }
 
@@ -319,7 +319,19 @@ namespace NegativeEncoder.FunctionTabs
             BuildTaskAndAddEncodingQueueAction(EncodingAction.FFMpegPipe, "ProcessAudio", null);
         }
 
-        private void BuildTaskAndAddEncodingQueueAction(EncodingAction action, string param, string extraOutput)
+        private void SimpleWithAss_Click(object sender, RoutedEventArgs e)
+        {
+            var assFileInput = AppContext.PresetContext.SubBurnAssFile;
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.SimpleWithAss, "Normal", assFileInput);
+        }
+
+        private void SimpleWithAssHdr_Click(object sender, RoutedEventArgs e)
+        {
+            var assFileInput = AppContext.PresetContext.SubBurnAssFile;
+            BuildTaskAndAddEncodingQueueAction(EncodingAction.SimpleWithAss, "HDR", assFileInput);
+        }
+
+        private void BuildTaskAndAddEncodingQueueAction(EncodingAction action, string param, string extra)
         {
             var input = AppContext.PresetContext.InputFile;
             var output = AppContext.PresetContext.OutputFile;
@@ -329,7 +341,7 @@ namespace NegativeEncoder.FunctionTabs
             var mainWindow = (MainWindow)Window.GetWindow(this);
             var selectPaths = mainWindow.MainFileList.GetAndRemoveAllSelectFilePath();
 
-            EncodingTask.TaskBuilder.AddEncodingTask(action, param, preset, selectPaths, input, output, extraOutput);
+            EncodingTask.TaskBuilder.AddEncodingTask(action, param, preset, selectPaths, input, output, extra);
         }
     }
 }

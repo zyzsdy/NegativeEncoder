@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NegativeEncoder.EncodingTask
 {
-    public delegate (string exefile, string args) BuildAction(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extraOutput);
+    public delegate (string exefile, string args) BuildAction(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extra);
 
     public static class TaskBuilder
     {
@@ -21,13 +21,14 @@ namespace NegativeEncoder.EncodingTask
                 { EncodingAction.AudioExtract, TaskArgs.AudioExtract.Build },
                 { EncodingAction.Muxer, TaskArgs.Muxer.Build },
                 { EncodingAction.FFMpegPipe, TaskArgs.FFMpegPipe.Build },
+                { EncodingAction.SimpleWithAss, TaskArgs.SimpleWithAss.Build }
             };
 
         
 
         public static void AddEncodingTask(EncodingAction action, string param,
             Preset currentPreset, List<FileSelector.FileInfo> selectPaths,
-            string input, string output, string extraOutput)
+            string input, string output, string extra)
         {
             if (!TaskArgBuilders.ContainsKey(action))
             {
@@ -59,7 +60,7 @@ namespace NegativeEncoder.EncodingTask
                     thisOutput = output;
                 }
 
-                var (exeFile, exeArgs) = taskArgBuilder.Invoke(param, thisInput, thisOutput, currentPreset, useHdr, input, extraOutput);
+                var (exeFile, exeArgs) = taskArgBuilder.Invoke(param, thisInput, thisOutput, currentPreset, useHdr, input, extra);
 
                 newTask.RegTask(exeFile, exeArgs);
                 newTask.RegInputOutput(thisInput, thisOutput);

@@ -15,17 +15,17 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
         /// <param name="preset"></param>
         /// <param name="useHdr"></param>
         /// <param name="originInput"></param>
-        /// <param name="extraOutput">混流目标输出地址</param>
+        /// <param name="extra">混流目标输出地址</param>
         /// <returns></returns>
-        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extraOutput)
+        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extra)
         {
             var baseDir = AppContext.EncodingContext.BaseDir;
 
             var (ext, _) = FileSelector.FileName.GetOutputExt(preset.MuxFormat);
-            var muxOutput = FileSelector.FileName.RecalcOutputPath(input, extraOutput, "_mux", ext);
+            var muxOutput = FileSelector.FileName.RecalcOutputPath(input, extra, "_mux", ext);
             if (input == originInput)
             {
-                muxOutput = extraOutput;
+                muxOutput = extra;
             }
 
             var audioInput = param;

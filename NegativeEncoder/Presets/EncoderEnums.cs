@@ -12,7 +12,8 @@ namespace NegativeEncoder.Presets
         AudioEncoding,
         AudioExtract,
         Muxer,
-        FFMpegPipe
+        FFMpegPipe,
+        SimpleWithAss
     }
 
     public enum Encoder

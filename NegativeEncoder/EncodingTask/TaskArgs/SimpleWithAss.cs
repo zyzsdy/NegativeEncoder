@@ -5,9 +5,9 @@ using System.Text;
 
 namespace NegativeEncoder.EncodingTask.TaskArgs
 {
-    public static class SimpleEncoding
+    public static class SimpleWithAss
     {
-        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr, string originInput, string extra)
+        public static (string exefile, string args) Build(string param, string input, string output, Preset preset, bool useHdr, string originInput, string assInput)
         {
             var exeFileName = TaskArgBuilder.GetBaseEncoderFile(preset);
 
@@ -51,7 +51,9 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                 addArgs.Add(preset.AudioBitrate);
             }
 
-            var args = $"{ioargs} {string.Join(" ", addArgs)} {gargs}";
+            var subBurnArgs = $"--vpp-subburn filename=\"{assInput}\"";
+
+            var args = $"{ioargs} {string.Join(" ", addArgs)} {gargs} {subBurnArgs}";
             return (exeFileName, args);
         }
     }

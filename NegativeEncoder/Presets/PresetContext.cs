@@ -24,6 +24,11 @@ namespace NegativeEncoder.Presets
         {
             InputFileChanged?.Invoke(sender, e);
         }
+
+        /// <summary>
+        /// 字幕文件
+        /// </summary>
+        public string SubBurnAssFile { get; set; } = string.Empty;
         /// <summary>
         /// 输出文件路径
         /// </summary>
