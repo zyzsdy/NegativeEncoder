@@ -1,6 +1,5 @@
 ﻿using NegativeEncoder.Presets;
 using NegativeEncoder.Utils;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -17,7 +16,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
             var workDir = Path.GetDirectoryName(output);
 
             var vpyName = Path.GetFileNameWithoutExtension(output) + "_vpyTemp.vpy";
-            var vpyFullname = Path.Combine(workDir, vpyName);
+            var vpyFullname = Path.Combine(workDir!, vpyName);
             tempFileList.Add(vpyFullname);
 
             var pyExtraLibName = Path.Combine(baseDir, "Libs\\site-packages");
@@ -37,64 +36,69 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
             var gargs = TaskArgBuilder.GenericArgumentBuilder(preset, useHdr);
             
 
-            if (preset.AudioEncode == AudioEncode.Copy)
+            switch (preset.AudioEncode)
             {
-                //复制音频流
-
-                //--生成无音频流视频
-                var tempVideoExt = Path.GetExtension(output);
-                var tempVideoOutput = Path.Combine(workDir, Path.GetFileNameWithoutExtension(output) + "_tempVideo" + tempVideoExt);
-                var ioargs = TaskArgBuilder.GetIOArgs("-", tempVideoOutput, preset);
-
-                batSb.Append($"\"{vspipeFile}\" --y4m \"{vpyFullname}\" - | \"{encoderFile}\" --y4m {ioargs} {gargs}\n");
-                tempFileList.Add(tempVideoOutput);
-
-                //--混流
-                var ffmpegFile = Path.Combine(baseDir, "Libs\\ffmpeg.exe");
-                var format = TaskArgBuilder.GetFormat(preset.OutputFormat);
-                var extraArgs = "";
-                if (preset.OutputFormat == OutputFormat.MP4)
+                case AudioEncode.Copy:
                 {
-                    extraArgs = "-movflags faststart";
+                    //复制音频流
+
+                    //--生成无音频流视频
+                    var tempVideoExt = Path.GetExtension(output);
+                    var tempVideoOutput = Path.Combine(workDir, Path.GetFileNameWithoutExtension(output) + "_tempVideo" + tempVideoExt);
+                    var ioargs = TaskArgBuilder.GetIOArgs("-", tempVideoOutput, preset);
+
+                    batSb.Append($"\"{vspipeFile}\" --y4m \"{vpyFullname}\" - | \"{encoderFile}\" --y4m {ioargs} {gargs}\n");
+                    tempFileList.Add(tempVideoOutput);
+
+                    //--混流
+                    var ffmpegFile = Path.Combine(baseDir, "Libs\\ffmpeg.exe");
+                    var format = TaskArgBuilder.GetFormat(preset.OutputFormat);
+                    var extraArgs = "";
+                    if (preset.OutputFormat == OutputFormat.MP4)
+                    {
+                        extraArgs = "-movflags faststart";
+                    }
+                    batSb.Append($"\"{ffmpegFile}\" -y -i \"{tempVideoOutput}\" -i \"{input}\" -map 0:v -map 1:a -c copy {extraArgs} -f {format} \"{output}\"\n");
+                    break;
                 }
-                batSb.Append($"\"{ffmpegFile}\" -i \"{tempVideoOutput}\" -i \"{input}\" -map 0:v -map 1:a -c copy {extraArgs} -f {format} \"{output}\"\n");
-
-            }
-            else if (preset.AudioEncode == AudioEncode.Encode)
-            {
-                //压制音频流
-
-                //--生成无音频流视频
-                var tempVideoExt = Path.GetExtension(output);
-                var tempVideoOutput = Path.Combine(workDir, Path.GetFileNameWithoutExtension(output) + "_tempVideo" + tempVideoExt);
-                var ioargs = TaskArgBuilder.GetIOArgs("-", tempVideoOutput, preset);
-
-                batSb.Append($"\"{vspipeFile}\" --y4m \"{vpyFullname}\" - | \"{encoderFile}\" --y4m {ioargs} {gargs}\n");
-                tempFileList.Add(tempVideoOutput);
-
-                //--qaac处理音频
-                var ffmpegFile = Path.Combine(baseDir, "Libs\\ffmpeg.exe");
-                var qaacFile = Path.Combine(baseDir, "Libs\\qaac64.exe");
-                var audioOutput = Path.Combine(workDir, Path.GetFileNameWithoutExtension(output) + "_tempAudio.m4a");
-
-                batSb.Append($"\"{ffmpegFile}\" -i \"{input}\" -vn -sn -v 0 -c:a pcm_s16le -f wav pipe: | \"{qaacFile}\" -q 2 --ignorelength -c {preset.AudioBitrate} - -o \"{audioOutput}\"\n");
-                tempFileList.Add(audioOutput);
-
-                //--混流
-                var format = TaskArgBuilder.GetFormat(preset.OutputFormat);
-                var extraArgs = "";
-                if (preset.OutputFormat == OutputFormat.MP4)
+                case AudioEncode.Encode:
                 {
-                    extraArgs = "-movflags faststart";
-                }
-                batSb.Append($"\"{ffmpegFile}\" -i \"{tempVideoOutput}\" -i \"{audioOutput}\" -map 0:v -map 1:a -c copy {extraArgs} -f {format} \"{output}\"\n");
-            }
-            else
-            {
-                //无音频流
-                var ioargs = TaskArgBuilder.GetIOArgs("-", output, preset);
+                    //压制音频流
 
-                batSb.Append($"\"{vspipeFile}\" --y4m \"{vpyFullname}\" - | \"{encoderFile}\" --y4m {ioargs} {gargs}\n");
+                    //--生成无音频流视频
+                    var tempVideoExt = Path.GetExtension(output);
+                    var tempVideoOutput = Path.Combine(workDir, Path.GetFileNameWithoutExtension(output) + "_tempVideo" + tempVideoExt);
+                    var ioargs = TaskArgBuilder.GetIOArgs("-", tempVideoOutput, preset);
+
+                    batSb.Append($"\"{vspipeFile}\" --y4m \"{vpyFullname}\" - | \"{encoderFile}\" --y4m {ioargs} {gargs}\n");
+                    tempFileList.Add(tempVideoOutput);
+
+                    //--qaac处理音频
+                    var ffmpegFile = Path.Combine(baseDir, "Libs\\ffmpeg.exe");
+                    var qaacFile = Path.Combine(baseDir, "Libs\\qaac64.exe");
+                    var audioOutput = Path.Combine(workDir, Path.GetFileNameWithoutExtension(output) + "_tempAudio.m4a");
+
+                    batSb.Append($"\"{ffmpegFile}\" -y -i \"{input}\" -vn -sn -v 0 -c:a pcm_s16le -f wav pipe: | \"{qaacFile}\" -q 2 --ignorelength -c {preset.AudioBitrate} - -o \"{audioOutput}\"\n");
+                    tempFileList.Add(audioOutput);
+
+                    //--混流
+                    var format = TaskArgBuilder.GetFormat(preset.OutputFormat);
+                    var extraArgs = "";
+                    if (preset.OutputFormat == OutputFormat.MP4)
+                    {
+                        extraArgs = "-movflags faststart";
+                    }
+                    batSb.Append($"\"{ffmpegFile}\" -y -i \"{tempVideoOutput}\" -i \"{audioOutput}\" -map 0:v -map 1:a -c copy {extraArgs} -f {format} \"{output}\"\n");
+                    break;
+                }
+                default:
+                {
+                    //无音频流
+                    var ioargs = TaskArgBuilder.GetIOArgs("-", output, preset);
+
+                    batSb.Append($"\"{vspipeFile}\" --y4m \"{vpyFullname}\" - | \"{encoderFile}\" --y4m {ioargs} {gargs}\n");
+                    break;
+                }
             }
 
             foreach (var tempFile in tempFileList)

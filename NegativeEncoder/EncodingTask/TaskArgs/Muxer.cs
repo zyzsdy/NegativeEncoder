@@ -1,5 +1,4 @@
 ﻿using NegativeEncoder.Presets;
-using System;
 using System.IO;
 
 namespace NegativeEncoder.EncodingTask.TaskArgs
@@ -45,7 +44,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                 extraArgs = "-movflags faststart";
             }
             var format = TaskArgBuilder.GetFormat(preset.MuxFormat);
-            var args = $"-i \"{input}\" -i \"{audioInput}\" -map 0:v -map 1:a -c copy {extraArgs} -f {format} \"{muxOutput}\"";
+            var args = $"-y -i \"{input}\" -i \"{audioInput}\" -map 0:v -map 1:a -c copy {extraArgs} -f {format} \"{muxOutput}\"";
 
             return (ffmpegFile, args);
         }
