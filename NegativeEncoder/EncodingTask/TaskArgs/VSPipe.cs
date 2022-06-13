@@ -33,7 +33,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 
             var vspipeFile = Path.Combine(baseDir, "Libs\\VSPipe.exe");
             var encoderFile = TaskArgBuilder.GetBaseEncoderFile(preset);
-            var gargs = TaskArgBuilder.GenericArgumentBuilder(preset, useHdr);
+            var gargs = TaskArgBuilder.GenericArgumentBuilder(preset, useHdr, true);
             
 
             switch (preset.AudioEncode)

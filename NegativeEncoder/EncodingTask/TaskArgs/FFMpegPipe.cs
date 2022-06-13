@@ -24,7 +24,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 
             var ffmpegFile = Path.Combine(baseDir, "Libs\\ffmpeg.exe");
             var encoderFile = TaskArgBuilder.GetBaseEncoderFile(preset);
-            var gargs = TaskArgBuilder.GenericArgumentBuilder(preset, useHdr);
+            var gargs = TaskArgBuilder.GenericArgumentBuilder(preset, useHdr, true);
 
             var addArgList = new List<string>();
 

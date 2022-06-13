@@ -6,7 +6,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
 {
     public static class TaskArgBuilder
     {
-        public static string GenericArgumentBuilder(Preset preset, bool useHdr)
+        public static string GenericArgumentBuilder(Preset preset, bool useHdr, bool usePipe)
         {
             if (preset.IsUseCustomParameters)
             {
@@ -289,16 +289,19 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
             }
             else
             {
-                argList.Add("--colorrange");
-                argList.Add("auto");
-                argList.Add("--colormatrix");
-                argList.Add("auto");
-                argList.Add("--colorprim");
-                argList.Add("auto");
-                argList.Add("--transfer");
-                argList.Add("auto");
-                argList.Add("--chromaloc");
-                argList.Add("auto");
+                if (!usePipe)
+                {
+                    argList.Add("--colorrange");
+                    argList.Add("auto");
+                    argList.Add("--colormatrix");
+                    argList.Add("auto");
+                    argList.Add("--colorprim");
+                    argList.Add("auto");
+                    argList.Add("--transfer");
+                    argList.Add("auto");
+                    argList.Add("--chromaloc");
+                    argList.Add("auto");
+                }
             }
 
             return string.Join(" ", argList);

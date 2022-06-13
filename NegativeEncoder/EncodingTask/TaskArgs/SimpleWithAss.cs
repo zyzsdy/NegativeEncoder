@@ -12,7 +12,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
             var exeFileName = TaskArgBuilder.GetBaseEncoderFile(preset);
 
             string ioargs = TaskArgBuilder.GetIOArgs(input, output, preset);
-            string gargs = TaskArgBuilder.GenericArgumentBuilder(preset, useHdr);
+            string gargs = TaskArgBuilder.GenericArgumentBuilder(preset, useHdr, false);
 
             var addArgs = new List<string>
             {
