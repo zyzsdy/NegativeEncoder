@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NegativeEncoder.SystemOptions
@@ -22,7 +21,8 @@ namespace NegativeEncoder.SystemOptions
                 return defaultOption;
             }
 
-            var configFileString = await System.IO.File.ReadAllTextAsync(configPath);
+            //在LTSC2022上Async函数发生阻塞情况，暂时换同步
+            var configFileString = System.IO.File.ReadAllText(configPath);
             var jsonOption = JsonConvert.DeserializeObject<T>(configFileString);
 
             return jsonOption;
@@ -45,13 +45,9 @@ namespace NegativeEncoder.SystemOptions
             var configFileString = "";
             try
             {
-                using (var configFileStream = new System.IO.FileStream(configPath, System.IO.FileMode.Open))
-                {
-                    using (var sr = new System.IO.StreamReader(configFileStream))
-                    {
-                        configFileString = sr.ReadToEnd();
-                    }
-                }
+                await using var configFileStream = new System.IO.FileStream(configPath, System.IO.FileMode.Open);
+                using var sr = new System.IO.StreamReader(configFileStream);
+                configFileString = await sr.ReadToEndAsync();
             }
             catch (Exception e)
             {
@@ -81,13 +77,9 @@ namespace NegativeEncoder.SystemOptions
             var configFileString = "";
             try
             {
-                using (var configFileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open))
-                {
-                    using (var sr = new System.IO.StreamReader(configFileStream))
-                    {
-                        configFileString = sr.ReadToEnd();
-                    }
-                }
+                await using var configFileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Open);
+                using var sr = new System.IO.StreamReader(configFileStream);
+                configFileString = await sr.ReadToEndAsync();
             }
             catch (Exception e)
             {
@@ -116,7 +108,7 @@ namespace NegativeEncoder.SystemOptions
             //判断目录是否存在
             if (!System.IO.Directory.Exists(configBase))
             {
-                System.IO.Directory.CreateDirectory(configBase);
+                System.IO.Directory.CreateDirectory(configBase!);
             }
 
             var jsonString = JsonConvert.SerializeObject(config);
@@ -135,7 +127,7 @@ namespace NegativeEncoder.SystemOptions
             //判断目录是否存在
             if (!System.IO.Directory.Exists(configBase))
             {
-                System.IO.Directory.CreateDirectory(configBase);
+                System.IO.Directory.CreateDirectory(configBase!);
             }
 
             var jsonString = JsonConvert.SerializeObject(configs);
@@ -149,7 +141,7 @@ namespace NegativeEncoder.SystemOptions
             //判断目录是否存在
             if (!System.IO.Directory.Exists(fileBase))
             {
-                System.IO.Directory.CreateDirectory(fileBase);
+                System.IO.Directory.CreateDirectory(fileBase!);
             }
 
             var jsonString = JsonConvert.SerializeObject(configs);

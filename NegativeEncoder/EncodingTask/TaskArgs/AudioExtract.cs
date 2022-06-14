@@ -1,5 +1,4 @@
 ﻿using NegativeEncoder.Presets;
-using System;
 using System.IO;
 
 namespace NegativeEncoder.EncodingTask.TaskArgs
@@ -17,7 +16,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                 audioOutput = extra;
             }
 
-            var args = $"-i \"{input}\" -vn -sn -c:a copy -y -map 0:a \"{audioOutput}\"";
+            var args = $"-y -i \"{input}\" -vn -sn -c:a copy -y -map 0:a \"{audioOutput}\"";
 
             return (ffmpegFile, args);
         }

@@ -1,14 +1,12 @@
 ﻿using NegativeEncoder.Presets;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace NegativeEncoder.EncodingTask.TaskArgs
 {
     public static class TaskArgBuilder
     {
-        public static string GenericArgumentBuilder(Preset preset, bool useHdr)
+        public static string GenericArgumentBuilder(Preset preset, bool useHdr, bool usePipe)
         {
             if (preset.IsUseCustomParameters)
             {
@@ -59,30 +57,30 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                 case QualityPreset.Performance:
                     argList.Add(preset.Encoder switch
                     {
-                        Presets.Encoder.NVENC => "performance",
-                        Presets.Encoder.QSV => "faster",
-                        Presets.Encoder.VCE => "fast",
+                        Encoder.NVENC => "performance",
+                        Encoder.QSV => "faster",
+                        Encoder.VCE => "fast",
                     });
                     break;
                 case QualityPreset.Balanced:
                     argList.Add(preset.Encoder switch
                     {
-                        Presets.Encoder.NVENC => "default",
-                        Presets.Encoder.QSV => "balanced",
-                        Presets.Encoder.VCE => "balanced",
+                        Encoder.NVENC => "default",
+                        Encoder.QSV => "balanced",
+                        Encoder.VCE => "balanced",
                     });
                     break;
                 case QualityPreset.Quality:
                     argList.Add(preset.Encoder switch
                     {
-                        Presets.Encoder.NVENC => "quality",
-                        Presets.Encoder.QSV => "best",
-                        Presets.Encoder.VCE => "slow",
+                        Encoder.NVENC => "quality",
+                        Encoder.QSV => "best",
+                        Encoder.VCE => "slow",
                     });
                     break;
             }
 
-            if (preset.Encoder == Presets.Encoder.NVENC)
+            if (preset.Encoder == Encoder.NVENC)
             {
                 argList.Add("--output-depth");
                 argList.Add(preset.ColorDepth switch
@@ -92,15 +90,16 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                 });
             }
 
-            if (preset.Encoder == Presets.Encoder.NVENC)
+            switch (preset.Encoder)
             {
-                argList.Add("--vbr-quality");
-                argList.Add(preset.VbrQuailty);
-            }
-            else if (preset.Encoder == Presets.Encoder.QSV && preset.EncodeMode == EncodeMode.QVBR && preset.Codec == Codec.AVC)
-            {
-                argList.Add("--qvbr-quality");
-                argList.Add(preset.VbrQuailty);
+                case Encoder.NVENC:
+                    argList.Add("--vbr-quality");
+                    argList.Add(preset.VbrQuailty);
+                    break;
+                case Encoder.QSV when preset.EncodeMode == EncodeMode.QVBR && preset.Codec == Codec.AVC:
+                    argList.Add("--qvbr-quality");
+                    argList.Add(preset.VbrQuailty);
+                    break;
             }
 
             if (preset.IsSetMaxGop)
@@ -108,7 +107,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                 argList.Add("--gop-len");
                 argList.Add(preset.MaxGop);
 
-                if (preset.IsStrictGop && preset.Encoder != Presets.Encoder.VCE)
+                if (preset.IsStrictGop && preset.Encoder != Encoder.VCE)
                 {
                     argList.Add("--strict-gop");
                 }
@@ -126,7 +125,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                 argList.Add(preset.MaxBitrate);
             }
 
-            if (preset.Encoder == Presets.Encoder.QSV)
+            if (preset.Encoder == Encoder.QSV)
             {
                 argList.Add(preset.D3DMode switch
                 {
@@ -248,12 +247,12 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                     }
                 }
 
-                if (preset.IsRepeatHeaders && preset.Encoder == Presets.Encoder.NVENC)
+                if (preset.IsRepeatHeaders && preset.Encoder == Encoder.NVENC)
                 {
                     argList.Add("--repeat-headers");
                 }
 
-                if (preset.IsConvertHdrType && preset.Encoder == Presets.Encoder.NVENC)
+                if (preset.IsConvertHdrType && preset.Encoder == Encoder.NVENC)
                 {
                     argList.Add("--vpp-colorspace");
                     var (oldMatrix, oldPrim, oldTransfer) = preset.OldHdrType switch
@@ -288,7 +287,22 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
                 }
 
             }
-            
+            else
+            {
+                if (!usePipe)
+                {
+                    argList.Add("--colorrange");
+                    argList.Add("auto");
+                    argList.Add("--colormatrix");
+                    argList.Add("auto");
+                    argList.Add("--colorprim");
+                    argList.Add("auto");
+                    argList.Add("--transfer");
+                    argList.Add("auto");
+                    argList.Add("--chromaloc");
+                    argList.Add("auto");
+                }
+            }
 
             return string.Join(" ", argList);
         }
@@ -297,9 +311,9 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
         {
             var encodingPath = "Libs\\" + preset.Encoder switch
             {
-                Presets.Encoder.NVENC => "NVEncC64.exe",
-                Presets.Encoder.QSV => "QSVEncC64.exe",
-                Presets.Encoder.VCE => "VCEEncC64.exe",
+                Encoder.NVENC => "NVEncC64.exe",
+                Encoder.QSV => "QSVEncC64.exe",
+                Encoder.VCE => "VCEEncC64.exe",
             };
 
             return Path.Combine(AppContext.EncodingContext.BaseDir, encodingPath);

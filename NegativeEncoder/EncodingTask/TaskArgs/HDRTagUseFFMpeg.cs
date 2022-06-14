@@ -1,5 +1,4 @@
 ﻿using NegativeEncoder.Presets;
-using System;
 using System.IO;
 
 namespace NegativeEncoder.EncodingTask.TaskArgs
@@ -33,7 +32,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs
             }
             var format = TaskArgBuilder.GetFormat(preset.OutputFormat);
 
-            var args = $"-i \"{input}\" -c copy " +
+            var args = $"-y -i \"{input}\" -c copy " +
                 $"-bsf:v hevc_metadata=colour_primaries={prim}:transfer_characteristics={transfer}:matrix_coefficients={matrix} " +
                 $"-f {format} \"{output}\"";
 
