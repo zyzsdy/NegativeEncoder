@@ -1,35 +1,24 @@
 ﻿using Microsoft.Win32;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace NegativeEncoder
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             //初始化（阶段2）
             DataContext = new
@@ -42,8 +31,8 @@ namespace NegativeEncoder
             TaskQueueListBox.ItemsSource = AppContext.EncodingContext.TaskQueue;
 
             AppContext.Status.MainStatus = "载入系统配置...";
-            AppContext.Config = SystemOptions.SystemOption.ReadOption<SystemOptions.Config>().GetAwaiter().GetResult(); //读取全局配置
-            Presets.PresetProvider.LoadPresetAutoSave().GetAwaiter().GetResult(); //读取当前预设
+            AppContext.Config = await SystemOptions.SystemOption.ReadOption<SystemOptions.Config>(); //读取全局配置
+            await Presets.PresetProvider.LoadPresetAutoSave(); //读取当前预设
 
             Presets.PresetProvider.InitPresetAutoSave(PresetMenuItems); //初始化预设自动保存
 
@@ -74,10 +63,10 @@ namespace NegativeEncoder
             Application.Current.Shutdown();
         }
 
-        private void AutoCheckUpdateAfterStartupMenuItem_Click(object sender, RoutedEventArgs e)
+        private async void AutoCheckUpdateAfterStartupMenuItem_Click(object sender, RoutedEventArgs e)
         {
             AppContext.Config.AutoCheckUpdate = AutoCheckUpdateAfterStartupMenuItem.IsChecked;
-            SystemOptions.SystemOption.SaveOption(AppContext.Config).GetAwaiter().GetResult();
+            await SystemOptions.SystemOption.SaveOption(AppContext.Config);
         }
 
         private void CheckUpdateMenuItem_Click(object sender, RoutedEventArgs e)
@@ -217,7 +206,7 @@ namespace NegativeEncoder
         {
             var source = TaskQueueListBox.SelectedItem as EncodingTask.EncodingTask;
 
-            if (!string.IsNullOrEmpty(source.Output))
+            if (!string.IsNullOrEmpty(source!.Output))
             {
                 var psi = new ProcessStartInfo("explorer.exe")
                 {
