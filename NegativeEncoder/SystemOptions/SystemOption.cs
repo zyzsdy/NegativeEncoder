@@ -22,7 +22,7 @@ namespace NegativeEncoder.SystemOptions
             }
 
             //在LTSC2022上Async函数发生阻塞情况，暂时换同步
-            var configFileString = System.IO.File.ReadAllText(configPath);
+            var configFileString = await System.IO.File.ReadAllTextAsync(configPath);
             var jsonOption = JsonConvert.DeserializeObject<T>(configFileString);
 
             return jsonOption;
