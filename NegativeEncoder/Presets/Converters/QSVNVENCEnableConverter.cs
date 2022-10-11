@@ -1,66 +1,63 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Windows;
 using System.Windows.Data;
 
-namespace NegativeEncoder.Presets.Converters
+namespace NegativeEncoder.Presets.Converters;
+
+public class QSVEnableConverter : IValueConverter
 {
-    public class QSVEnableConverter : IValueConverter
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        if (value != null)
         {
-            if (value != null)
-            {
-                var v = (Encoder)value;
-                return v == Encoder.QSV;
-            }
-
-            return DependencyProperty.UnsetValue;
+            var v = (Encoder)value;
+            return v == Encoder.QSV;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return DependencyProperty.UnsetValue;
-        }
+        return DependencyProperty.UnsetValue;
     }
 
-    public class NVENCEnableConverter : IValueConverter
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value != null)
-            {
-                var v = (Encoder)value;
-                return v == Encoder.NVENC;
-            }
+        return DependencyProperty.UnsetValue;
+    }
+}
 
-            return DependencyProperty.UnsetValue;
+public class NVENCEnableConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value != null)
+        {
+            var v = (Encoder)value;
+            return v == Encoder.NVENC;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return DependencyProperty.UnsetValue;
-        }
+        return DependencyProperty.UnsetValue;
     }
 
-    public class VCEDisableConverter : IValueConverter
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value != null)
-            {
-                var v = (Encoder)value;
-                return v != Encoder.VCE;
-            }
+        return DependencyProperty.UnsetValue;
+    }
+}
 
-            return DependencyProperty.UnsetValue;
+public class VCEDisableConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value != null)
+        {
+            var v = (Encoder)value;
+            return v != Encoder.VCE;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return DependencyProperty.UnsetValue;
-        }
+        return DependencyProperty.UnsetValue;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return DependencyProperty.UnsetValue;
     }
 }

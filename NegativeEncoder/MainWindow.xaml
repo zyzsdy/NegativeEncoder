@@ -12,48 +12,51 @@
         MinHeight="700" MinWidth="1200"
         Loaded="Window_Loaded">
     <Window.Resources>
-        <localStatusConverter:ProgressToVisibilityValueConverter x:Key="ProgressToVisibilityValueConverter"/>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <preset:TitleConverter x:Key="TitleConverter"/>
+        <localStatusConverter:ProgressToVisibilityValueConverter x:Key="ProgressToVisibilityValueConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <preset:TitleConverter x:Key="TitleConverter" />
     </Window.Resources>
     <Window.Title>
         <MultiBinding Converter="{StaticResource TitleConverter}">
-            <Binding Path="Version.CurrentVersion"/>
-            <Binding Path="PresetContext.CurrentPreset.PresetName"/>
-            <Binding Path="PresetContext.IsPresetEdit"/>
+            <Binding Path="Version.CurrentVersion" />
+            <Binding Path="PresetContext.CurrentPreset.PresetName" />
+            <Binding Path="PresetContext.IsPresetEdit" />
         </MultiBinding>
     </Window.Title>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="文件(_F)">
-                <MenuItem Header="导入视频(_I)..." Click="ImportVideoMenuItem_Click"/>
-                <MenuItem Header="清空待处理列表(_C)" Click="ClearFilesMenuItem_Click"/>
-                <MenuItem Header="强制开始任务调度(_S)" Click="TaskScheduleMenuItem_Click"/>
-                <Separator/>
-                <MenuItem Header="退出(_X)" InputGestureText="Alt+F4" Click="ExitAppMenuItem_Click"/>
+                <MenuItem Header="导入视频(_I)..." Click="ImportVideoMenuItem_Click" />
+                <MenuItem Header="清空待处理列表(_C)" Click="ClearFilesMenuItem_Click" />
+                <MenuItem Header="强制开始任务调度(_S)" Click="TaskScheduleMenuItem_Click" />
+                <Separator />
+                <MenuItem Header="退出(_X)" InputGestureText="Alt+F4" Click="ExitAppMenuItem_Click" />
             </MenuItem>
             <MenuItem x:Name="PresetMenuItems" Header="预设(_P)">
-                <MenuItem Header="新建" Click="NewPresetMenuItem_Click"/>
-                <MenuItem Header="保存预设" Click="SavePresetMenuItem_Click"/>
-                <MenuItem Header="另存为..." Click="SaveAsPresetMenuItem_Click"/>
-                <MenuItem Header="重命名" Click="RenamePresetMenuItem_Click"/>
-                <MenuItem Header="删除" Click="DeletePresetMenuItem_Click"/>
-                <MenuItem Header="导出预设集合..." Click="ExportPresetMenuItem_Click"/>
-                <MenuItem Header="导入预设集合..." Click="ImportPresetMenuItem_Click"/>
-                <Separator/>
+                <MenuItem Header="新建" Click="NewPresetMenuItem_Click" />
+                <MenuItem Header="保存预设" Click="SavePresetMenuItem_Click" />
+                <MenuItem Header="另存为..." Click="SaveAsPresetMenuItem_Click" />
+                <MenuItem Header="重命名" Click="RenamePresetMenuItem_Click" />
+                <MenuItem Header="删除" Click="DeletePresetMenuItem_Click" />
+                <MenuItem Header="导出预设集合..." Click="ExportPresetMenuItem_Click" />
+                <MenuItem Header="导入预设集合..." Click="ImportPresetMenuItem_Click" />
+                <Separator />
             </MenuItem>
             <MenuItem Header="帮助(_H)">
-                <MenuItem x:Name="CheckUpdateMenuItem" Header="检查更新(_U)..." Click="CheckUpdateMenuItem_Click"/>
-                <MenuItem x:Name="OpenNewVersionReleasePageMenuItem" Header="{Binding NewVersionMenuHeader}" Visibility="{Binding IsShowMenuItem, Converter={StaticResource BoolToVisibilityConverter}}" Click="OpenNewVersionReleasePageMenuItem_Click"/>
-                <MenuItem x:Name="AutoCheckUpdateAfterStartupMenuItem" Header="启动时自动检查更新" IsCheckable="True" Click="AutoCheckUpdateAfterStartupMenuItem_Click"/>
-                <Separator/>
-                <MenuItem Header="启动消极压制工具包命令行(_T)..." Click="OpenNEENCToolsCmdMenuItem_Click"/>
+                <MenuItem x:Name="CheckUpdateMenuItem" Header="检查更新(_U)..." Click="CheckUpdateMenuItem_Click" />
+                <MenuItem x:Name="OpenNewVersionReleasePageMenuItem" Header="{Binding NewVersionMenuHeader}"
+                          Visibility="{Binding IsShowMenuItem, Converter={StaticResource BoolToVisibilityConverter}}"
+                          Click="OpenNewVersionReleasePageMenuItem_Click" />
+                <MenuItem x:Name="AutoCheckUpdateAfterStartupMenuItem" Header="启动时自动检查更新" IsCheckable="True"
+                          Click="AutoCheckUpdateAfterStartupMenuItem_Click" />
+                <Separator />
+                <MenuItem Header="启动消极压制工具包命令行(_T)..." Click="OpenNEENCToolsCmdMenuItem_Click" />
                 <MenuItem Header="资源管理器右键菜单">
-                    <MenuItem Header="在右键菜单注册" Click="NEToolsInstallMenuItem_Click"/>
-                    <MenuItem Header="取消右键菜单注册" Click="NEToolsRemoveMenuItem_Click"/>
+                    <MenuItem Header="在右键菜单注册" Click="NEToolsInstallMenuItem_Click" />
+                    <MenuItem Header="取消右键菜单注册" Click="NEToolsRemoveMenuItem_Click" />
                 </MenuItem>
-                <Separator/>
-                <MenuItem Header="关于(_A)" Click="OpenAboutWindowMenuItem_Click"/>
+                <Separator />
+                <MenuItem Header="关于(_A)" Click="OpenAboutWindowMenuItem_Click" />
             </MenuItem>
         </Menu>
         <StatusBar x:Name="StatusBar" DockPanel.Dock="Bottom">
@@ -61,65 +64,70 @@
                 <ItemsPanelTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="250"/>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="250" />
                         </Grid.ColumnDefinitions>
                     </Grid>
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
             <StatusBarItem Grid.Column="0">
-                <TextBlock Text="{Binding MainStatus}"/>
+                <TextBlock Text="{Binding MainStatus}" />
             </StatusBarItem>
-            <Separator Grid.Column="1"/>
-            <StatusBarItem Grid.Column="2" Visibility="{Binding Progress, Converter={StaticResource ProgressToVisibilityValueConverter}}">
-                <ProgressBar Value="{Binding Progress}" Height="14" Width="120"/>
+            <Separator Grid.Column="1" />
+            <StatusBarItem Grid.Column="2"
+                           Visibility="{Binding Progress, Converter={StaticResource ProgressToVisibilityValueConverter}}">
+                <ProgressBar Value="{Binding Progress}" Height="14" Width="120" />
             </StatusBarItem>
-            <Separator Grid.Column="3"/>
+            <Separator Grid.Column="3" />
             <StatusBarItem Grid.Column="4">
-                <TextBlock Text="{Binding EncoderStatus}"/>
+                <TextBlock Text="{Binding EncoderStatus}" />
             </StatusBarItem>
         </StatusBar>
-        
+
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" MinWidth="250"/>
-                <ColumnDefinition Width="5*" MinWidth="200"/>
-                <ColumnDefinition Width="1*" MinWidth="250"/>
+                <ColumnDefinition Width="1*" MinWidth="250" />
+                <ColumnDefinition Width="5*" MinWidth="200" />
+                <ColumnDefinition Width="1*" MinWidth="250" />
             </Grid.ColumnDefinitions>
 
-            <localFileSelector:FileList x:Name="MainFileList" Grid.Row="0" Grid.Column="0"/>
-            <local:FunctionTabs x:Name="FunctionTabs" Grid.Row="0" Grid.Column="1"/>
-            <ListBox x:Name="TaskQueueListBox" Grid.Row="0" Grid.Column="2" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <localFileSelector:FileList x:Name="MainFileList" Grid.Row="0" Grid.Column="0" />
+            <local:FunctionTabs x:Name="FunctionTabs" Grid.Row="0" Grid.Column="1" />
+            <ListBox x:Name="TaskQueueListBox" Grid.Row="0" Grid.Column="2" HorizontalContentAlignment="Stretch"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListBox.Resources>
                     <ContextMenu x:Key="encodeListContextMenu">
-                        <MenuItem Header="打开详情窗口..." Click="EncodeContextMenuOpenDetailMenuItem_Click"/>
-                        <MenuItem Header="打开输出目标目录..." Click="EncodeContextMenuBrowseOutputDirMenuItem_Click"/>
+                        <MenuItem Header="打开详情窗口..." Click="EncodeContextMenuOpenDetailMenuItem_Click" />
+                        <MenuItem Header="打开输出目标目录..." Click="EncodeContextMenuBrowseOutputDirMenuItem_Click" />
                     </ContextMenu>
                     <Style TargetType="{x:Type ListBoxItem}">
-                        <Setter Property="ContextMenu" Value="{StaticResource encodeListContextMenu}"/>
+                        <Setter Property="ContextMenu" Value="{StaticResource encodeListContextMenu}" />
                     </Style>
                 </ListBox.Resources>
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
-                        <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                        <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick" />
                     </Style>
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical" Height="50">
-                            <Label Content="{Binding TaskName}" Grid.Column="0" Height="25"/>
-                            <ProgressBar Value="{Binding Progress}" HorizontalAlignment="Stretch" Grid.Column="1" Maximum="1000" Height="20"/>
+                            <Label Content="{Binding TaskName}" Height="25" />
+                            <ProgressBar Value="{Binding Progress}" HorizontalAlignment="Stretch" Maximum="1000"
+                                         Height="20" />
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <GridSplitter Grid.Row="0" Grid.Column="0" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
-            <GridSplitter Grid.Row="0" Grid.Column="1" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
+            <GridSplitter Grid.Row="0" Grid.Column="0" Width="3" VerticalAlignment="Stretch"
+                          HorizontalAlignment="Right" />
+            <GridSplitter Grid.Row="0" Grid.Column="1" Width="3" VerticalAlignment="Stretch"
+                          HorizontalAlignment="Right" />
         </Grid>
-        
+
     </DockPanel>
 </Window>

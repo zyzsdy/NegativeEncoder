@@ -7,27 +7,30 @@
         mc:Ignorable="d"
         Height="340" Width="600">
     <Window.Resources>
-        <local:TaskNameConverter x:Key="TaskNameConverter"/>
+        <local:TaskNameConverter x:Key="TaskNameConverter" />
     </Window.Resources>
     <Window.Title>
         <MultiBinding Converter="{StaticResource TaskNameConverter}">
-            <Binding Path="IsFinished"/>
-            <Binding Path="TaskName"/>
+            <Binding Path="IsFinished" />
+            <Binding Path="TaskName" />
         </MultiBinding>
     </Window.Title>
     <Grid>
-        <TextBox x:Name="logBox" Margin="10,10,10,40" TextWrapping="Wrap" Text="{Binding RunLog}" IsReadOnly="True" TextChanged="logBox_TextChanged"/>
-        <ProgressBar Margin="10,0,300,9.5" Height="22" VerticalAlignment="Bottom" Value="{Binding Progress}" Maximum="1000"/>
-        <Button x:Name="mainButton" Margin="0,0,10,9.5" HorizontalAlignment="Right" Width="75" Height="22" VerticalAlignment="Bottom" Click="mainButton_Click">
+        <TextBox x:Name="logBox" Margin="10,10,10,40" TextWrapping="Wrap" Text="{Binding RunLog}" IsReadOnly="True"
+                 TextChanged="logBox_TextChanged" />
+        <ProgressBar Margin="10,0,300,9.5" Height="22" VerticalAlignment="Bottom" Value="{Binding Progress}"
+                     Maximum="1000" />
+        <Button x:Name="mainButton" Margin="0,0,10,9.5" HorizontalAlignment="Right" Width="75" Height="22"
+                VerticalAlignment="Bottom" Click="mainButton_Click">
             <Button.Style>
                 <Style TargetType="Button">
-                    <Setter Property="Content" Value="删除任务"/>
+                    <Setter Property="Content" Value="删除任务" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsFinished}" Value="true">
-                            <Setter Property="Content" Value="删除任务"/>
+                            <Setter Property="Content" Value="删除任务" />
                         </DataTrigger>
                         <DataTrigger Binding="{Binding IsFinished}" Value="false">
-                            <Setter Property="Content" Value="中止"/>
+                            <Setter Property="Content" Value="中止" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>

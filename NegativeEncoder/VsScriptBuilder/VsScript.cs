@@ -1,34 +1,30 @@
-﻿using PropertyChanged;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+﻿using System.ComponentModel;
+using PropertyChanged;
 
-namespace NegativeEncoder.VsScriptBuilder
+namespace NegativeEncoder.VsScriptBuilder;
+
+[AddINotifyPropertyChangedInterface]
+public class VsScript : INotifyPropertyChanged
 {
-    [AddINotifyPropertyChangedInterface]
-    public class VsScript : INotifyPropertyChanged
-    {
-        /// <summary>
-        /// 字幕文件路径
-        /// </summary>
-        public string SubFile { get; set; } = string.Empty;
+    /// <summary>
+    ///     字幕文件路径
+    /// </summary>
+    public string SubFile { get; set; } = string.Empty;
 
-        /// <summary>
-        /// 是否调整大小
-        /// </summary>
-        public bool IsResize { get; set; } = false;
+    /// <summary>
+    ///     是否调整大小
+    /// </summary>
+    public bool IsResize { get; set; } = false;
 
-        public string ResizeWidth { get; set; } = "1920";
-        public string ResizeHeight { get; set; } = "1080";
+    public string ResizeWidth { get; set; } = "1920";
+    public string ResizeHeight { get; set; } = "1080";
 
-        public bool UseVsfmod { get; set; } = false;
-        public bool UseRepeat { get; set; } = false;
-        public bool UseQTGMC { get; set; } = false;
-        public bool UseIVTC { get; set; } = false;
-        public bool UseYadifDouble { get; set; } = false;
-        public bool UseYadifNormal { get; set; } = false;
+    public bool UseVsfmod { get; set; } = false;
+    public bool UseRepeat { get; set; } = false;
+    public bool UseQTGMC { get; set; } = false;
+    public bool UseIVTC { get; set; } = false;
+    public bool UseYadifDouble { get; set; } = false;
+    public bool UseYadifNormal { get; set; } = false;
 
-        public event PropertyChangedEventHandler PropertyChanged;
-    }
+    public event PropertyChangedEventHandler PropertyChanged;
 }

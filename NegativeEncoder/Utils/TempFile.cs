@@ -1,42 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace NegativeEncoder.Utils
+namespace NegativeEncoder.Utils;
+
+public static class TempFile
 {
-    public static class TempFile
+    public static void SaveTempFile(string fullFilename, string content, bool convertToANSI = true)
     {
-        public static void SaveTempFile(string fullFilename, string content, bool convertToANSI = true)
+        content = content.Replace("\n", "\r\n");
+
+        var tempFs = File.Create(fullFilename);
+        if (convertToANSI)
         {
-            content = content.Replace("\n", "\r\n");
+            var codePage = Console.OutputEncoding.CodePage;
+            var ansi = Encoding.GetEncoding(codePage);
 
-            var tempFs = System.IO.File.Create(fullFilename);
-            if (convertToANSI)
-            {
-                var codePage = Console.OutputEncoding.CodePage;
-                var ansi = Encoding.GetEncoding(codePage);
-
-                var unicodeByte = Encoding.Unicode.GetBytes(content);
-                byte[] tempContent = Encoding.Convert(Encoding.Unicode, ansi, unicodeByte);
-                tempFs.Write(tempContent, 0, tempContent.Length);
-            }
-            else
-            {
-                var unicodeByte = Encoding.Unicode.GetBytes(content);
-                byte[] tempContent = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, unicodeByte);
-                tempFs.Write(tempContent, 0, tempContent.Length);
-            }
-            tempFs.Close();
+            var unicodeByte = Encoding.Unicode.GetBytes(content);
+            var tempContent = Encoding.Convert(Encoding.Unicode, ansi, unicodeByte);
+            tempFs.Write(tempContent, 0, tempContent.Length);
+        }
+        else
+        {
+            var unicodeByte = Encoding.Unicode.GetBytes(content);
+            var tempContent = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, unicodeByte);
+            tempFs.Write(tempContent, 0, tempContent.Length);
         }
 
-        public static void SaveTempFileUTF16LE(string fullFilename, string content)
-        {
-            content = content.Replace("\n", "\r\n");
+        tempFs.Close();
+    }
 
-            using var tempFs = new FileStream(fullFilename, FileMode.Create);
-            using var saveStream = new StreamWriter(tempFs, Encoding.Unicode);
-            saveStream.Write(content);
-        }
+    public static void SaveTempFileUTF16LE(string fullFilename, string content)
+    {
+        content = content.Replace("\n", "\r\n");
+
+        using var tempFs = new FileStream(fullFilename, FileMode.Create);
+        using var saveStream = new StreamWriter(tempFs, Encoding.Unicode);
+        saveStream.Write(content);
     }
 }

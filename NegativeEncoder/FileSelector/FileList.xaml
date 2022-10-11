@@ -1,29 +1,33 @@
 ﻿<UserControl x:Class="NegativeEncoder.FileSelector.FileList"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:NegativeEncoder.FileSelector"
-             mc:Ignorable="d" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="250" Loaded="FileListControl_Loaded">
     <Grid>
-        <Label Content="待处理视频：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25"/>
-        <Button Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="25" Height="25" Click="RemoveVideoItemButton_Click">
-            <Image Source="/Resources/baseline_remove_black_18dp.png"/>
+        <Label Content="待处理视频：" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="25" />
+        <Button Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="25" Height="25"
+                Click="RemoveVideoItemButton_Click">
+            <Image Source="/Resources/baseline_remove_black_18dp.png" />
         </Button>
-        <Button Margin="0,10,40,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="25" Height="25" Click="ImportVideoButton_Click">
-            <Image Source="/Resources/baseline_add_black_18dp.png"/>
+        <Button Margin="0,10,40,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="25" Height="25"
+                Click="ImportVideoButton_Click">
+            <Image Source="/Resources/baseline_add_black_18dp.png" />
         </Button>
-        <ListBox x:Name="FileListBox" Margin="10,40,10,40" SelectionMode="Extended" AllowDrop="True" DragOver="FileListBox_DragOver" Drop="FileListBox_Drop" SelectionChanged="FileListBox_SelectionChanged">
+        <ListBox x:Name="FileListBox" Margin="10,40,10,40" SelectionMode="Extended" AllowDrop="True"
+                 DragOver="FileListBox_DragOver" Drop="FileListBox_Drop"
+                 SelectionChanged="FileListBox_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <TextBlock Text="{Binding Filename}"/>
+                        <TextBlock Text="{Binding Filename}" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <CheckBox x:Name="SelectAllCheckBox" Content="批量处理列表中全部内容" HorizontalAlignment="Right" Margin="0,0,10,10" Height="15" VerticalAlignment="Bottom" Click="SelectAllCheckBox_Click"/>
+        <CheckBox x:Name="SelectAllCheckBox" Content="批量处理列表中全部内容" HorizontalAlignment="Right" Margin="0,0,10,10"
+                  Height="15" VerticalAlignment="Bottom" Click="SelectAllCheckBox_Click" />
 
     </Grid>
 </UserControl>
