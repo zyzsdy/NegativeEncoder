@@ -16,7 +16,8 @@ public static class TaskArgBuilder
             preset.Codec switch
             {
                 Codec.AVC => "h264",
-                Codec.HEVC => "hevc"
+                Codec.HEVC => "hevc",
+                Codec.AV1 => "av1"
             }
         };
 

@@ -16,7 +16,8 @@ public class PresetOption
     public ObservableCollection<EnumOption<Codec>> CodecOptions { get; set; } = new()
     {
         new EnumOption<Codec> { Value = Codec.AVC, Name = "AVC (H.264)" },
-        new EnumOption<Codec> { Value = Codec.HEVC, Name = "HEVC (H.265)" }
+        new EnumOption<Codec> { Value = Codec.HEVC, Name = "HEVC (H.265)" },
+        new EnumOption<Codec> { Value = Codec.AV1, Name = "AV1" }
     };
 
     public ObservableCollection<EnumOption<QualityPreset>> QualityPresetOptions { get; set; } = new()
