@@ -22,7 +22,8 @@ public enum Encoder
 public enum Codec
 {
     AVC,
-    HEVC
+    HEVC,
+    AV1
 }
 
 public enum EncodeMode
