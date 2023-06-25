@@ -167,7 +167,7 @@
                                       Height="25" Width="120"
                                       ItemsSource="{Binding PresetOption.ColorDepthOptions}"
                                       SelectedValue="{Binding CurrentPreset.ColorDepth}" SelectedValuePath="Value"
-                                      IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource NVENCEnableConverter}}">
+                                      IsEnabled="{Binding CurrentPreset.Encoder,Converter={StaticResource VCEDisableConverter}}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Name}" />
