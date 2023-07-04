@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NegativeEncoder.Presets;
 
 namespace NegativeEncoder.EncodingTask.TaskArgs;
@@ -18,7 +19,8 @@ public static class SimpleWithAss
             preset.Decoder switch
             {
                 Decoder.AVSW => "--avsw",
-                Decoder.AVHW => "--avhw"
+                Decoder.AVHW => "--avhw",
+                _ => throw new ArgumentOutOfRangeException()
             }
         };
 
@@ -35,7 +37,8 @@ public static class SimpleWithAss
             {
                 AVSync.Cfr => "cfr",
                 AVSync.ForceCfr => "forcecfr",
-                AVSync.Vfr => "vfr"
+                AVSync.Vfr => "vfr",
+                _ => throw new ArgumentOutOfRangeException()
             });
         }
 
