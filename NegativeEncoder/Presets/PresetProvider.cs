@@ -36,7 +36,7 @@ public static class PresetProvider
         }
 
         //非NVENC
-        if (preset.Encoder != Encoder.NVENC)
+        if (preset.Encoder == Encoder.VCE)
             //编码器非NVENC时，只能使用8 bit模式
             if (preset.ColorDepth != ColorDepth.C8Bit)
                 AppContext.PresetContext.CurrentPreset.ColorDepth = ColorDepth.C8Bit;

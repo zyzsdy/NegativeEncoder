@@ -21,7 +21,7 @@ public class EncodingTask
 
     //=================================================
 
-    private int totalFrames = 0;
+    //private int totalFrames = 0;
 
     public EncodingTask()
     {

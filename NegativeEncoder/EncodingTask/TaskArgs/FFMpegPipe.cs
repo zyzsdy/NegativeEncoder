@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using NegativeEncoder.Presets;
@@ -42,7 +43,8 @@ public class FFMpegPipe
             {
                 AVSync.Cfr => "cfr",
                 AVSync.ForceCfr => "forcecfr",
-                AVSync.Vfr => "vfr"
+                AVSync.Vfr => "vfr",
+                _ => throw new ArgumentOutOfRangeException()
             });
         }
 

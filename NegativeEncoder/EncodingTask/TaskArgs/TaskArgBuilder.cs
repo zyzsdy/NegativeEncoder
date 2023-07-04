@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using NegativeEncoder.Presets;
 
@@ -17,7 +18,8 @@ public static class TaskArgBuilder
             {
                 Codec.AVC => "h264",
                 Codec.HEVC => "hevc",
-                Codec.AV1 => "av1"
+                Codec.AV1 => "av1",
+                _ => throw new ArgumentOutOfRangeException()
             }
         };
 
@@ -57,7 +59,8 @@ public static class TaskArgBuilder
                 {
                     Encoder.NVENC => "performance",
                     Encoder.QSV => "faster",
-                    Encoder.VCE => "fast"
+                    Encoder.VCE => "fast",
+                    _ => throw new ArgumentOutOfRangeException()
                 });
                 break;
             case QualityPreset.Balanced:
@@ -65,7 +68,8 @@ public static class TaskArgBuilder
                 {
                     Encoder.NVENC => "default",
                     Encoder.QSV => "balanced",
-                    Encoder.VCE => "balanced"
+                    Encoder.VCE => "balanced",
+                    _ => throw new ArgumentOutOfRangeException()
                 });
                 break;
             case QualityPreset.Quality:
@@ -73,18 +77,20 @@ public static class TaskArgBuilder
                 {
                     Encoder.NVENC => "quality",
                     Encoder.QSV => "best",
-                    Encoder.VCE => "slow"
+                    Encoder.VCE => "slow",
+                    _ => throw new ArgumentOutOfRangeException()
                 });
                 break;
         }
 
-        if (preset.Encoder == Encoder.NVENC)
+        if (preset.Encoder != Encoder.VCE)
         {
             argList.Add("--output-depth");
             argList.Add(preset.ColorDepth switch
             {
                 ColorDepth.C10Bit => "10",
-                ColorDepth.C8Bit => "8"
+                ColorDepth.C8Bit => "8",
+                _ => throw new ArgumentOutOfRangeException()
             });
         }
 
@@ -126,7 +132,8 @@ public static class TaskArgBuilder
                 D3DMode.Disable => "--disable-d3d",
                 D3DMode.Auto => "--d3d",
                 D3DMode.D3D9 => "--d3d9",
-                D3DMode.D3D11 => "--d3d11"
+                D3DMode.D3D11 => "--d3d11",
+                _ => throw new ArgumentOutOfRangeException()
             });
 
         if (preset.IsUseDeInterlace)
@@ -135,7 +142,8 @@ public static class TaskArgBuilder
             argList.Add(preset.FieldOrder switch
             {
                 FieldOrder.TFF => "tff",
-                FieldOrder.BFF => "bff"
+                FieldOrder.BFF => "bff",
+                _ => throw new ArgumentOutOfRangeException()
             });
 
             switch (preset.DeInterlaceMethodPreset)
@@ -247,13 +255,15 @@ public static class TaskArgBuilder
                 {
                     HdrType.SDR => ("bt709", "bt709", "bt709"),
                     HdrType.HDR10 => ("bt2020nc", "bt2020", "smpte2084"),
-                    HdrType.HLG => ("bt2020nc", "bt2020", "arib-std-b67")
+                    HdrType.HLG => ("bt2020nc", "bt2020", "arib-std-b67"),
+                    _ => throw new ArgumentOutOfRangeException()
                 };
                 var (newMatrix, newPrim, newTransfer) = preset.NewHdrType switch
                 {
                     HdrType.SDR => ("bt709", "bt709", "bt709"),
                     HdrType.HDR10 => ("bt2020nc", "bt2020", "smpte2084"),
-                    HdrType.HLG => ("bt2020nc", "bt2020", "arib-std-b67")
+                    HdrType.HLG => ("bt2020nc", "bt2020", "arib-std-b67"),
+                    _ => throw new ArgumentOutOfRangeException()
                 };
 
                 var param =
@@ -266,7 +276,8 @@ public static class TaskArgBuilder
                         Hdr2Sdr.Hable => "hable",
                         Hdr2Sdr.Mobius => "mobius",
                         Hdr2Sdr.Reinhard => "reinhard",
-                        Hdr2Sdr.Bt2390 => "bt2390"
+                        Hdr2Sdr.Bt2390 => "bt2390",
+                        _ => throw new ArgumentOutOfRangeException()
                     };
 
                     param += ",desat_strength=" + preset.Hdr2SdrDeSatStrength;
@@ -301,7 +312,8 @@ public static class TaskArgBuilder
         {
             Encoder.NVENC => "NVEncC64.exe",
             Encoder.QSV => "QSVEncC64.exe",
-            Encoder.VCE => "VCEEncC64.exe"
+            Encoder.VCE => "VCEEncC64.exe",
+            _ => throw new ArgumentOutOfRangeException()
         };
 
         return Path.Combine(AppContext.EncodingContext.BaseDir, encodingPath);
@@ -314,7 +326,8 @@ public static class TaskArgBuilder
             OutputFormat.MP4 => "mp4",
             OutputFormat.MPEGTS => "mpegts",
             OutputFormat.FLV => "flv",
-            OutputFormat.MKV => "matroska"
+            OutputFormat.MKV => "matroska",
+            _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
         };
     }
 
