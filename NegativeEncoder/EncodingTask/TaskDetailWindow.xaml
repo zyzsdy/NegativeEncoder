@@ -17,7 +17,8 @@
     </Window.Title>
     <Grid>
         <TextBox x:Name="logBox" Margin="10,10,10,40" TextWrapping="Wrap" Text="{Binding RunLog}" IsReadOnly="True"
-                 TextChanged="logBox_TextChanged" ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
+                 TextChanged="logBox_TextChanged" ScrollViewer.CanContentScroll="True"
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
         <ProgressBar Margin="10,0,300,9.5" Height="22" VerticalAlignment="Bottom" Value="{Binding Progress}"
                      Maximum="1000" />
         <Button x:Name="mainButton" Margin="0,0,10,9.5" HorizontalAlignment="Right" Width="75" Height="22"

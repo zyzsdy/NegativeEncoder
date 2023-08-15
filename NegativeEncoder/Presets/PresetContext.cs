@@ -52,6 +52,8 @@ public class PresetContext
     /// </summary>
     public VsScript VsScript { get; set; } = new();
 
+    public int SelectedTab { get; set; } = 0;
+
     public event SelectionChangedEventHandler InputFileChanged;
 
     public void NotifyInputFileChange(object sender, SelectionChangedEventArgs e)

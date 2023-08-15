@@ -105,9 +105,21 @@ internal class Program
 
         //写入软件版本
         var asm = Assembly.GetEntryAssembly();
-        var asmVersion =
+        /*var asmVersion =
             (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(asm,
                 typeof(AssemblyInformationalVersionAttribute));
         AppContext.Version.CurrentVersion = asmVersion?.InformationalVersion ?? "";
+
+        {
+            var assembly = typeof(App).GetTypeInfo().Assembly;
+            var version = Attribute.GetCustomAttribute(assembly, typeof(AssemblyVersionAttribute)) as AssemblyVersionAttribute;
+        }
+
+        {
+            var assembly = typeof(App).GetTypeInfo().Assembly;
+            var version = Attribute.GetCustomAttribute(assembly, typeof(AssemblyFileVersionAttribute)) as AssemblyFileVersionAttribute;
+        }*/
+
+        AppContext.Version.CurrentVersion = asm!.GetName().Version!.ToString();
     }
 }

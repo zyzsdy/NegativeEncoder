@@ -27,12 +27,12 @@
         <Label Content="输出" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Height="25" />
         <TextBox Margin="55,40,90,0" TextWrapping="NoWrap" VerticalAlignment="Top" Height="25"
                  VerticalContentAlignment="Center"
-                 Text="{Binding OutputFile}" />
+                 Text="{Binding OutputFile}" TextChanged="OutputFile_TextChanged" />
         <Button Content="浏览..." HorizontalAlignment="Right" Margin="0,40,20,0" VerticalAlignment="Top" Height="25"
                 Width="65" Click="OutputBrowseButton_Click" />
 
-        <TabControl Margin="10,79,20,10">
-            <TabItem Header="编码器">
+        <TabControl Margin="10,79,20,10" SelectedIndex="{Binding SelectedTab}">
+            <TabItem Header="编码器" DragOver="Tab_DragOver" AllowDrop="True">
                 <Grid>
                     <Label Content="编码器" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"
                            Height="25" />
@@ -344,7 +344,7 @@
 
                 </Grid>
             </TabItem>
-            <TabItem Header="HDR">
+            <TabItem Header="HDR" DragOver="Tab_DragOver" AllowDrop="True">
                 <Grid>
                     <CheckBox Content="输出带有HDR标记的视频" HorizontalAlignment="Left" Margin="10,10,0,0" Height="25"
                               VerticalAlignment="Top" VerticalContentAlignment="Center"
@@ -434,7 +434,7 @@
 
                 </Grid>
             </TabItem>
-            <TabItem Header="VS">
+            <TabItem Header="VS" DragOver="Tab_DragOver" AllowDrop="True">
                 <DockPanel>
                     <Grid DockPanel.Dock="Top" Height="65">
                         <Border BorderBrush="#FFD0D0D0" BorderThickness="0,0,0,1" />
@@ -495,7 +495,7 @@
                     </avalonEdit:TextEditor>
                 </DockPanel>
             </TabItem>
-            <TabItem Header="音频">
+            <TabItem Header="音频" DragOver="Tab_DragOver" AllowDrop="True">
                 <Grid>
                     <Label Content="音频输出" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"
                            Height="25" />
@@ -519,7 +519,7 @@
                             Click="AudioExtractButton_Click" />
                 </Grid>
             </TabItem>
-            <TabItem Header="封装">
+            <TabItem Header="封装" DragOver="Tab_DragOver" AllowDrop="True">
                 <Grid>
                     <Label Content="音频输入" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"
                            Height="25" />
@@ -556,7 +556,7 @@
 
                 </Grid>
             </TabItem>
-            <TabItem Header="常用">
+            <TabItem Header="常用" DragOver="Tab_DragOver" AllowDrop="True">
                 <Grid>
                     <GroupBox Header="ffmpeg pipe" VerticalAlignment="Top" Margin="10,10,10,0" Height="72"
                               ToolTip="使用FFMPEG解码并处理视频，并尝试修复音画同步。">

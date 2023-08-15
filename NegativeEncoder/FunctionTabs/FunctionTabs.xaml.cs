@@ -15,6 +15,8 @@ namespace NegativeEncoder.FunctionTabs;
 /// </summary>
 public partial class FunctionTabs : UserControl
 {
+    private bool _isAutoChange, _pathChanged;
+
     public FunctionTabs()
     {
         InitializeComponent();
@@ -44,7 +46,10 @@ public partial class FunctionTabs : UserControl
         var input = AppContext.PresetContext.InputFile;
         var (ext, _) = FileName.GetOutputExt(AppContext.PresetContext.CurrentPreset.OutputFormat);
 
-        var output = FileName.RecalcOutputPath(input, AppContext.PresetContext.OutputFile, "_neenc", ext);
+        var output = _pathChanged
+            ? FileName.RecalcOutputPath(input, AppContext.PresetContext.OutputFile, "_neenc", ext)
+            : FileName.RecalcOutputPath(input, "_neenc", ext);
+        _isAutoChange = true;
         AppContext.PresetContext.OutputFile = output;
     }
 
@@ -301,5 +306,20 @@ public partial class FunctionTabs : UserControl
         var selectPaths = mainWindow!.MainFileList.GetAndRemoveAllSelectFilePath();
 
         TaskBuilder.AddEncodingTask(action, param, preset, selectPaths, input, output, extra);
+    }
+
+    private void Tab_DragOver(object sender, DragEventArgs e)
+    {
+        var tabItem1 = (TabItem)sender;
+        var index = ((TabControl)(tabItem1.Parent)).Items.IndexOf(tabItem1);
+        AppContext.PresetContext.SelectedTab = index;
+    }
+
+    private void OutputFile_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!_isAutoChange)
+            _pathChanged = true;
+        else
+            _isAutoChange = false;
     }
 }

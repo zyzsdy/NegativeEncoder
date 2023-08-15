@@ -13,14 +13,25 @@ public static class FileName
         var basicOutputPath = Path.GetDirectoryName(AppContext.PresetContext.OutputFile);
 
         var inputWithoutExt = Path.GetFileNameWithoutExtension(input);
-        var outputName = Path.ChangeExtension($"{inputWithoutExt}{suffix}", ext);
+        var outputName = Path.ChangeExtension($"{inputWithoutExt}{suffix}.out", ext);
 
         if (!string.IsNullOrEmpty(outputPath)) return Path.Combine(outputPath, outputName);
 
         if (!string.IsNullOrEmpty(basicOutputPath)) return Path.Combine(basicOutputPath, outputName);
 
         var basePath = Path.GetDirectoryName(input);
-        return Path.Combine(basePath, outputName);
+        return Path.Combine(basePath!, outputName);
+    }
+
+    public static string RecalcOutputPath(string input, string suffix, string ext)
+    {
+        if (string.IsNullOrEmpty(input)) return "";
+
+        var inputWithoutExt = Path.GetFileNameWithoutExtension(input);
+        var outputName = Path.ChangeExtension($"{inputWithoutExt}{suffix}.out", ext);
+
+        var basePath = Path.GetDirectoryName(input);
+        return Path.Combine(basePath!, outputName);
     }
 
     public static (string ext, string filter) GetOutputExt(OutputFormat outputFormat)
