@@ -113,9 +113,7 @@ public class EncodingTask
             mainProcess.Start();
             Running = true;
 
-            var codePage = Console.OutputEncoding.CodePage;
-            var ansi = Encoding.GetEncoding(codePage);
-            using (var reader = new StreamReader(mainProcess.StandardError.BaseStream, ansi))
+            using (var reader = new StreamReader(mainProcess.StandardError.BaseStream, Encoding.UTF8))
             {
                 var thisline = reader.ReadLine();
 
