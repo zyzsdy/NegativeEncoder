@@ -11,7 +11,7 @@ namespace NegativeEncoder.Presets;
 
 public static class PresetProvider
 {
-    private static bool _isLoadingPreset = false;
+    private static bool _isLoadingPreset;
 
     public static void InitPresetAutoSave(MenuItem presetMenuItems)
     {
