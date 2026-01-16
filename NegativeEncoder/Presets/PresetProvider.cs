@@ -22,9 +22,6 @@ public static class PresetProvider
 
     public static void CurrentPreset_PropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        //如果正在加载预设，不触发自动保存
-        if (_isLoadingPreset) return;
-
         //检查预设是否合法
         var preset = AppContext.PresetContext.CurrentPreset;
 
@@ -50,6 +47,9 @@ public static class PresetProvider
         if (preset.NewHdrType != HdrType.SDR)
             if (preset.Hdr2SdrMethod != Hdr2Sdr.None)
                 AppContext.PresetContext.CurrentPreset.Hdr2SdrMethod = Hdr2Sdr.None;
+
+        //如果正在加载预设，不触发自动保存
+        if (_isLoadingPreset) return;
 
         //标记当前预设已修改
         AppContext.PresetContext.IsPresetEdit = true;
