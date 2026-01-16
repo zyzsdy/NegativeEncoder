@@ -27,4 +27,9 @@ public class VsScript : INotifyPropertyChanged
     public bool UseYadifNormal { get; set; } = false;
 
     public event PropertyChangedEventHandler PropertyChanged;
+
+    private void RaisePropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

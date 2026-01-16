@@ -191,4 +191,9 @@ public class Preset : INotifyPropertyChanged
     public OutputFormat MuxFormat { get; set; } = OutputFormat.MP4;
 
     public event PropertyChangedEventHandler PropertyChanged;
+
+    private void RaisePropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }
