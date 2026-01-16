@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="关于" Height="300" Width="500" ResizeMode="NoResize">
+        Title="关于" Height="360" Width="500" ResizeMode="NoResize">
     <Grid>
         <Image Source="../Resources/icon.png" HorizontalAlignment="Left" Height="150" Width="150" Margin="10,10,0,0"
                VerticalAlignment="Top" />
@@ -13,7 +13,7 @@
         <TextBlock x:Name="AboutVersionBlock" HorizontalAlignment="Left" Margin="170,38,0,0" Text="Version "
                    VerticalAlignment="Top" />
         <TextBlock HorizontalAlignment="Left" Margin="170,53,0,0" Text="Author: Ted Zyzsdy" VerticalAlignment="Top" />
-        <TextBlock Margin="170,73,10,37" TextWrapping="Wrap">
+        <TextBlock Margin="170,73,10,80" TextWrapping="Wrap">
             <Run>Special Thanks to MeowSound Idols and other supporters.</Run>
             <LineBreak />
             <Run>项目地址：https://github.com/zyzsdy/NegativeEncoder</Run>
@@ -23,6 +23,7 @@
             <LineBreak />
             <Run>详情请查看 LICENSE 文件。</Run>
         </TextBlock>
+        <TextBlock x:Name="ToolVersionBlock" Margin="170,200,10,37" TextWrapping="Wrap" FontSize="12" />
         <Button Content="关闭" Margin="0,0,10,10" Height="22" VerticalAlignment="Bottom" HorizontalAlignment="Right"
                 Width="48" Click="CloseAboutWindowButton_Click" />
         <Button Content="打开项目首页..." Margin="0,0,63,10" Height="22" VerticalAlignment="Bottom"
