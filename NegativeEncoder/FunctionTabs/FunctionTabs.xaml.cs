@@ -311,7 +311,7 @@ public partial class FunctionTabs : UserControl
     private void Tab_DragOver(object sender, DragEventArgs e)
     {
         var tabItem1 = (TabItem)sender;
-        var index = ((TabControl)(tabItem1.Parent)).Items.IndexOf(tabItem1);
+        var index = ((TabControl)tabItem1.Parent).Items.IndexOf(tabItem1);
         AppContext.PresetContext.SelectedTab = index;
     }
 

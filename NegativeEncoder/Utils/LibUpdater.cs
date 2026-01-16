@@ -53,10 +53,7 @@ public static class LibUpdater
             ? $"工具库已更新：{string.Join("，", updates)}"
             : "工具库未更新";
 
-        if (errors.Count > 0)
-        {
-            message += $"。失败：{string.Join("，", errors)}";
-        }
+        if (errors.Count > 0) message += $"。失败：{string.Join("，", errors)}";
 
         AppContext.Status.MainStatus = message;
     }
@@ -69,10 +66,7 @@ public static class LibUpdater
             return;
         }
 
-        if (result.Updated)
-        {
-            updates.Add(result.Name);
-        }
+        if (result.Updated) updates.Add(result.Name);
     }
 
     private static async Task<LibUpdateResult> UpdateFfmpegAsync(HttpClient httpClient, string libsDir, string sevenZip)
@@ -89,9 +83,7 @@ public static class LibUpdater
         if (!string.IsNullOrWhiteSpace(latestVersion) &&
             !string.IsNullOrWhiteSpace(localNormalized) &&
             !IsNewerVersion(latestVersion, localNormalized))
-        {
             return new LibUpdateResult("FFmpeg", false, string.Empty);
-        }
 
         return await UpdateFromArchiveAsync(httpClient, libsDir, sevenZip, "FFmpeg", downloadUrl, "ffmpeg.exe");
     }
@@ -104,24 +96,17 @@ public static class LibUpdater
         string exeName)
     {
         var latestTag = await GetLatestRigayaReleaseAsync(httpClient, repoName);
-        if (string.IsNullOrWhiteSpace(latestTag))
-        {
-            return new LibUpdateResult(repoName, false, "在线版本获取失败");
-        }
+        if (string.IsNullOrWhiteSpace(latestTag)) return new LibUpdateResult(repoName, false, "在线版本获取失败");
 
         var version = NormalizeVersion(latestTag);
-        if (string.IsNullOrWhiteSpace(version))
-        {
-            return new LibUpdateResult(repoName, false, "版本号解析失败");
-        }
+        if (string.IsNullOrWhiteSpace(version)) return new LibUpdateResult(repoName, false, "版本号解析失败");
 
         var localVersion = await GetLocalRigayaVersionAsync(libsDir, repoName, exeName);
         if (!string.IsNullOrWhiteSpace(localVersion) && !IsNewerVersion(version, localVersion))
-        {
             return new LibUpdateResult(repoName, false, string.Empty);
-        }
 
-        var downloadUrl = $"https://github.com/rigaya/{repoName}/releases/download/{version}/{repoName}C_{version}_x64.7z";
+        var downloadUrl =
+            $"https://github.com/rigaya/{repoName}/releases/download/{version}/{repoName}C_{version}_x64.7z";
         return await UpdateFromArchiveAsync(httpClient, libsDir, sevenZip, repoName, downloadUrl, exeName);
     }
 
@@ -141,24 +126,15 @@ public static class LibUpdater
 
         try
         {
-            if (Directory.Exists(extractDir))
-            {
-                Directory.Delete(extractDir, true);
-            }
+            if (Directory.Exists(extractDir)) Directory.Delete(extractDir, true);
 
             await DownloadFileAsync(httpClient, downloadUrl, archivePath);
 
             var extractResult = await RunSevenZipAsync(sevenZip, archivePath, extractDir);
-            if (!extractResult)
-            {
-                return new LibUpdateResult(name, false, "解压失败");
-            }
+            if (!extractResult) return new LibUpdateResult(name, false, "解压失败");
 
             var exePath = FindFile(extractDir, exeName);
-            if (string.IsNullOrWhiteSpace(exePath))
-            {
-                return new LibUpdateResult(name, false, "未找到可执行文件");
-            }
+            if (string.IsNullOrWhiteSpace(exePath)) return new LibUpdateResult(name, false, "未找到可执行文件");
 
             var sourceDir = Path.GetDirectoryName(exePath) ?? extractDir;
             CopyDirectoryFiles(sourceDir, libsDir);
@@ -173,10 +149,7 @@ public static class LibUpdater
         {
             try
             {
-                if (Directory.Exists(tempDir))
-                {
-                    Directory.Delete(tempDir, true);
-                }
+                if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
             }
             catch
             {
@@ -188,10 +161,7 @@ public static class LibUpdater
     private static async Task DownloadFileAsync(HttpClient httpClient, string url, string outputPath)
     {
         using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-        if (response.StatusCode != HttpStatusCode.OK)
-        {
-            throw new InvalidOperationException("下载失败");
-        }
+        if (response.StatusCode != HttpStatusCode.OK) throw new InvalidOperationException("下载失败");
 
         await using var stream = await response.Content.ReadAsStreamAsync();
         await using var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -255,16 +225,10 @@ public static class LibUpdater
         try
         {
             var response = await httpClient.GetAsync(releasesApi);
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                return string.Empty;
-            }
+            if (response.StatusCode != HttpStatusCode.OK) return string.Empty;
 
             var responseStr = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(responseStr))
-            {
-                return string.Empty;
-            }
+            if (string.IsNullOrEmpty(responseStr)) return string.Empty;
 
             var releaseObj = JObject.Parse(responseStr);
             return releaseObj["tag_name"]?.ToString() ?? string.Empty;
@@ -285,12 +249,10 @@ public static class LibUpdater
     {
         var exePath = Path.Combine(libsDir, exeName);
         if (string.Equals(repoName, "VCEEnc", StringComparison.OrdinalIgnoreCase))
-        {
             return NormalizeVersion(await GetToolVersionAsync(
                 exePath,
                 "--version",
                 new Regex(@"VCEEnc.*?\s([0-9]+(?:\.[0-9]+)+)", RegexOptions.IgnoreCase)));
-        }
 
         return NormalizeVersion(await GetToolVersionAsync(
             exePath,
@@ -300,10 +262,7 @@ public static class LibUpdater
 
     private static async Task<string> GetToolVersionAsync(string exePath, string arguments, Regex versionRegex)
     {
-        if (!File.Exists(exePath))
-        {
-            return string.Empty;
-        }
+        if (!File.Exists(exePath)) return string.Empty;
 
         try
         {
@@ -357,42 +316,26 @@ public static class LibUpdater
         try
         {
             var response = await httpClient.GetAsync(activeBranchesUrl);
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                return string.Empty;
-            }
+            if (response.StatusCode != HttpStatusCode.OK) return string.Empty;
 
             var html = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(html))
-            {
-                return string.Empty;
-            }
+            if (string.IsNullOrEmpty(html)) return string.Empty;
 
             var tags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (Match match in Regex.Matches(html, @"\brelease/\d+(?:\.\d+)+\b", RegexOptions.IgnoreCase))
-            {
                 tags.Add(match.Value);
-            }
 
             foreach (Match match in Regex.Matches(html, @"\bn\d+(?:\.\d+)+\b", RegexOptions.IgnoreCase))
-            {
                 tags.Add(match.Value);
-            }
 
-            if (tags.Count == 0)
-            {
-                return string.Empty;
-            }
+            if (tags.Count == 0) return string.Empty;
 
             var latestTag = string.Empty;
-            var latestVersion = new System.Version(0, 0);
+            var latestVersion = new Version(0, 0);
             foreach (var tag in tags)
             {
                 var numeric = NormalizeVersion(tag);
-                if (!System.Version.TryParse(numeric, out var parsed))
-                {
-                    continue;
-                }
+                if (!Version.TryParse(numeric, out var parsed)) continue;
 
                 if (parsed > latestVersion)
                 {
@@ -411,16 +354,11 @@ public static class LibUpdater
 
     private static bool IsNewerVersion(string latestVersion, string currentVersion)
     {
-        if (string.IsNullOrWhiteSpace(latestVersion) || string.IsNullOrWhiteSpace(currentVersion))
-        {
-            return false;
-        }
+        if (string.IsNullOrWhiteSpace(latestVersion) || string.IsNullOrWhiteSpace(currentVersion)) return false;
 
-        if (System.Version.TryParse(latestVersion, out var latestParsed) &&
-            System.Version.TryParse(currentVersion, out var currentParsed))
-        {
+        if (Version.TryParse(latestVersion, out var latestParsed) &&
+            Version.TryParse(currentVersion, out var currentParsed))
             return latestParsed > currentParsed;
-        }
 
         return !string.Equals(latestVersion, currentVersion, StringComparison.OrdinalIgnoreCase);
     }

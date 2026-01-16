@@ -37,7 +37,6 @@ public class FFMpegPipe
         }
 
         if (!preset.IsUseCustomParameters)
-        {
             if (preset.IsSetAvSync && preset.AudioEncode != AudioEncode.None)
             {
                 addArgList.Add("--avsync");
@@ -49,7 +48,6 @@ public class FFMpegPipe
                     _ => throw new ArgumentOutOfRangeException()
                 });
             }
-        }
 
         var addArgs = string.Join(" ", addArgList);
 

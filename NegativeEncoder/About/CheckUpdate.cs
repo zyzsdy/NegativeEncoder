@@ -33,10 +33,7 @@ public class CheckUpdate
             AppContext.Version.UpdateVersionLinkUrl = appUpdateResult.Url;
             AppContext.Version.IsLatest = appUpdateResult.IsLatest;
 
-            if (!appUpdateResult.IsLatest)
-            {
-                updateMessages.Add($"程序 {appUpdateResult.LatestTag}");
-            }
+            if (!appUpdateResult.IsLatest) updateMessages.Add($"程序 {appUpdateResult.LatestTag}");
         }
 
         var libUpdates = await CheckLibUpdatesAsync(httpClient);
@@ -49,9 +46,7 @@ public class CheckUpdate
             }
 
             if (libUpdate.HasUpdate)
-            {
                 updateMessages.Add($"{libUpdate.Name} {libUpdate.CurrentVersion} → {libUpdate.LatestVersion}");
-            }
         }
 
         if (updateMessages.Count == 0)
@@ -67,15 +62,10 @@ public class CheckUpdate
         }
 
         var summaryMessage = $"发现更新：{string.Join("，", updateMessages)}。";
-        if (errorMessages.Count > 0)
-        {
-            summaryMessage += $"部分检查失败：{string.Join("，", errorMessages)}。";
-        }
+        if (errorMessages.Count > 0) summaryMessage += $"部分检查失败：{string.Join("，", errorMessages)}。";
 
         if (!appUpdateResult.IsLatest && appUpdateResult.Success)
-        {
             summaryMessage += $"请使用「帮助」-「新版本 {appUpdateResult.LatestTag}」更新主程序。";
-        }
 
         AppContext.Status.MainStatus = summaryMessage;
     }
@@ -88,16 +78,12 @@ public class CheckUpdate
         {
             var response = await httpClient.GetAsync(githubApiUrl);
             if (response.StatusCode != HttpStatusCode.OK)
-            {
                 return new AppUpdateResult(false, true, string.Empty, string.Empty, "主程序更新检查失败");
-            }
 
             responseStr = await response.Content.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(responseStr))
-            {
                 return new AppUpdateResult(false, true, string.Empty, string.Empty, "主程序更新检查失败");
-            }
         }
         catch
         {
@@ -126,6 +112,7 @@ public class CheckUpdate
             var nowVersionTag = $"v{AppContext.Version.CurrentVersion}";
             isLatest = nowVersionTag == tag;
         }
+
         return new AppUpdateResult(true, isLatest, tag, url, string.Empty);
     }
 
@@ -176,22 +163,16 @@ public class CheckUpdate
         string updateUrl)
     {
         if (!File.Exists(exePath))
-        {
             return new LibUpdateResult(name, string.Empty, string.Empty, updateUrl, false, "本地文件不存在");
-        }
 
         var currentVersion = await GetToolVersionAsync(exePath, versionArguments, versionRegex);
         if (string.IsNullOrWhiteSpace(currentVersion))
-        {
             return new LibUpdateResult(name, string.Empty, string.Empty, updateUrl, false, "本地版本获取失败");
-        }
 
         var latestVersion = await latestVersionProvider();
         if (string.IsNullOrWhiteSpace(latestVersion))
-        {
             return new LibUpdateResult(name, NormalizeVersion(currentVersion), string.Empty, updateUrl, false,
                 "在线版本获取失败");
-        }
 
         var normalizedCurrent = NormalizeVersion(currentVersion);
         var normalizedLatest = NormalizeVersion(latestVersion);
@@ -206,42 +187,26 @@ public class CheckUpdate
         try
         {
             var response = await httpClient.GetAsync(activeBranchesUrl);
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                return string.Empty;
-            }
+            if (response.StatusCode != HttpStatusCode.OK) return string.Empty;
 
             var html = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(html))
-            {
-                return string.Empty;
-            }
+            if (string.IsNullOrEmpty(html)) return string.Empty;
 
             var tags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (Match match in Regex.Matches(html, @"\brelease/\d+(?:\.\d+)+\b", RegexOptions.IgnoreCase))
-            {
                 tags.Add(match.Value);
-            }
 
             foreach (Match match in Regex.Matches(html, @"\bn\d+(?:\.\d+)+\b", RegexOptions.IgnoreCase))
-            {
                 tags.Add(match.Value);
-            }
 
-            if (tags.Count == 0)
-            {
-                return string.Empty;
-            }
+            if (tags.Count == 0) return string.Empty;
 
             var latestTag = string.Empty;
             var latestVersion = new System.Version(0, 0);
             foreach (var tag in tags)
             {
                 var numeric = NormalizeVersion(tag);
-                if (!System.Version.TryParse(numeric, out var parsed))
-                {
-                    continue;
-                }
+                if (!System.Version.TryParse(numeric, out var parsed)) continue;
 
                 if (parsed > latestVersion)
                 {
@@ -264,16 +229,10 @@ public class CheckUpdate
         try
         {
             var response = await httpClient.GetAsync(releasesApi);
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                return string.Empty;
-            }
+            if (response.StatusCode != HttpStatusCode.OK) return string.Empty;
 
             var responseStr = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(responseStr))
-            {
-                return string.Empty;
-            }
+            if (string.IsNullOrEmpty(responseStr)) return string.Empty;
 
             var releaseObj = JObject.Parse(responseStr);
             return releaseObj["tag_name"]?.ToString() ?? string.Empty;
@@ -334,10 +293,7 @@ public class CheckUpdate
 
     private static string NormalizeVersion(string version)
     {
-        if (string.IsNullOrWhiteSpace(version))
-        {
-            return string.Empty;
-        }
+        if (string.IsNullOrWhiteSpace(version)) return string.Empty;
 
         var match = Regex.Match(version, @"\d+(?:\.\d+)+");
         return match.Success ? match.Value : version.Trim();
@@ -345,16 +301,11 @@ public class CheckUpdate
 
     private static bool IsNewerVersion(string latestVersion, string currentVersion)
     {
-        if (string.IsNullOrWhiteSpace(latestVersion) || string.IsNullOrWhiteSpace(currentVersion))
-        {
-            return false;
-        }
+        if (string.IsNullOrWhiteSpace(latestVersion) || string.IsNullOrWhiteSpace(currentVersion)) return false;
 
         if (System.Version.TryParse(latestVersion, out var latestParsed) &&
             System.Version.TryParse(currentVersion, out var currentParsed))
-        {
             return latestParsed > currentParsed;
-        }
 
         return !string.Equals(latestVersion, currentVersion, StringComparison.OrdinalIgnoreCase);
     }

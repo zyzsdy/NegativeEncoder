@@ -8,8 +8,8 @@ public static class TaskProvider
     public static void Schedule()
     {
         var queue = AppContext.EncodingContext.TaskQueue;
-        var runningCount = queue.Count(x => x.Running && x.IsFinished == false);
-        var restCount = queue.Count(x => x.IsFinished == false);
+        var runningCount = queue.Count(x => x.Running && !x.IsFinished);
+        var restCount = queue.Count(x => !x.IsFinished);
 
         AppContext.Status.EncoderStatus = $"{runningCount} 编码中，还剩 {restCount} 个";
         if (runningCount == 0) AppContext.Status.EncoderStatus = "空闲";
@@ -22,7 +22,7 @@ public static class TaskProvider
         }
 
         //寻找第一个待调度任务
-        var firstTask = queue.FirstOrDefault(x => x.Running == false);
+        var firstTask = queue.FirstOrDefault(x => !x.Running);
 
         if (firstTask != default)
         {

@@ -67,10 +67,7 @@ public partial class AboutWindow : Window
 
     private static string FormatVersion(string version)
     {
-        if (string.IsNullOrWhiteSpace(version))
-        {
-            return "未检测到";
-        }
+        if (string.IsNullOrWhiteSpace(version)) return "未检测到";
 
         var normalized = NormalizeVersion(version);
         return string.IsNullOrWhiteSpace(normalized) ? version : normalized;
@@ -84,10 +81,7 @@ public partial class AboutWindow : Window
 
     private static async Task<string> GetToolVersionAsync(string exePath, string arguments, Regex versionRegex)
     {
-        if (!File.Exists(exePath))
-        {
-            return string.Empty;
-        }
+        if (!File.Exists(exePath)) return string.Empty;
 
         try
         {

@@ -27,7 +27,6 @@ public static class ProcessExtend
             if (descendants.Count == 0) break;
 
             foreach (var child in descendants)
-            {
                 try
                 {
                     child.WaitForExit(pollIntervalMs);
@@ -36,7 +35,6 @@ public static class ProcessExtend
                 {
                     // ignore child process exit failures
                 }
-            }
 
             Thread.Sleep(pollIntervalMs);
         }
