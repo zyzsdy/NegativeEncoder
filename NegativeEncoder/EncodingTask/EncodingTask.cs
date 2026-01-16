@@ -62,6 +62,7 @@ public class EncodingTask
     {
         mainProcess?.KillProcessTree();
         IsFinished = true;
+        Running = false;
 
         Progress = 0;
         ProcessStop?.Invoke(this);
@@ -106,8 +107,6 @@ public class EncodingTask
             EnableRaisingEvents = true
         };
 
-        mainProcess.Exited += MainProc_Exited;
-
         Task.Run(() =>
         {
             mainProcess.Start();
@@ -115,11 +114,12 @@ public class EncodingTask
 
             using (var reader = new StreamReader(mainProcess.StandardError.BaseStream, Encoding.UTF8))
             {
-                var thisline = reader.ReadLine();
-
                 while (!IsFinished)
                 {
-                    if (thisline != null)
+                    var thisline = reader.ReadLine();
+                    if (thisline == null) break;
+
+                    if (!IsFinished)
                     {
                         RunLog += thisline + '\n';
 
@@ -135,12 +135,18 @@ public class EncodingTask
                                 // 解析不了的时候，我们就当无事发生（
                             }
                     }
-
-                    thisline = reader.ReadLine();
                 }
             }
 
-            mainProcess.WaitForExit();
+            mainProcess.WaitForProcessTreeExit();
+
+            if (!IsFinished)
+            {
+                IsFinished = true;
+                Running = false;
+                Progress = 1000;
+                ProcessStop?.Invoke(this);
+            }
         });
     }
 }
