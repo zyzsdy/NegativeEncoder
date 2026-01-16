@@ -44,8 +44,6 @@ public partial class MainWindow
 
         AutoCheckUpdateAfterStartupMenuItem.IsChecked = AppContext.Config.AutoCheckUpdate;
 
-        OpenNewVersionReleasePageMenuItem.DataContext = AppContext.Version;
-
         if (AppContext.Config.AutoCheckUpdate) CheckUpdateMenuItem_Click(sender, e);
 
         AppContext.Status.MainStatus = "就绪";
@@ -75,6 +73,11 @@ public partial class MainWindow
     private void CheckUpdateMenuItem_Click(object sender, RoutedEventArgs e)
     {
         Task.Run(async () => { await CheckUpdate.Check(); });
+    }
+
+    private void UpdateLibsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        Task.Run(async () => { await LibUpdater.UpdateAllAsync(); });
     }
 
     private void OpenNewVersionReleasePageMenuItem_Click(object sender, RoutedEventArgs e)
