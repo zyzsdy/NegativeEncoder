@@ -36,16 +36,19 @@ public class FFMpegPipe
             addArgList.Add($"{preset.OutputResWidth}x{preset.OUtputResHeight}");
         }
 
-        if (preset.IsSetAvSync && preset.AudioEncode != AudioEncode.None)
+        if (!preset.IsUseCustomParameters)
         {
-            addArgList.Add("--avsync");
-            addArgList.Add(preset.AVSync switch
+            if (preset.IsSetAvSync && preset.AudioEncode != AudioEncode.None)
             {
-                AVSync.Cfr => "cfr",
-                AVSync.ForceCfr => "forcecfr",
-                AVSync.Vfr => "vfr",
-                _ => throw new ArgumentOutOfRangeException()
-            });
+                addArgList.Add("--avsync");
+                addArgList.Add(preset.AVSync switch
+                {
+                    AVSync.Cfr => "cfr",
+                    AVSync.ForceCfr => "forcecfr",
+                    AVSync.Vfr => "vfr",
+                    _ => throw new ArgumentOutOfRangeException()
+                });
+            }
         }
 
         var addArgs = string.Join(" ", addArgList);

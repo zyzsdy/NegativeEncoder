@@ -30,27 +30,30 @@ public static class SimpleWithAss
             addArgs.Add($"{preset.OutputResWidth}x{preset.OUtputResHeight}");
         }
 
-        if (preset.IsSetAvSync && preset.AudioEncode != AudioEncode.None)
+        if (!preset.IsUseCustomParameters)
         {
-            addArgs.Add("--avsync");
-            addArgs.Add(preset.AVSync switch
+            if (preset.IsSetAvSync && preset.AudioEncode != AudioEncode.None)
             {
-                AVSync.Cfr => "cfr",
-                AVSync.ForceCfr => "forcecfr",
-                AVSync.Vfr => "vfr",
-                _ => throw new ArgumentOutOfRangeException()
-            });
-        }
+                addArgs.Add("--avsync");
+                addArgs.Add(preset.AVSync switch
+                {
+                    AVSync.Cfr => "cfr",
+                    AVSync.ForceCfr => "forcecfr",
+                    AVSync.Vfr => "vfr",
+                    _ => throw new ArgumentOutOfRangeException()
+                });
+            }
 
-        if (preset.AudioEncode == AudioEncode.Copy)
-        {
-            addArgs.Add("--audio-copy");
-        }
-        else if (preset.AudioEncode == AudioEncode.Encode)
-        {
-            addArgs.Add("--audio-codec");
-            addArgs.Add("--audio-bitrate");
-            addArgs.Add(preset.AudioBitrate);
+            if (preset.AudioEncode == AudioEncode.Copy)
+            {
+                addArgs.Add("--audio-copy");
+            }
+            else if (preset.AudioEncode == AudioEncode.Encode)
+            {
+                addArgs.Add("--audio-codec");
+                addArgs.Add("--audio-bitrate");
+                addArgs.Add(preset.AudioBitrate);
+            }
         }
 
         var subBurnArgs = $"--vpp-subburn filename=\"{assInput}\"";
