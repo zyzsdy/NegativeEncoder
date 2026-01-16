@@ -5,17 +5,18 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "消极压制"
-!define PRODUCT_VERSION "5.0.7"
+!define PRODUCT_VERSION "5.1.0.0"
 !define PRODUCT_PUBLISHER "Ted Zyzsdy"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NegativeEncoder.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-!define PRODUCT_UNINST_ROOT_KEY "HKLM"
+!define PRODUCT_UNINST_ROOT_KEY "HKCU"
 !define PRODUCT_STARTMENU_REGVAL "NSIS:StartMenuDir"
 
-SetCompressor lzma
+SetCompressor /SOLID lzma
 
 ; MUI 1.67 compatible ------
 !include "MUI2.nsh"
+!include "FileFunc.nsh"
 
 ; MUI Settings
 !define MUI_ABORTWARNING
@@ -47,6 +48,7 @@ var ICONS_GROUP
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
+!insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
 ; Language files
@@ -57,15 +59,25 @@ var ICONS_GROUP
 
 ; MUI end ------
 
+RequestExecutionLevel user
+
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 OutFile "NegativeEncoderSetup.exe"
-InstallDir "$PROGRAMFILES64\NegativeEncoder"
-InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
+InstallDir "$LOCALAPPDATA\NegativeEncoder"
+InstallDirRegKey HKCU "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
 BrandingText "MeowSound Idols"
 
+VIProductVersion "${PRODUCT_VERSION}"
+VIAddVersionKey /LANG=2052 "ProductName" "${PRODUCT_NAME}"
+VIAddVersionKey /LANG=2052 "CompanyName" "${PRODUCT_PUBLISHER}"
+VIAddVersionKey /LANG=2052 "LegalCopyright" "Copyright © 2018-2026 ${PRODUCT_PUBLISHER}"
+VIAddVersionKey /LANG=2052 "FileDescription" "${PRODUCT_NAME} Installer"
+VIAddVersionKey /LANG=2052 "FileVersion" "${PRODUCT_VERSION}"
+
 Section "主程序" SEC01
+  SetRegView 64
   SetOutPath "$INSTDIR\NEbin"
   SetOverwrite try
   File /r "..\NEbin\"
@@ -73,12 +85,13 @@ Section "主程序" SEC01
 ; Shortcuts
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\消极压制.lnk" "$INSTDIR\NEbin\NegativeEncoder.exe"
-  CreateShortCut "$DESKTOP\消极压制.lnk" "$INSTDIR\NEbin\NegativeEncoder.exe"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\消极压制.lnk" "$INSTDIR\NEbin\NegativeEncoder.exe" "" "$INSTDIR\NEbin\ne.ico"
+  CreateShortCut "$DESKTOP\消极压制.lnk" "$INSTDIR\NEbin\NegativeEncoder.exe" "" "$INSTDIR\NEbin\ne.ico"
   !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
 Section "工具包" SEC02
+  SetRegView 64
   SetOutPath "$INSTDIR\Libs"
   File /r "..\Libs\"
 
@@ -88,21 +101,33 @@ Section "工具包" SEC02
 SectionEnd
 
 Section -AdditionalIcons
+  SetRegView 64
   SetOutPath $INSTDIR
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk" "$INSTDIR\uninst.exe"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk" "$INSTDIR\uninst.exe" "" "$INSTDIR\NEbin\ne.ico"
   !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
 Section -Post
+  SetRegView 64
   WriteUninstaller "$INSTDIR\uninst.exe"
-  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\"
+  ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+  WriteRegStr HKCU "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\NEbin\NegativeEncoder.exe"
+  WriteRegStr HKCU "${PRODUCT_DIR_REGKEY}" "Path" "$INSTDIR\NEbin"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" '"$INSTDIR\uninst.exe"'
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\NEbin\ne.ico"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallLocation" "$INSTDIR"
+  WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoModify" 1
+  WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoRepair" 1
+  WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "EstimatedSize" $0
 SectionEnd
+
+Function .onInit
+  SetRegView 64
+FunctionEnd
 
 
 Function un.onUninstSuccess
@@ -111,12 +136,14 @@ Function un.onUninstSuccess
 FunctionEnd
 
 Function un.onInit
+  SetRegView 64
   MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "你确实要完全移除 $(^Name) ，其及所有的组件？" IDYES +2
   Abort
 FunctionEnd
 
 Section Uninstall
   !insertmacro MUI_STARTMENU_GETFOLDER "Application" $ICONS_GROUP
+  Delete "$INSTDIR\uninst.exe"
   RMDir /r "$INSTDIR"
 
   Delete "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk"
@@ -126,6 +153,6 @@ Section Uninstall
   RMDir "$SMPROGRAMS\$ICONS_GROUP"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
-  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
+  DeleteRegKey HKCU "${PRODUCT_DIR_REGKEY}"
   SetAutoClose true
 SectionEnd

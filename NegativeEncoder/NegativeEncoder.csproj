@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <UseWPF>true</UseWPF>
-    <Version>5.0.8</Version>
+    <Version>5.1.0.0</Version>
     <Authors>Ted Zyzsdy</Authors>
     <Company>MeowSound Idols</Company>
     <Description>一个可爱的NVENC/QSVENC/VCEENC的外壳</Description>
