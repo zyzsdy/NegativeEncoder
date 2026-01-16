@@ -11,6 +11,8 @@ namespace NegativeEncoder.Presets;
 
 public static class PresetProvider
 {
+    private static bool _isLoadingPreset = false;
+
     public static void InitPresetAutoSave(MenuItem presetMenuItems)
     {
         //AppContext.PresetContext.CurrentPreset.PropertyChanged += CurrentPreset_PropertyChanged;
@@ -20,6 +22,9 @@ public static class PresetProvider
 
     public static void CurrentPreset_PropertyChanged(object sender, PropertyChangedEventArgs e)
     {
+        //如果正在加载预设，不触发自动保存
+        if (_isLoadingPreset) return;
+
         //检查预设是否合法
         var preset = AppContext.PresetContext.CurrentPreset;
 
@@ -114,12 +119,20 @@ public static class PresetProvider
 
             var checkName = m.Header as string;
 
-            foreach (var p in AppContext.PresetContext.PresetList)
-                if (p.PresetName == checkName)
-                {
-                    AppContext.PresetContext.CurrentPreset = DeepCompare.CloneDeep1(p);
-                    break;
-                }
+            _isLoadingPreset = true;
+            try
+            {
+                foreach (var p in AppContext.PresetContext.PresetList)
+                    if (p.PresetName == checkName)
+                    {
+                        AppContext.PresetContext.CurrentPreset = DeepCompare.CloneDeep1(p);
+                        break;
+                    }
+            }
+            finally
+            {
+                _isLoadingPreset = false;
+            }
 
             ReBuildPresetMenu(m.Parent as MenuItem);
             //存储预设到文件
@@ -129,9 +142,17 @@ public static class PresetProvider
 
     public static async Task LoadPresetAutoSave()
     {
-        AppContext.PresetContext.CurrentPreset = await SystemOption.ReadOption<Preset>();
-        AppContext.PresetContext.PresetList =
-            (await SystemOption.ReadListOption<Preset>()).OrderBy(it => it.PresetName).ToList();
+        _isLoadingPreset = true;
+        try
+        {
+            AppContext.PresetContext.CurrentPreset = await SystemOption.ReadOption<Preset>();
+            AppContext.PresetContext.PresetList =
+                (await SystemOption.ReadListOption<Preset>()).OrderBy(it => it.PresetName).ToList();
+        }
+        finally
+        {
+            _isLoadingPreset = false;
+        }
     }
 
     public static void NewPreset(Window parentWindow = null)
@@ -215,15 +236,23 @@ public static class PresetProvider
             await SystemOption.SaveListOption(AppContext.PresetContext.PresetList);
         }
 
-        if (AppContext.PresetContext.PresetList.Count > 0)
+        _isLoadingPreset = true;
+        try
         {
-            AppContext.PresetContext.CurrentPreset = DeepCompare.CloneDeep1(AppContext.PresetContext.PresetList[0]);
-            AppContext.PresetContext.IsPresetEdit = false;
+            if (AppContext.PresetContext.PresetList.Count > 0)
+            {
+                AppContext.PresetContext.CurrentPreset = DeepCompare.CloneDeep1(AppContext.PresetContext.PresetList[0]);
+                AppContext.PresetContext.IsPresetEdit = false;
+            }
+            else
+            {
+                AppContext.PresetContext.CurrentPreset = new Preset();
+                AppContext.PresetContext.IsPresetEdit = true;
+            }
         }
-        else
+        finally
         {
-            AppContext.PresetContext.CurrentPreset = new Preset();
-            AppContext.PresetContext.IsPresetEdit = true;
+            _isLoadingPreset = false;
         }
 
         ReBuildPresetMenu(presetMenuItems);
