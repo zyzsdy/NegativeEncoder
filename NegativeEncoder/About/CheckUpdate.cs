@@ -127,7 +127,7 @@ public class CheckUpdate
                 "-version",
                 new Regex(@"ffmpeg version\s+([^\s]+)", RegexOptions.IgnoreCase),
                 async () => await GetLatestFfmpegTagAsync(httpClient),
-                "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z"),
+                "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z"),
             await CheckLibUpdateAsync(
                 "NVEnc",
                 Path.Combine(baseDir, "Libs", "NVEncC64.exe"),

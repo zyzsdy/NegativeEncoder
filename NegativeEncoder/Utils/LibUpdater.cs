@@ -71,7 +71,7 @@ public static class LibUpdater
 
     private static async Task<LibUpdateResult> UpdateFfmpegAsync(HttpClient httpClient, string libsDir, string sevenZip)
     {
-        const string downloadUrl = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z";
+        const string downloadUrl = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z";
         var latestTag = await GetLatestFfmpegTagAsync(httpClient);
         var latestVersion = NormalizeVersion(latestTag);
         var localVersion = await GetToolVersionAsync(
@@ -85,7 +85,7 @@ public static class LibUpdater
             !IsNewerVersion(latestVersion, localNormalized))
             return new LibUpdateResult("FFmpeg", false, string.Empty);
 
-        return await UpdateFromArchiveAsync(httpClient, libsDir, sevenZip, "FFmpeg", downloadUrl, "ffmpeg.exe");
+        return await UpdateFromArchiveAsync(httpClient, libsDir, sevenZip, "FFmpeg", downloadUrl, "ffmpeg.exe", true);
     }
 
     private static async Task<LibUpdateResult> UpdateRigayaToolAsync(
@@ -116,7 +116,8 @@ public static class LibUpdater
         string sevenZip,
         string name,
         string downloadUrl,
-        string exeName)
+        string exeName,
+        bool copyOnlyExe = false)
     {
         var tempDir = Path.Combine(libsDir, "_update_temp");
         Directory.CreateDirectory(tempDir);
@@ -130,14 +131,23 @@ public static class LibUpdater
 
             await DownloadFileAsync(httpClient, downloadUrl, archivePath);
 
-            var extractResult = await RunSevenZipAsync(sevenZip, archivePath, extractDir);
+            var extractResult =
+                await RunSevenZipAsync(sevenZip, archivePath, extractDir, copyOnlyExe ? exeName : string.Empty);
             if (!extractResult) return new LibUpdateResult(name, false, "解压失败");
 
             var exePath = FindFile(extractDir, exeName);
             if (string.IsNullOrWhiteSpace(exePath)) return new LibUpdateResult(name, false, "未找到可执行文件");
 
-            var sourceDir = Path.GetDirectoryName(exePath) ?? extractDir;
-            CopyDirectoryFiles(sourceDir, libsDir);
+            if (copyOnlyExe)
+            {
+                var targetPath = Path.Combine(libsDir, exeName);
+                File.Copy(exePath, targetPath, true);
+            }
+            else
+            {
+                var sourceDir = Path.GetDirectoryName(exePath) ?? extractDir;
+                CopyDirectoryFiles(sourceDir, libsDir);
+            }
 
             return new LibUpdateResult(name, true, string.Empty);
         }
@@ -168,13 +178,18 @@ public static class LibUpdater
         await stream.CopyToAsync(fs);
     }
 
-    private static async Task<bool> RunSevenZipAsync(string sevenZip, string archivePath, string extractDir)
+    private static async Task<bool> RunSevenZipAsync(
+        string sevenZip,
+        string archivePath,
+        string extractDir,
+        string includeFileName)
     {
         Directory.CreateDirectory(extractDir);
+        var includeArg = string.IsNullOrWhiteSpace(includeFileName) ? string.Empty : $" -r -i!{includeFileName}";
         var psi = new ProcessStartInfo
         {
             FileName = sevenZip,
-            Arguments = $"x \"{archivePath}\" -y -o\"{extractDir}\"",
+            Arguments = $"x \"{archivePath}\" -y -o\"{extractDir}\"{includeArg}",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
