@@ -2,6 +2,9 @@ name: Build Test
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
@@ -17,3 +20,5 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build
