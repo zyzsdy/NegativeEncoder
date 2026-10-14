@@ -1,0 +1,9 @@
+{
+  "installerUrl": "https://secure-appldnld.apple.com/itunes12/091-56359-20171213-EDF2198A-E039-11E7-9A9F-D21A1E4B8CED/iTunes64Setup.exe",
+  "installerSha256": "66dd04b6664314da06720f86a8740b05ecc50c3b3c8cf0c1ea04e03b3e4b1cb5",
+  "msiName": "AppleApplicationSupport64.msi",
+  "msiSha256": "2b9eb15b811a65946342d7609a5308356a90c7efde477e424390357db6382ed0",
+  "productVersion": "6.2.1",
+  "downloadBytes": 264339784,
+  "sourceDescription": "Apple iTunes 12.7.2 historical desktop installer (2017). Apple Application Support x64 6.2.1."
+}

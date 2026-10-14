@@ -5,7 +5,15 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "消极压制"
-!define PRODUCT_VERSION "5.1.0.0"
+!ifndef PRODUCT_VERSION
+  !define PRODUCT_VERSION "5.1.0.0"
+!endif
+!ifndef PACKAGE_DIR
+  !define PACKAGE_DIR ".."
+!endif
+!ifndef OUTPUT_FILE
+  !define OUTPUT_FILE "NegativeEncoderSetup.exe"
+!endif
 !define PRODUCT_PUBLISHER "Ted Zyzsdy"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NegativeEncoder.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -29,6 +37,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_PAGE_WELCOME
 ; License page
 !insertmacro MUI_PAGE_LICENSE "licence.txt"
+!insertmacro MUI_PAGE_COMPONENTS
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
 ; Start menu page
@@ -62,7 +71,7 @@ var ICONS_GROUP
 RequestExecutionLevel user
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "NegativeEncoderSetup.exe"
+OutFile "${OUTPUT_FILE}"
 InstallDir "$LOCALAPPDATA\NegativeEncoder"
 InstallDirRegKey HKCU "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
@@ -77,10 +86,11 @@ VIAddVersionKey /LANG=2052 "FileDescription" "${PRODUCT_NAME} Installer"
 VIAddVersionKey /LANG=2052 "FileVersion" "${PRODUCT_VERSION}"
 
 Section "主程序" SEC01
+  SectionIn RO
   SetRegView 64
   SetOutPath "$INSTDIR\NEbin"
   SetOverwrite try
-  File /r "..\NEbin\"
+  File /r "${PACKAGE_DIR}\NEbin\*.*"
 
 ; Shortcuts
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
@@ -91,14 +101,43 @@ Section "主程序" SEC01
 SectionEnd
 
 Section "工具包" SEC02
+  SectionIn RO
   SetRegView 64
   SetOutPath "$INSTDIR\Libs"
-  File /r "..\Libs\"
+  File /r "${PACKAGE_DIR}\Libs\*.*"
+  SetOutPath "$INSTDIR"
+  File "${PACKAGE_DIR}\dependencies.lock.json"
+  File "${PACKAGE_DIR}\THIRD-PARTY-NOTICES.md"
+  SetOutPath "$INSTDIR\ThirdParty"
+  File /r "${PACKAGE_DIR}\ThirdParty\*.*"
+  SetOutPath "$INSTDIR\Setup"
+  File "apple-runtime.lock.json"
 
 ; Shortcuts
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
+
+Section /o "Apple AAC 运行库（可选，联网安装）" SECAPPLE
+  DetailPrint "检测并准备 qaac 所需 Apple 运行库..."
+  nsExec::ExecToStack '"$INSTDIR\NEbin\NegativeEncoder.exe" --runFunc InstallAppleRuntime'
+  Pop $0
+  Pop $1
+  DetailPrint "$1"
+  StrCmp $0 "3010" apple_reboot
+  StrCmp $0 "0" apple_done
+  MessageBox MB_ICONEXCLAMATION|MB_OK "Apple 运行库安装未完成。主程序将继续安装，qaac 功能暂不可用。可重新运行本安装程序，选择 Apple AAC 运行库组件。$\r$\n$1" /SD IDOK
+  Goto apple_done
+apple_reboot:
+  SetRebootFlag true
+apple_done:
+SectionEnd
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "NegativeEncoder 主程序。"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "固定版本的编码器、FFmpeg、VapourSynth 及插件。"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SECAPPLE} "已有可用 qaac 运行库时跳过安装。否则从 Apple 官方下载约 264 MB 的历史安装包，安装 x64 Application Support 6.2.1（2017 年版本）。将显示 Apple 协议和安装向导，可能需要管理员权限。"
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Section -AdditionalIcons
   SetRegView 64
@@ -112,8 +151,7 @@ Section -Post
   SetRegView 64
   WriteUninstaller "$INSTDIR\uninst.exe"
   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
-  WriteRegStr HKCU "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\NEbin\NegativeEncoder.exe"
-  WriteRegStr HKCU "${PRODUCT_DIR_REGKEY}" "Path" "$INSTDIR\NEbin"
+  WriteRegStr HKCU "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" '"$INSTDIR\uninst.exe"'
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\NEbin\ne.ico"
@@ -126,6 +164,10 @@ Section -Post
 SectionEnd
 
 Function .onInit
+  ${IfNot} ${RunningX64}
+    MessageBox MB_ICONSTOP "此安装包需要 64 位 Windows。"
+    Abort
+  ${EndIf}
   SetRegView 64
 FunctionEnd
 

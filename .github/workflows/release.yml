@@ -1,0 +1,106 @@
+name: Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-installer-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  installer:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Test application and packaging
+        shell: pwsh
+        run: |
+          dotnet test NegativeEncoder.sln --configuration Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s install/tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/cache@v4
+        with:
+          path: artifacts/dependency-cache
+          key: windows-x64-libs-v1-${{ hashFiles('install/dependencies.lock.json') }}
+      - name: Install NSIS
+        shell: pwsh
+        run: |
+          choco install nsis --version=3.11 --allow-downgrade --force --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build installer
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+        run: ./install/build-installer.ps1 -Version $env:RELEASE_VERSION
+      - name: Smoke test installed package
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -LiteralPath artifacts/installer -Filter '*-setup.exe' | Select-Object -First 1
+          $installed = Join-Path $env:RUNNER_TEMP 'NegativeEncoder install smoke'
+          $process = Start-Process -FilePath $installer.FullName -ArgumentList "/S /D=$installed" -WindowStyle Hidden -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Installer failed: $($process.ExitCode)" }
+          python install/collect_dependencies.py --output $installed --verify-only
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $app = Start-Process -FilePath "$installed/NEbin/NegativeEncoder.exe" -ArgumentList '--runFunc SaveCmdTools' -WindowStyle Hidden -Wait -PassThru
+          if ($app.ExitCode -ne 0) { throw "Installed application failed: $($app.ExitCode)" }
+          if (!(Test-Path -LiteralPath "$installed/Libs/startnecmd.bat")) { throw 'Application resolved the wrong Libs directory' }
+      - name: Verify relocation
+        shell: pwsh
+        run: |
+          $relocated = Join-Path $env:RUNNER_TEMP 'NegativeEncoder relocated'
+          $relocated = [IO.Path]::GetFullPath($relocated)
+          $tempRoot = [IO.Path]::GetFullPath($env:RUNNER_TEMP) + [IO.Path]::DirectorySeparatorChar
+          if (!$relocated.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unsafe relocation path' }
+          $source = (Resolve-Path -LiteralPath artifacts/package).Path
+          Move-Item -LiteralPath $source -Destination $relocated
+          python install/collect_dependencies.py --output $relocated --verify-only
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NegativeEncoder-Windows-x64
+          path: artifacts/installer/*
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+  draft-release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: installer
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: NegativeEncoder-Windows-x64
+          path: installer
+      - name: Attach installer to draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --json isDraft > release.json 2>/dev/null; then
+            python3 -c 'import json; assert json.load(open("release.json"))["isDraft"], "Refusing to overwrite a published release"'
+            gh release upload "$RELEASE_TAG" installer/* --clobber
+          else
+            gh release create "$RELEASE_TAG" installer/* --draft --verify-tag \
+              --title "NegativeEncoder $RELEASE_TAG" \
+              --notes 'Windows x64 installer. Dependency versions and checksums are attached. qaac requires separately installed Apple Application Support; hardware encoding requires compatible GPU drivers.'
+          fi

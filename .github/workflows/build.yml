@@ -22,3 +22,8 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    - name: Test packaging scripts
+      run: python -m unittest discover -s install/tests -v

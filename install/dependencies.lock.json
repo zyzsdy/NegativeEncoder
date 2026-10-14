@@ -1,0 +1,435 @@
+{
+  "schema": 1,
+  "vsrepo_commit": "dd6708f3bfd28495358db99360d411d012d3b00c",
+  "assets": [
+    {
+      "name": "NVEnc",
+      "version": "9.38",
+      "url": "https://github.com/rigaya/NVEnc/releases/download/9.38/NVEncC_9.38_x64.7z",
+      "sha256": "f4ec81cd2bd4acae35415dc539c7a439e45667b4398e6209f3aa16ac21cf55e5",
+      "destination": "Libs/NVEnc",
+      "mode": "directory",
+      "extension": ".7z",
+      "source": "https://github.com/rigaya/NVEnc/tree/9.38",
+      "executable": "NVEncC64.exe"
+    },
+    {
+      "name": "QSVEnc",
+      "version": "8.33",
+      "url": "https://github.com/rigaya/QSVEnc/releases/download/8.33/QSVEncC_8.33_x64.7z",
+      "sha256": "358dafb3188b712db9e58fb47cdf0dd75ebbdb1c08af3f19eb54157da9bbd9c7",
+      "destination": "Libs/QSVEnc",
+      "mode": "directory",
+      "extension": ".7z",
+      "source": "https://github.com/rigaya/QSVEnc/tree/8.33",
+      "executable": "QSVEncC64.exe"
+    },
+    {
+      "name": "VCEEnc",
+      "version": "9.21",
+      "url": "https://github.com/rigaya/VCEEnc/releases/download/9.21/VCEEncC_9.21_x64.7z",
+      "sha256": "aa4a36d161cbe3073ed97d97ba5651c7579455ae60e173e5117d55f96afb8a19",
+      "destination": "Libs/VCEEnc",
+      "mode": "directory",
+      "extension": ".7z",
+      "source": "https://github.com/rigaya/VCEEnc/tree/9.21",
+      "executable": "VCEEncC64.exe"
+    },
+    {
+      "name": "FFmpeg",
+      "version": "9.0.2",
+      "url": "https://github.com/GyanD/codexffmpeg/releases/download/9.0.2/ffmpeg-9.0.2-full_build.7z",
+      "sha256": "f0e46253c70dfe902bac915dfb4224f0cf1b7c6eeab9da2ccc9a5581f9a71b13",
+      "destination": "Libs",
+      "mode": "files",
+      "extension": ".7z",
+      "source": "https://github.com/FFmpeg/FFmpeg/tree/n9.0.2",
+      "files": {
+        "ffmpeg.exe": {
+          "path": "ffmpeg-9.0.2-full_build/bin/ffmpeg.exe",
+          "sha256": "589e50b766d251afdf181dd664d40bd94407e200b019989fd7468c7d118a28d0"
+        }
+      }
+    },
+    {
+      "name": "qaac",
+      "version": "v3.07",
+      "url": "https://github.com/nu774/qaac/releases/download/v3.07/qaac_3.07.zip",
+      "sha256": "1fb3ab4aa81725e2607ac1b31afa0e13d2617ee6eb5900f5070c092f5271cbb3",
+      "destination": "Libs/qaac",
+      "mode": "directory",
+      "extension": ".zip",
+      "source": "https://github.com/nu774/qaac/tree/v3.07",
+      "executable": "qaac64.exe"
+    },
+    {
+      "name": "7-Zip",
+      "version": "26.04",
+      "url": "https://github.com/ip7z/7zip/releases/download/26.04/7z2604-x64.exe",
+      "sha256": "d54bf805f9f3704d1e8db2fa3498ae7ef2df0312b40b558e7c71c734430a665d",
+      "destination": "Libs",
+      "mode": "files",
+      "extension": ".exe",
+      "source": "https://github.com/ip7z/7zip/tree/26.04",
+      "files": {
+        "7z.exe": {
+          "path": "7z.exe",
+          "sha256": "95fff19b73eff77c87c0d7bd32822e43fb90dd2932459f962eb532d8dfb6ba53"
+        },
+        "7z.dll": {
+          "path": "7z.dll",
+          "sha256": "899cd73d7fc60e1c1c35c7de0f5bed3dc69bfe2cecbd48014d868a347970a0b1"
+        }
+      }
+    },
+    {
+      "name": "MKVToolNix",
+      "version": "102.0",
+      "url": "https://mkvtoolnix.download/windows/releases/102.0/mkvtoolnix-64-bit-102.0.7z",
+      "sha256": "cd63c42caee3d9e5b631e029657b3bd322beba77e150cecbfc9ae4923638b049",
+      "destination": "Libs/MKVToolNix",
+      "mode": "directory",
+      "extension": ".7z",
+      "executable": "mkvmerge.exe",
+      "source": "https://mkvtoolnix.download/sources/"
+    },
+    {
+      "name": "Python",
+      "version": "3.13.16",
+      "url": "https://www.python.org/ftp/python/3.13.16/python-3.13.16-embed-amd64.zip",
+      "sha256": "97dae5274cc54867065e8d5a3226e48c35017ed332a0fdb0e27d5b5821961297",
+      "destination": "Libs/python",
+      "mode": "python",
+      "extension": ".zip",
+      "source": "https://www.python.org/downloads/release/python-31316/"
+    },
+    {
+      "name": "VapourSynth",
+      "version": "R79",
+      "url": "https://github.com/vapoursynth/vapoursynth/releases/download/R79/VapourSynth64-Portable-R79.zip",
+      "sha256": "625b3410d903943107291592e90d6f521f829ebb8291d952ee91b8d674bbb153",
+      "destination": "Libs/python/Lib/site-packages",
+      "mode": "vapoursynth",
+      "extension": ".zip",
+      "source": "https://github.com/vapoursynth/vapoursynth/tree/R79"
+    },
+    {
+      "name": "lsmas",
+      "version": "1296.0.0.0",
+      "url": "https://github.com/HomeOfAviSynthPlusEvolution/L-SMASH-Works/releases/download/1296.0.0.0/L-SMASH-Works-r1296.0.0.0.7z",
+      "sha256": "1b9a5ad3ed9ce4b57f6a2463dba4ead54f38aa20d42bd9980032cd14c0f270c3",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "LSMASHSource.dll": {
+          "path": "x64/LSMASHSource.dll",
+          "sha256": "672d9e2887b30d89a06b35724717682193de6ca833a86d4798a9fa160321e658"
+        }
+      },
+      "source": "https://github.com/HomeOfAviSynthPlusEvolution/L-SMASH-Works",
+      "vsrepo_identifier": "systems.innocent.lsmas"
+    },
+    {
+      "name": "vivtc",
+      "version": "R1",
+      "url": "https://github.com/vapoursynth/vivtc/releases/download/R1/vivtc-r1.7z",
+      "sha256": "4d1b22c551c3059a585a3df6b5220f7e5aabf0f1754230560de4fc9183ef480f",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "VIVTC.dll": {
+          "path": "win64/VIVTC.dll",
+          "sha256": "53f52a50daac380729794ccaad0a596bec93001bd48a74f26405ecd8fcbd2f0d"
+        }
+      },
+      "source": "https://github.com/vapoursynth/vivtc",
+      "vsrepo_identifier": "org.ivtc.v"
+    },
+    {
+      "name": "yadifmod",
+      "version": "r10",
+      "url": "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Yadifmod/releases/download/r10/Yadifmod-r10.7z",
+      "sha256": "87d5572224cf0649f53e2be835ea0dfb40d2694012647b8bc38d46f40ce977dc",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "Yadifmod.dll": {
+          "path": "Win64/Yadifmod.dll",
+          "sha256": "62575a35d1182ade1d878469dafc5de0c568a39f523114a003c28554bf5401a1"
+        }
+      },
+      "source": "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Yadifmod",
+      "vsrepo_identifier": "com.holywu.yadifmod"
+    },
+    {
+      "name": "nnedi3cl",
+      "version": "r8",
+      "url": "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL/releases/download/r8/NNEDI3CL-r8.7z",
+      "sha256": "e2bb6e0b4c29efce7c31d278f9ef2113e2b192e37ead211f18788338b21da98b",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "NNEDI3CL.dll": {
+          "path": "plugins64/NNEDI3CL.dll",
+          "sha256": "4dfb34d51d5b277973ccb2dfb922de702258cf6a1b9eb62de990dd1d72c04a2a"
+        }
+      },
+      "source": "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL",
+      "vsrepo_identifier": "com.holywu.nnedi3cl"
+    },
+    {
+      "name": "xyvsf",
+      "version": "r3",
+      "url": "https://github.com/HomeOfVapourSynthEvolution/xy-VSFilter/releases/download/r3/xy-VSFilter-r3.7z",
+      "sha256": "3d14f6f2f30b27b8865cdf1908b64f8bfb141ba629686ebdf753371867ef2019",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "xy-VSFilter.dll": {
+          "path": "plugins64/xy-VSFilter.dll",
+          "sha256": "c011c93c285f976f9446e52e66e4cd035be6956721c568b4a386a528f22380ce"
+        }
+      },
+      "source": "https://github.com/HomeOfVapourSynthEvolution/xy-VSFilter",
+      "vsrepo_identifier": "com.xy.vsfilter"
+    },
+    {
+      "name": "vsfm",
+      "version": "r5.2.6",
+      "url": "https://github.com/sorayuki/VSFilterMod/releases/download/r5.2.6/VSFilterMod_bin.zip",
+      "sha256": "a256dcac5d776d8ab3a592f7ccae7d9151feafb203196fea7836f71b00b48ddd",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".zip",
+      "files": {
+        "VSFilterMod.dll": {
+          "path": "x64/VSFilterMod.dll",
+          "sha256": "87a9c3c1ab7614eda22b8fb367840a87fd34c0c7fb92d7c4d3aa6bb0b2a6ee6b"
+        }
+      },
+      "source": "https://github.com/sorayuki/VSFilterMod",
+      "vsrepo_identifier": "com.holywu.vsfiltermod"
+    },
+    {
+      "name": "havsfunc",
+      "version": "r33",
+      "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/havsfunc/zipball/r33",
+      "sha256": "fb1640ba1bffeb62cadb5f0a1ea581364cb3c8f57fb6f9e2e557d85a613e2bb4",
+      "destination": "Libs/site-packages",
+      "mode": "files",
+      "extension": ".zip",
+      "files": {
+        "havsfunc.py": {
+          "path": "HomeOfVapourSynthEvolution-havsfunc-7a4f5c7/havsfunc.py",
+          "sha256": "4da2839544b1ce9382db670b069dc358228251d147dad91f740a860840e04924",
+          "replacements": [
+            {
+              "old": "_lambda=",
+              "new": "lambda_=",
+              "count": 2
+            },
+            {
+              "old": "_global=",
+              "new": "global_=",
+              "count": 4
+            }
+          ],
+          "patched_sha256": "545280a330e5c8ee73826d07dd86f6466437e7617a622228bae962d63213bf7a"
+        }
+      },
+      "source": "https://github.com/HomeOfVapourSynthEvolution/havsfunc",
+      "vsrepo_identifier": "havsfunc"
+    },
+    {
+      "name": "mvsfunc",
+      "version": "git:865c748",
+      "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/mvsfunc/zipball/865c7486ca860d323754ec4774bc4cca540a7076",
+      "sha256": "33cba456c2be85460c6efda293d90111b959f4c7d8644de90a68d44bfa2a61a4",
+      "destination": "Libs/site-packages",
+      "mode": "files",
+      "extension": ".zip",
+      "files": {
+        "mvsfunc/mvsfunc.py": {
+          "path": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/mvsfunc.py",
+          "sha256": "1adeb385d19bac1f8c541b655d1f98a38e18c9a0065d4483c25184c22908a984"
+        },
+        "mvsfunc/__init__.py": {
+          "path": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/__init__.py",
+          "sha256": "a08e2bc2d1b255ffa373ef52a63506da6a926e72a4d115aaabe5e95272016d89"
+        },
+        "mvsfunc/_metadata.py": {
+          "path": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/_metadata.py",
+          "sha256": "654d75ba830a969d5940e1d6a18a7801a0a8b9860fd9aa85688f954ee0d5bd53"
+        },
+        "mvsfunc/py.typed": {
+          "path": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/py.typed",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "source": "https://github.com/HomeOfVapourSynthEvolution/mvsfunc",
+      "vsrepo_identifier": "mvsfunc"
+    },
+    {
+      "name": "adjust",
+      "version": "git:a3af7cb",
+      "url": "https://api.github.com/repos/dubhatervapoursynth/vapoursynth-adjust/zipball/a3af7cb57cb37747b0667346375536e65b1fed17",
+      "sha256": "cb9e55b6e129f364ccc37619f16e1cb908c1a6dbef7ade8cfcf3d321e144dd0f",
+      "destination": "Libs/site-packages",
+      "mode": "files",
+      "extension": ".zip",
+      "files": {
+        "adjust.py": {
+          "path": "dubhatervapoursynth-vapoursynth-adjust-a3af7cb/adjust.py",
+          "sha256": "22b25995ef37e6d003c2999e51e80d1570376413db9067f703fe4fcef4600bfa"
+        }
+      },
+      "source": "https://github.com/dubhatervapoursynth/vapoursynth-adjust",
+      "vsrepo_identifier": "adjust"
+    },
+    {
+      "name": "mv",
+      "version": "v24",
+      "url": "https://github.com/dubhatervapoursynth/vapoursynth-mvtools/releases/download/v24/vapoursynth-mvtools-v24-win64.7z",
+      "sha256": "b9883003eed100d4ffd44344b658554076b89da6d45041b378e675720426bc95",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "libmvtools.dll": {
+          "path": "libmvtools.dll",
+          "sha256": "530a2f003901a7c0749b0b3797c2a2d2c9b12a2b87c4ca4e9d4ec7937260f091"
+        }
+      },
+      "source": "https://github.com/dubhatervapoursynth/vapoursynth-mvtools",
+      "vsrepo_identifier": "com.nodame.mvtools"
+    },
+    {
+      "name": "misc",
+      "version": "R2",
+      "url": "https://github.com/vapoursynth/vs-miscfilters-obsolete/releases/download/R2/miscfilters-r2.7z",
+      "sha256": "54cf54c4d66151c01c1c663ed0d47ca99c7f1b0a94927bd99b35362c02172bd2",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "MiscFilters.dll": {
+          "path": "win64/MiscFilters.dll",
+          "sha256": "33d911c2f5fd59d33cabb9056348f821421fd18afc0754e8a29ebfe3a35047ab"
+        }
+      },
+      "source": "https://github.com/vapoursynth/vs-miscfilters-obsolete",
+      "vsrepo_identifier": "com.vapoursynth.misc"
+    },
+    {
+      "name": "rgvs",
+      "version": "R1",
+      "url": "https://github.com/vapoursynth/vs-removegrain/releases/download/R1/removegrain-r1.7z",
+      "sha256": "dc408c560de537d273e78607a776f357ba80d9a7a0074d3c10bc9f3e3376d35f",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "RemoveGrainVS.dll": {
+          "path": "win64/RemoveGrainVS.dll",
+          "sha256": "eed537d5f0de88fc4d5acac1d3dde16b3c81524565fd1fe5e4322bd91117c3fe"
+        }
+      },
+      "source": "https://github.com/vapoursynth/vs-removegrain",
+      "vsrepo_identifier": "com.vapoursynth.removegrainvs"
+    },
+    {
+      "name": "fmtc",
+      "version": "r30",
+      "url": "https://github.com/EleonoreMizo/fmtconv/releases/download/r30/fmtconv-r30.zip",
+      "sha256": "f35dba222f2a4d998cd5f777e14382d21337f86fec8ba38832d577ad5795f2e6",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".zip",
+      "files": {
+        "fmtconv.dll": {
+          "path": "win64/fmtconv.dll",
+          "sha256": "ddbe77e0b09d745608202c9fbca2c70d0c26e0428b27b15b92dfd2cad87f1898"
+        }
+      },
+      "source": "https://github.com/EleonoreMizo/fmtconv",
+      "vsrepo_identifier": "fmtconv"
+    },
+    {
+      "name": "znedi3",
+      "version": "r3.3",
+      "url": "https://github.com/sekrit-twc/znedi3/releases/download/r3.3/znedi3_r3.3.7z",
+      "sha256": "2f6512a971cbc94660b716f9689ee9a55ab6d9fd29484ea62d92a20151d56fd6",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "vsznedi3.dll": {
+          "path": "vsznedi3.dll",
+          "sha256": "5c1dd6cc681bb1a812b0285349179e185f2f5962e816810e963af8a3b018a9aa"
+        }
+      },
+      "source": "https://github.com/sekrit-twc/znedi3",
+      "vsrepo_identifier": "xxx.abc.znedi3"
+    },
+    {
+      "name": "nnedi3_weights",
+      "version": "r1",
+      "url": "https://github.com/sekrit-twc/znedi3/releases/download/r1/znedi3_r1.7z",
+      "sha256": "7855efe5cd40f801888c2bf1fcdeacc1d7513b06a10e14a93547fed4b2ca19f0",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "nnedi3_weights.bin": {
+          "path": "nnedi3_weights.bin",
+          "sha256": "27f382430435bb7613deb1c52f3c79c300c9869812cfe29079432a9c82251d42"
+        }
+      },
+      "source": "",
+      "vsrepo_identifier": "com.deinterlace.nnedi3.weights"
+    },
+    {
+      "name": "fftw3_library",
+      "version": "3.3.10",
+      "url": "https://github.com/Vapoursynth-Plugins-Gitify/fftw3/releases/download/3.3.10/FFTW-3.3.10.zip",
+      "sha256": "af8795076a306eea05964fc65f5dfcc5147bf71da4e8a42696b868418fb0020f",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".zip",
+      "files": {
+        "libfftw3-3.dll": {
+          "path": "FFTW-3.3.10/mingw64/libfftw3-3.dll",
+          "sha256": "6e5424ab1ab2690f8dc4756af16e9fa4a75bc7885d84d1cfeb7f254e55bac930"
+        },
+        "libfftw3f-3.dll": {
+          "path": "FFTW-3.3.10/mingw64/libfftw3f-3.dll",
+          "sha256": "8f35a79e1299edf403edb8f3269c833b79a81d2ef4b45ba378a66f47c19c957a"
+        }
+      },
+      "source": "https://github.com/Vapoursynth-Plugins-Gitify/fftw3",
+      "vsrepo_identifier": "org.fftw.fftw3"
+    },
+    {
+      "name": "eedi3m",
+      "version": "r8",
+      "url": "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-EEDI3/releases/download/r8/EEDI3-r8.7z",
+      "sha256": "fa8515e0aa711ca979a87d812860c8582c7789fd805df2be10760748c0a9c486",
+      "destination": "Libs/python/Lib/site-packages/vapoursynth/plugins",
+      "mode": "files",
+      "extension": ".7z",
+      "files": {
+        "EEDI3m.dll": {
+          "path": "EEDI3m.dll",
+          "sha256": "8fc1a433112707164c1a87d2c9e78709822b7ca89325f0d691d36337f6bf9051"
+        }
+      },
+      "source": "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-EEDI3",
+      "vsrepo_identifier": "com.holywu.eedi3"
+    }
+  ]
+}
