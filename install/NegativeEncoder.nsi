@@ -6,7 +6,7 @@
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "消极压制"
 !ifndef PRODUCT_VERSION
-  !define PRODUCT_VERSION "5.1.0.0"
+  !define PRODUCT_VERSION "5.2.0.0"
 !endif
 !ifndef PACKAGE_DIR
   !define PACKAGE_DIR ".."

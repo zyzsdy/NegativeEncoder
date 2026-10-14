@@ -64,7 +64,7 @@ try {
     New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
     $installer = Join-Path $OutputDirectory "NegativeEncoder-$Version-win-x64-setup.exe"
     & $MakeNsis /INPUTCHARSET UTF8 "/DPRODUCT_VERSION=$Version" "/DPACKAGE_DIR=$PackageDirectory" `
-        "/DOUTPUT_FILE=$installer" (Join-Path $PSScriptRoot 'nvinstall_v5.0.4_v2.nsi')
+        "/DOUTPUT_FILE=$installer" (Join-Path $PSScriptRoot 'NegativeEncoder.nsi')
     if ($LASTEXITCODE -ne 0) { throw 'NSIS compilation failed' }
     if (!(Test-Path -LiteralPath $installer -PathType Leaf)) { throw 'NSIS produced no installer' }
 

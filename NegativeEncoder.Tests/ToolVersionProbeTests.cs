@@ -8,7 +8,7 @@ public class ToolVersionProbeTests
     [Theory]
     [InlineData("ffmpeg version n7.1.1", "7.1.1")]
     [InlineData("release/6.1", "6.1")]
-    [InlineData("v5.1.0", "5.1.0")]
+    [InlineData("v5.2.0", "5.2.0")]
     public void NormalizeVersion_ReturnsNumericPart(string input, string expected)
     {
         var normalized = ToolVersionProbe.NormalizeVersion(input);

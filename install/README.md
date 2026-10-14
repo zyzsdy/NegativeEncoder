@@ -1,8 +1,8 @@
 # Windows x64 安装包
 
-普通 CI 构建并测试主程序和收集脚本。GitHub Actions 的 **Windows Installer** 可手动运行，也会在推送数字版本 tag（例如 `v5.1.0` 或 `v5.1.0.0`）时自动运行。
+当前应用版本为 **5.2.0.0**。普通 CI 构建并测试主程序和收集脚本。GitHub Actions 的 **Windows Installer** 可手动运行，也会在推送数字版本 tag（例如 `v5.2.0` 或 `v5.2.0.0`）时自动运行。
 
-成功后下载 artifact **NegativeEncoder-Windows-x64**，其中包含安装程序、SHA256SUMS、依赖锁文件及第三方声明。tag 构建还会创建/更新草稿 Release；不会覆盖已发布的 Release。手动运行采用项目 Version，tag 构建采用 tag 的数字版本。
+成功后下载 artifact **NegativeEncoder-Windows-x64**，其中包含安装程序、SHA256SUMS、依赖锁文件及第三方声明。tag 构建还会将这些文件上传到对应的 GitHub Release 并自动发布；已有 Release 会更新同名附件，保留标题和说明。新 Release 会先创建为草稿，附件上传成功后再发布。手动运行普通分支采用项目 Version，仅上传 artifact；tag 构建采用 tag 的数字版本并发布 Release。
 
 ## 本地构建
 
