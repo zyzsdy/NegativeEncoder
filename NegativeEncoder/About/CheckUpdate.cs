@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NegativeEncoder.Utils;
@@ -76,7 +76,7 @@ public class CheckUpdate
         string responseStr;
         try
         {
-            var response = await httpClient.GetAsync(githubApiUrl);
+            using var response = await ToolVersionProbe.GetWithHostValidationAsync(httpClient, githubApiUrl);
             if (response.StatusCode != HttpStatusCode.OK)
                 return new AppUpdateResult(false, true, string.Empty, string.Empty, "主程序更新检查失败");
 
@@ -84,6 +84,18 @@ public class CheckUpdate
 
             if (string.IsNullOrEmpty(responseStr))
                 return new AppUpdateResult(false, true, string.Empty, string.Empty, "主程序更新检查失败");
+        }
+        catch (InvalidOperationException)
+        {
+            return new AppUpdateResult(false, true, string.Empty, string.Empty, "主程序更新源校验失败");
+        }
+        catch (HttpRequestException)
+        {
+            return new AppUpdateResult(false, true, string.Empty, string.Empty, "主程序更新检查网络/证书失败");
+        }
+        catch (AuthenticationException)
+        {
+            return new AppUpdateResult(false, true, string.Empty, string.Empty, "主程序更新检查网络/证书失败");
         }
         catch
         {
@@ -96,17 +108,17 @@ public class CheckUpdate
         {
             var releaseObj = JArray.Parse(responseStr);
             var releaseNote = releaseObj[0];
-            tag = releaseNote["tag_name"].ToString();
-            url = releaseNote["html_url"].ToString();
+            tag = releaseNote["tag_name"]?.ToString() ?? string.Empty;
+            url = releaseNote["html_url"]?.ToString() ?? string.Empty;
         }
         catch
         {
             return new AppUpdateResult(false, true, string.Empty, string.Empty, "主程序更新解析失败");
         }
 
-        var currentVersionPure = NormalizeVersion(AppContext.Version.CurrentVersion);
-        var latestVersionPure = NormalizeVersion(tag);
-        var isLatest = !IsNewerVersion(latestVersionPure, currentVersionPure);
+        var currentVersionPure = ToolVersionProbe.NormalizeVersion(AppContext.Version.CurrentVersion);
+        var latestVersionPure = ToolVersionProbe.NormalizeVersion(tag);
+        var isLatest = !ToolVersionProbe.IsNewerVersion(latestVersionPure, currentVersionPure);
         if (string.IsNullOrWhiteSpace(currentVersionPure) || string.IsNullOrWhiteSpace(latestVersionPure))
         {
             var nowVersionTag = $"v{AppContext.Version.CurrentVersion}";
@@ -119,39 +131,37 @@ public class CheckUpdate
     private static async Task<List<LibUpdateResult>> CheckLibUpdatesAsync(HttpClient httpClient)
     {
         var baseDir = AppContext.EncodingContext.BaseDir;
-        var libUpdates = new List<LibUpdateResult>
-        {
+        return
+        [
             await CheckLibUpdateAsync(
                 "FFmpeg",
                 Path.Combine(baseDir, "Libs", "ffmpeg.exe"),
                 "-version",
-                new Regex(@"ffmpeg version\s+([^\s]+)", RegexOptions.IgnoreCase),
+                ToolVersionProbe.FfmpegVersionRegex,
                 async () => await GetLatestFfmpegTagAsync(httpClient),
                 "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z"),
             await CheckLibUpdateAsync(
                 "NVEnc",
                 Path.Combine(baseDir, "Libs", "NVEncC64.exe"),
                 "--version",
-                new Regex(@"NVEncC.*?\s([0-9]+(?:\.[0-9]+)+)", RegexOptions.IgnoreCase),
+                ToolVersionProbe.NvencVersionRegex,
                 async () => await GetLatestRigayaReleaseAsync(httpClient, "NVEnc"),
                 "https://github.com/rigaya/NVEnc/releases"),
             await CheckLibUpdateAsync(
                 "QSVEnc",
                 Path.Combine(baseDir, "Libs", "QSVEncC64.exe"),
                 "--version",
-                new Regex(@"QSVEncC.*?\s([0-9]+(?:\.[0-9]+)+)", RegexOptions.IgnoreCase),
+                ToolVersionProbe.QsvencVersionRegex,
                 async () => await GetLatestRigayaReleaseAsync(httpClient, "QSVEnc"),
                 "https://github.com/rigaya/QSVEnc/releases"),
             await CheckLibUpdateAsync(
                 "VCEEnc",
                 Path.Combine(baseDir, "Libs", "VCEEncC64.exe"),
                 "--version",
-                new Regex(@"VCEEnc.*?\s([0-9]+(?:\.[0-9]+)+)", RegexOptions.IgnoreCase),
+                ToolVersionProbe.VceencVersionRegex,
                 async () => await GetLatestRigayaReleaseAsync(httpClient, "VCEEnc"),
                 "https://github.com/rigaya/VCEEnc/releases")
-        };
-
-        return libUpdates;
+        ];
     }
 
     private static async Task<LibUpdateResult> CheckLibUpdateAsync(
@@ -165,18 +175,18 @@ public class CheckUpdate
         if (!File.Exists(exePath))
             return new LibUpdateResult(name, string.Empty, string.Empty, updateUrl, false, "本地文件不存在");
 
-        var currentVersion = await GetToolVersionAsync(exePath, versionArguments, versionRegex);
+        var currentVersion = await ToolVersionProbe.GetToolVersionAsync(exePath, versionArguments, versionRegex);
         if (string.IsNullOrWhiteSpace(currentVersion))
             return new LibUpdateResult(name, string.Empty, string.Empty, updateUrl, false, "本地版本获取失败");
 
         var latestVersion = await latestVersionProvider();
         if (string.IsNullOrWhiteSpace(latestVersion))
-            return new LibUpdateResult(name, NormalizeVersion(currentVersion), string.Empty, updateUrl, false,
-                "在线版本获取失败");
+            return new LibUpdateResult(name, ToolVersionProbe.NormalizeVersion(currentVersion), string.Empty, updateUrl,
+                false, "在线版本获取失败");
 
-        var normalizedCurrent = NormalizeVersion(currentVersion);
-        var normalizedLatest = NormalizeVersion(latestVersion);
-        var hasUpdate = IsNewerVersion(normalizedLatest, normalizedCurrent);
+        var normalizedCurrent = ToolVersionProbe.NormalizeVersion(currentVersion);
+        var normalizedLatest = ToolVersionProbe.NormalizeVersion(latestVersion);
+        var hasUpdate = ToolVersionProbe.IsNewerVersion(normalizedLatest, normalizedCurrent);
 
         return new LibUpdateResult(name, normalizedCurrent, normalizedLatest, updateUrl, hasUpdate, string.Empty);
     }
@@ -186,17 +196,16 @@ public class CheckUpdate
         const string activeBranchesUrl = "https://github.com/FFmpeg/FFmpeg/branches/active";
         try
         {
-            var response = await httpClient.GetAsync(activeBranchesUrl);
+            using var response = await ToolVersionProbe.GetWithHostValidationAsync(httpClient, activeBranchesUrl);
             if (response.StatusCode != HttpStatusCode.OK) return string.Empty;
 
             var html = await response.Content.ReadAsStringAsync();
             if (string.IsNullOrEmpty(html)) return string.Empty;
 
             var tags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (Match match in Regex.Matches(html, @"\brelease/\d+(?:\.\d+)+\b", RegexOptions.IgnoreCase))
+            foreach (Match match in ToolVersionProbe.FfmpegTagRegex.Matches(html))
                 tags.Add(match.Value);
-
-            foreach (Match match in Regex.Matches(html, @"\bn\d+(?:\.\d+)+\b", RegexOptions.IgnoreCase))
+            foreach (Match match in ToolVersionProbe.FfmpegNightlyTagRegex.Matches(html))
                 tags.Add(match.Value);
 
             if (tags.Count == 0) return string.Empty;
@@ -205,7 +214,7 @@ public class CheckUpdate
             var latestVersion = new System.Version(0, 0);
             foreach (var tag in tags)
             {
-                var numeric = NormalizeVersion(tag);
+                var numeric = ToolVersionProbe.NormalizeVersion(tag);
                 if (!System.Version.TryParse(numeric, out var parsed)) continue;
 
                 if (parsed > latestVersion)
@@ -228,7 +237,7 @@ public class CheckUpdate
         var releasesApi = $"https://api.github.com/repos/rigaya/{repoName}/releases/latest";
         try
         {
-            var response = await httpClient.GetAsync(releasesApi);
+            using var response = await ToolVersionProbe.GetWithHostValidationAsync(httpClient, releasesApi);
             if (response.StatusCode != HttpStatusCode.OK) return string.Empty;
 
             var responseStr = await response.Content.ReadAsStringAsync();
@@ -241,73 +250,6 @@ public class CheckUpdate
         {
             return string.Empty;
         }
-    }
-
-    private static async Task<string> GetToolVersionAsync(string exePath, string arguments, Regex versionRegex)
-    {
-        try
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = exePath,
-                Arguments = arguments,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using var process = new Process { StartInfo = psi };
-            process.Start();
-
-            var outputTask = process.StandardOutput.ReadToEndAsync();
-            var errorTask = process.StandardError.ReadToEndAsync();
-            var exitTask = process.WaitForExitAsync();
-
-            var completed = await Task.WhenAny(exitTask, Task.Delay(4000));
-            if (completed != exitTask)
-            {
-                try
-                {
-                    process.Kill();
-                }
-                catch
-                {
-                    // ignored
-                }
-
-                return string.Empty;
-            }
-
-            var output = await outputTask;
-            var error = await errorTask;
-            var text = string.IsNullOrWhiteSpace(output) ? error : output;
-            var match = versionRegex.Match(text ?? string.Empty);
-            return match.Success ? match.Groups[1].Value : string.Empty;
-        }
-        catch
-        {
-            return string.Empty;
-        }
-    }
-
-    private static string NormalizeVersion(string version)
-    {
-        if (string.IsNullOrWhiteSpace(version)) return string.Empty;
-
-        var match = Regex.Match(version, @"\d+(?:\.\d+)+");
-        return match.Success ? match.Value : version.Trim();
-    }
-
-    private static bool IsNewerVersion(string latestVersion, string currentVersion)
-    {
-        if (string.IsNullOrWhiteSpace(latestVersion) || string.IsNullOrWhiteSpace(currentVersion)) return false;
-
-        if (System.Version.TryParse(latestVersion, out var latestParsed) &&
-            System.Version.TryParse(currentVersion, out var currentParsed))
-            return latestParsed > currentParsed;
-
-        return !string.Equals(latestVersion, currentVersion, StringComparison.OrdinalIgnoreCase);
     }
 
     private record AppUpdateResult(bool Success, bool IsLatest, string LatestTag, string Url, string ErrorMessage);

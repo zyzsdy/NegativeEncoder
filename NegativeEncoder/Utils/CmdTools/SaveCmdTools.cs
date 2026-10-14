@@ -11,14 +11,15 @@ public static class SaveCmdTools
         var batName = "Libs\\startnecmd.bat";
         var batFullName = Path.Combine(baseDir, batName);
 
-        var batContent = "@set ___NE_VER_=v" + AppContext.Version.CurrentVersion + "\n" +
+        var batContent = "@chcp 65001 >nul\n" +
+                         "@set ___NE_VER_=v" + AppContext.Version.CurrentVersion + "\n" +
                          "@echo 消极压制工具包 %___NE_VER_%\n" +
                          "@echo ====================================\n" +
                          "@title 消极压制工具包 %___NE_VER_%\n" +
                          "@set PATH=%PATH%;%~dp0\n" +
                          "@pushd %1";
 
-        TempFile.SaveTempFile(batFullName, batContent);
+        TempFile.SaveTempFile(batFullName, batContent, false);
     }
 
     public static void OpenCmdTools()

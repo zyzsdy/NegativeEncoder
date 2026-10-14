@@ -5,7 +5,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs;
 
 public class HDRTagUseFFMpeg
 {
-    public static (string exefile, string args) Build(string param, string input, string output, Preset preset,
+    internal static TaskLaunchInfo Build(string param, string input, string output, Preset preset,
         bool useHdr, string originInput, string extra)
     {
         var exeFileName = Path.Combine(AppContext.EncodingContext.BaseDir, "Libs\\ffmpeg.exe");
@@ -38,6 +38,6 @@ public class HDRTagUseFFMpeg
                    $"-bsf:v hevc_metadata=colour_primaries={prim}:transfer_characteristics={transfer}:matrix_coefficients={matrix} " +
                    $"-f {format} \"{output}\"";
 
-        return (exeFileName, args);
+        return TaskLaunchInfo.FromProcess(exeFileName, args);
     }
 }

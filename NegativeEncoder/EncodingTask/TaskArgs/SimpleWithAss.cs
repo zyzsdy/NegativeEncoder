@@ -6,7 +6,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs;
 
 public static class SimpleWithAss
 {
-    public static (string exefile, string args) Build(string param, string input, string output, Preset preset,
+    internal static TaskLaunchInfo Build(string param, string input, string output, Preset preset,
         bool useHdr, string originInput, string assInput)
     {
         var exeFileName = TaskArgBuilder.GetBaseEncoderFile(preset);
@@ -59,6 +59,6 @@ public static class SimpleWithAss
         var subBurnArgs = $"--vpp-subburn filename=\"{assInput}\"";
 
         var args = $"{ioargs} {string.Join(" ", addArgs)} {gargs} {subBurnArgs}";
-        return (exeFileName, args);
+        return TaskLaunchInfo.FromProcess(exeFileName, args);
     }
 }

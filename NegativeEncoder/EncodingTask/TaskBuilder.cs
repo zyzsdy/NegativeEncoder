@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using NegativeEncoder.EncodingTask.TaskArgs;
 using NegativeEncoder.FileSelector;
 using NegativeEncoder.Presets;
 
 namespace NegativeEncoder.EncodingTask;
 
-public delegate (string exefile, string args) BuildAction(string param, string input, string output, Preset preset,
+internal delegate TaskLaunchInfo BuildAction(string param, string input, string output, Preset preset,
     bool useHdr, string originInput, string extra);
 
 public static class TaskBuilder
@@ -36,12 +35,10 @@ public static class TaskBuilder
         }
 
         var taskArgBuilder = TaskArgBuilders[action];
-
         var useHdr = param == "HDR" || AppContext.Config.ForceHDR;
-
         var (ext, _) = FileName.GetOutputExt(currentPreset.OutputFormat);
 
-        //为每个选中的项目生成任务并推入任务队列
+        // 为每个选中的项目生成任务并推入任务队列
         foreach (var filePath in selectPaths)
         {
             var name = filePath.Filename;
@@ -53,23 +50,24 @@ public static class TaskBuilder
             var thisOutput = FileName.RecalcOutputPath(thisInput, output, "_neenc", ext);
             if (thisInput == input) thisOutput = output;
 
-            var (exeFile, exeArgs) =
+            var launchInfo =
                 taskArgBuilder.Invoke(param, thisInput, thisOutput, currentPreset, useHdr, input, extra);
 
-            newTask.RegTask(exeFile, exeArgs);
+            newTask.RegTask(launchInfo);
             newTask.RegInputOutput(thisInput, thisOutput);
-            newTask.RunLog += $"{exeFile} {exeArgs}\n";
-            newTask.ProcessStop += async _ =>
+            if (!string.IsNullOrWhiteSpace(launchInfo.CommandPreview))
+                newTask.RunLog += $"{launchInfo.CommandPreview}\n";
+
+            newTask.ProcessStop += _ =>
             {
                 AppContext.Status.MainStatus = $"{name} 任务完成";
-                await Task.Delay(500);
                 TaskProvider.Schedule();
             };
 
             AppContext.EncodingContext.TaskQueue.Add(newTask);
         }
 
-        //调度任务
+        // 调度任务
         AppContext.Status.MainStatus = "开始任务调度";
         TaskProvider.Schedule();
     }

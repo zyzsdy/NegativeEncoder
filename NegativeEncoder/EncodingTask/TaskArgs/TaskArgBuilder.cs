@@ -7,9 +7,23 @@ namespace NegativeEncoder.EncodingTask.TaskArgs;
 
 public static class TaskArgBuilder
 {
+    private static string SanitizeCustomParameters(string customParameters)
+    {
+        if (string.IsNullOrEmpty(customParameters)) return string.Empty;
+
+        var sb = new System.Text.StringBuilder(customParameters.Length);
+        foreach (var c in customParameters)
+        {
+            if (c == '\0') continue;
+            sb.Append(c);
+        }
+
+        return sb.ToString();
+    }
+
     public static string GenericArgumentBuilder(Preset preset, bool useHdr, bool usePipe)
     {
-        if (preset.IsUseCustomParameters) return preset.CustomParameters;
+        if (preset.IsUseCustomParameters) return SanitizeCustomParameters(preset.CustomParameters);
 
         var argList = new List<string>
         {
@@ -308,7 +322,7 @@ public static class TaskArgBuilder
 
     public static string GetBaseEncoderFile(Preset preset)
     {
-        var encodingPath = "Libs\\" + preset.Encoder switch
+        var executable = preset.Encoder switch
         {
             Encoder.NVENC => "NVEncC64.exe",
             Encoder.QSV => "QSVEncC64.exe",
@@ -316,7 +330,7 @@ public static class TaskArgBuilder
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        return Path.Combine(AppContext.EncodingContext.BaseDir, encodingPath);
+        return Path.Combine(AppContext.EncodingContext.BaseDir, "Libs", executable);
     }
 
     public static string GetFormat(OutputFormat format)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -9,78 +9,23 @@ namespace NegativeEncoder.SystemOptions;
 
 public static class SystemOption
 {
-    public static async Task<T> ReadOption<T>() where T : class, new()
+    public static Task<T> ReadOption<T>() where T : class, new()
     {
-        var defaultOption = new T();
         var configName = typeof(T).Name;
-
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var configPath = Path.Combine(appDataPath, $"NegativeEncoder/Config/{configName}.json");
-
-        //判断文件是否存在
-        if (!File.Exists(configPath)) return defaultOption;
-
-        //在LTSC2022上Async函数发生阻塞情况，暂时换同步
-        var configFileString = await File.ReadAllTextAsync(configPath);
-        var jsonOption = JsonConvert.DeserializeObject<T>(configFileString);
-
-        return jsonOption;
+        var configPath = Path.Combine(GetConfigBasePath(), $"{configName}.json");
+        return ReadOptionInternalAsync(configPath, new T(), backupOnInvalid: true);
     }
 
-    public static async Task<List<T>> ReadListOption<T>() where T : class, new()
+    public static Task<List<T>> ReadListOption<T>() where T : class, new()
     {
-        var defaultOption = new List<T>();
         var configName = typeof(T).Name;
-
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var configPath = Path.Combine(appDataPath, $"NegativeEncoder/Config/{configName}.list.json");
-
-        //判断文件是否存在
-        if (!File.Exists(configPath)) return defaultOption;
-
-        var configFileString = "";
-        try
-        {
-            await using var configFileStream = new FileStream(configPath, FileMode.Open);
-            using var sr = new StreamReader(configFileStream);
-            configFileString = await sr.ReadToEndAsync();
-        }
-        catch (Exception e)
-        {
-            MessageBox.Show(e.ToString(), e.Message);
-        }
-
-        if (string.IsNullOrEmpty(configFileString)) return defaultOption;
-
-        var jsonOption = JsonConvert.DeserializeObject<List<T>>(configFileString);
-
-        return jsonOption;
+        var configPath = Path.Combine(GetConfigBasePath(), $"{configName}.list.json");
+        return ReadOptionInternalAsync(configPath, new List<T>(), backupOnInvalid: true);
     }
 
-    public static async Task<List<T>> ReadListOption<T>(string filePath) where T : class, new()
+    public static Task<List<T>> ReadListOption<T>(string filePath) where T : class, new()
     {
-        var defaultOption = new List<T>();
-
-        //判断文件是否存在
-        if (!File.Exists(filePath)) return defaultOption;
-
-        var configFileString = "";
-        try
-        {
-            await using var configFileStream = new FileStream(filePath, FileMode.Open);
-            using var sr = new StreamReader(configFileStream);
-            configFileString = await sr.ReadToEndAsync();
-        }
-        catch (Exception e)
-        {
-            MessageBox.Show(e.ToString(), e.Message);
-        }
-
-        if (string.IsNullOrEmpty(configFileString)) return defaultOption;
-
-        var jsonOption = JsonConvert.DeserializeObject<List<T>>(configFileString);
-
-        return jsonOption;
+        return ReadOptionInternalAsync(filePath, new List<T>(), backupOnInvalid: false);
     }
 
     public static async Task SaveOption(object config)
@@ -90,14 +35,10 @@ public static class SystemOption
         lock (config)
         {
             var configName = config.GetType().Name;
-
-            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            configPath = Path.Combine(appDataPath, $"NegativeEncoder/Config/{configName}.json");
+            configPath = Path.Combine(GetConfigBasePath(), $"{configName}.json");
 
             var configBase = Path.GetDirectoryName(configPath);
-
-            //判断目录是否存在
-            if (!Directory.Exists(configBase)) Directory.CreateDirectory(configBase!);
+            if (!string.IsNullOrEmpty(configBase) && !Directory.Exists(configBase)) Directory.CreateDirectory(configBase);
 
             jsonString = JsonConvert.SerializeObject(config);
         }
@@ -108,14 +49,10 @@ public static class SystemOption
     public static async Task SaveListOption<T>(List<T> configs)
     {
         var configName = typeof(T).Name;
-
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var configPath = Path.Combine(appDataPath, $"NegativeEncoder/Config/{configName}.list.json");
+        var configPath = Path.Combine(GetConfigBasePath(), $"{configName}.list.json");
 
         var configBase = Path.GetDirectoryName(configPath);
-
-        //判断目录是否存在
-        if (!Directory.Exists(configBase)) Directory.CreateDirectory(configBase!);
+        if (!string.IsNullOrEmpty(configBase) && !Directory.Exists(configBase)) Directory.CreateDirectory(configBase);
 
         var jsonString = JsonConvert.SerializeObject(configs);
         await File.WriteAllTextAsync(configPath, jsonString);
@@ -124,11 +61,74 @@ public static class SystemOption
     public static async Task SaveListOption<T>(List<T> configs, string filePath)
     {
         var fileBase = Path.GetDirectoryName(filePath);
-
-        //判断目录是否存在
-        if (!Directory.Exists(fileBase)) Directory.CreateDirectory(fileBase!);
+        if (!string.IsNullOrEmpty(fileBase) && !Directory.Exists(fileBase)) Directory.CreateDirectory(fileBase);
 
         var jsonString = JsonConvert.SerializeObject(configs);
         await File.WriteAllTextAsync(filePath, jsonString);
+    }
+
+    private static string GetConfigBasePath()
+    {
+        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        return Path.Combine(appDataPath, "NegativeEncoder", "Config");
+    }
+
+    private static async Task<TOption> ReadOptionInternalAsync<TOption>(string filePath, TOption defaultOption,
+        bool backupOnInvalid)
+    {
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return defaultOption;
+
+        try
+        {
+            var configFileString = await File.ReadAllTextAsync(filePath);
+            if (string.IsNullOrWhiteSpace(configFileString))
+            {
+                if (backupOnInvalid) BackupInvalidConfig(filePath);
+                return defaultOption;
+            }
+
+            var jsonOption = JsonConvert.DeserializeObject<TOption>(configFileString);
+            if (jsonOption == null)
+            {
+                if (backupOnInvalid) BackupInvalidConfig(filePath);
+                return defaultOption;
+            }
+
+            return jsonOption;
+        }
+        catch (JsonException)
+        {
+            if (backupOnInvalid) BackupInvalidConfig(filePath);
+            return defaultOption;
+        }
+        catch (Exception e)
+        {
+            if (backupOnInvalid) BackupInvalidConfig(filePath);
+            MessageBox.Show(e.ToString(), e.Message);
+            return defaultOption;
+        }
+    }
+
+    private static void BackupInvalidConfig(string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath)) return;
+
+            var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var backupPath = $"{filePath}.bad.{timestamp}";
+            var index = 1;
+            while (File.Exists(backupPath))
+            {
+                backupPath = $"{filePath}.bad.{timestamp}.{index}";
+                index++;
+            }
+
+            File.Copy(filePath, backupPath, true);
+        }
+        catch
+        {
+            // ignored
+        }
     }
 }

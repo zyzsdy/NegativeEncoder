@@ -24,6 +24,7 @@
     <None Remove="Resources\baseline_add_black_18dp.png" />
     <None Remove="Resources\baseline_remove_black_18dp.png" />
     <None Remove="Resources\up.bmp" />
+    <Compile Remove="Utils\ProcessExtend.cs" />
   </ItemGroup>
 
   <ItemGroup>

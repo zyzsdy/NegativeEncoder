@@ -14,13 +14,7 @@ public static class HttpClientFactory
             if (_factory == null)
             {
                 var serviceCollection = new ServiceCollection();
-                serviceCollection.AddHttpClient("default").ConfigurePrimaryHttpMessageHandler(h =>
-                {
-                    return new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true
-                    };
-                });
+                serviceCollection.AddHttpClient("default");
 
                 var serviceProvider = serviceCollection.BuildServiceProvider();
                 _factory = serviceProvider.GetService<IHttpClientFactory>();

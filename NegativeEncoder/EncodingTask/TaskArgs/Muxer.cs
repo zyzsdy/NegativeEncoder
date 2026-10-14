@@ -17,7 +17,7 @@ public class Muxer
     /// <param name="originInput"></param>
     /// <param name="extra">混流目标输出地址</param>
     /// <returns></returns>
-    public static (string exefile, string args) Build(string param, string input, string output, Preset preset,
+    internal static TaskLaunchInfo Build(string param, string input, string output, Preset preset,
         bool useHdr, string originInput, string extra)
     {
         var baseDir = AppContext.EncodingContext.BaseDir;
@@ -33,7 +33,7 @@ public class Muxer
             var mkvmerge = Path.Combine(baseDir, "Libs\\mkvmerge.exe");
             var mkvArgs = $"-o \"{muxOutput}\" -A \"{input}\" -D \"{audioInput}\"";
 
-            return (mkvmerge, mkvArgs);
+            return TaskLaunchInfo.FromProcess(mkvmerge, mkvArgs);
         }
 
         var ffmpegFile = Path.Combine(baseDir, "Libs\\ffmpeg.exe");
@@ -43,6 +43,6 @@ public class Muxer
         var args =
             $"-y -i \"{input}\" -i \"{audioInput}\" -map 0:v -map 1:a -c copy {extraArgs} -f {format} \"{muxOutput}\"";
 
-        return (ffmpegFile, args);
+        return TaskLaunchInfo.FromProcess(ffmpegFile, args);
     }
 }

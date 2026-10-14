@@ -6,7 +6,7 @@ namespace NegativeEncoder.EncodingTask.TaskArgs;
 
 public static class SimpleEncoding
 {
-    public static (string exefile, string args) Build(string param, string input, string output, Preset preset,
+    internal static TaskLaunchInfo Build(string param, string input, string output, Preset preset,
         bool useHdr, string originInput, string extra)
     {
         var exeFileName = TaskArgBuilder.GetBaseEncoderFile(preset);
@@ -51,12 +51,13 @@ public static class SimpleEncoding
             else if (preset.AudioEncode == AudioEncode.Encode)
             {
                 addArgs.Add("--audio-codec");
+                addArgs.Add("aac");
                 addArgs.Add("--audio-bitrate");
                 addArgs.Add(preset.AudioBitrate);
             }
         }
 
         var args = $"{ioargs} {string.Join(" ", addArgs)} {gargs}";
-        return (exeFileName, args);
+        return TaskLaunchInfo.FromProcess(exeFileName, args);
     }
 }

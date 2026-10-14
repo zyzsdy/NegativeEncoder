@@ -4,6 +4,11 @@ namespace NegativeEncoder.VsScriptBuilder;
 
 public static class VsScriptBuilder
 {
+    private static string EscapePythonRawSingleQuotedPath(string path)
+    {
+        return string.IsNullOrEmpty(path) ? string.Empty : path.Replace("'", "\\'");
+    }
+
     public static string Build(VsScript vsOption, string input)
     {
         var sb = new StringBuilder();
@@ -15,8 +20,9 @@ public static class VsScriptBuilder
         sb.Append("\n");
 
         // 插入文件路径
-        sb.AppendFormat("VIDEO_PATH = r'{0}'\n", input);
-        if (!string.IsNullOrEmpty(vsOption.SubFile)) sb.AppendFormat("SUB_PATH = r'{0}'\n", vsOption.SubFile);
+        sb.AppendFormat("VIDEO_PATH = r'{0}'\n", EscapePythonRawSingleQuotedPath(input));
+        if (!string.IsNullOrEmpty(vsOption.SubFile))
+            sb.AppendFormat("SUB_PATH = r'{0}'\n", EscapePythonRawSingleQuotedPath(vsOption.SubFile));
         sb.Append("\n");
 
         // 插入源
