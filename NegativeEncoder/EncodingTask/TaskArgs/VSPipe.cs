@@ -25,7 +25,7 @@ public class VSPipe
 
         var plan = new TaskExecutionPlan("VSPipe");
 
-        var vspipeFile = Path.Combine(baseDir, "Libs\\VSPipe.exe");
+        var vspipeFile = ToolPaths.VSPipe(baseDir);
         var encoderFile = TaskArgBuilder.GetBaseEncoderFile(preset);
         var ffmpegFile = Path.Combine(baseDir, "Libs\\ffmpeg.exe");
         var gargs = TaskArgBuilder.GenericArgumentBuilder(preset, useHdr, true);
@@ -68,7 +68,7 @@ public class VSPipe
                     new ProcessEndpoint(encoderFile, $"--y4m {ioargs} {gargs}"),
                     true));
 
-                var qaacFile = Path.Combine(baseDir, "Libs\\qaac64.exe");
+                var qaacFile = ToolPaths.Resolve(baseDir, "qaac", "qaac64.exe");
                 var audioOutput = Path.Combine(workDir, Path.GetFileNameWithoutExtension(output) + "_tempAudio.m4a");
                 cleanupTargets.Add(audioOutput);
                 plan.Steps.Add(new PipelineStep(

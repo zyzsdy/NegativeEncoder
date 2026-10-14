@@ -7,6 +7,7 @@ using System.Windows;
 using CommandLine;
 using CommandLine.Text;
 using NegativeEncoder.Utils.CmdTools;
+using NegativeEncoder.Utils;
 
 namespace NegativeEncoder;
 
@@ -16,7 +17,7 @@ public class Options
     public string BaseDir { get; set; }
 
     [Option("runFunc", Required = false,
-        HelpText = "执行一些功能，并退出。(SaveCmdTools|OpenCmdTools|InstallCmdTools|UninstallCmdTools)")]
+        HelpText = "执行一些功能，并退出。(SaveCmdTools|OpenCmdTools|InstallCmdTools|UninstallCmdTools|CheckQaac|InstallAppleRuntime|PrepareAppleRuntime)")]
     public string RunFunction { get; set; }
 }
 
@@ -62,6 +63,25 @@ internal class Program
     {
         switch (runFunction)
         {
+            case "CheckQaac":
+                var result = QaacProbe.CheckAsync(ToolPaths.Resolve(AppContext.EncodingContext.BaseDir, "qaac", "qaac64.exe"))
+                    .GetAwaiter().GetResult();
+                Console.WriteLine(result.Message);
+                Environment.ExitCode = result.IsAvailable ? 0 : 1;
+                break;
+            case "InstallAppleRuntime":
+            case "PrepareAppleRuntime":
+                try
+                {
+                    Environment.ExitCode = AppleRuntimeInstaller.RunAsync(AppContext.EncodingContext.BaseDir,
+                        runFunction == "PrepareAppleRuntime").GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Apple 运行库准备失败：{ex.Message}");
+                    Environment.ExitCode = 1;
+                }
+                break;
             case "SaveCmdTools":
                 SaveCmdTools.SaveOpenBat();
                 break;

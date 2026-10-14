@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace NegativeEncoder.EncodingTask;
 
@@ -41,6 +42,26 @@ internal sealed class TaskExecutionPlan
 
     public string Name { get; }
     public List<TaskExecutionStep> Steps { get; } = [];
+
+    public string QaacExecutable
+    {
+        get
+        {
+            foreach (var step in Steps)
+            {
+                var executables = step switch
+                {
+                    ProcessStep process => new[] { process.Executable },
+                    PipelineStep pipeline => new[] { pipeline.Producer.Executable, pipeline.Consumer.Executable },
+                    _ => Array.Empty<string>()
+                };
+                foreach (var executable in executables)
+                    if (string.Equals(Path.GetFileName(executable), "qaac64.exe", StringComparison.OrdinalIgnoreCase))
+                        return executable;
+            }
+            return null;
+        }
+    }
 }
 
 internal abstract class TaskExecutionStep

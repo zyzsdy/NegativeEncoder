@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using NegativeEncoder.Presets;
+using NegativeEncoder.Utils;
 
 namespace NegativeEncoder.EncodingTask.TaskArgs;
 
@@ -322,15 +323,15 @@ public static class TaskArgBuilder
 
     public static string GetBaseEncoderFile(Preset preset)
     {
-        var executable = preset.Encoder switch
+        var (directory, executable) = preset.Encoder switch
         {
-            Encoder.NVENC => "NVEncC64.exe",
-            Encoder.QSV => "QSVEncC64.exe",
-            Encoder.VCE => "VCEEncC64.exe",
+            Encoder.NVENC => ("NVEnc", "NVEncC64.exe"),
+            Encoder.QSV => ("QSVEnc", "QSVEncC64.exe"),
+            Encoder.VCE => ("VCEEnc", "VCEEncC64.exe"),
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        return Path.Combine(AppContext.EncodingContext.BaseDir, "Libs", executable);
+        return ToolPaths.Resolve(AppContext.EncodingContext.BaseDir, directory, executable);
     }
 
     public static string GetFormat(OutputFormat format)

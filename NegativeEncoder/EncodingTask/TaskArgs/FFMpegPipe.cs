@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using NegativeEncoder.Utils;
 using NegativeEncoder.Presets;
 
 namespace NegativeEncoder.EncodingTask.TaskArgs;
@@ -58,7 +59,7 @@ public class FFMpegPipe
                     new ProcessEndpoint(encoderFile, $"--y4m {ioargs} {addArgs} {gargs}"),
                     true));
 
-                var qaacFile = Path.Combine(baseDir, "Libs\\qaac64.exe");
+                var qaacFile = ToolPaths.Resolve(baseDir, "qaac", "qaac64.exe");
                 var audioOutput = Path.Combine(workDir, Path.GetFileNameWithoutExtension(output) + "_tempAudio.m4a");
                 cleanupTargets.Add(audioOutput);
                 plan.Steps.Add(new PipelineStep(

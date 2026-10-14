@@ -179,6 +179,16 @@ public class EncodingTask
 
         try
         {
+            if (executionPlan.QaacExecutable is { } qaacExecutable)
+            {
+                var availability = await QaacProbe.CheckAsync(qaacExecutable, cancellationToken);
+                if (!availability.IsAvailable)
+                {
+                    AppendLogLine($"[ERR] {availability.Message}");
+                    SetIsFinished(true);
+                    return;
+                }
+            }
             foreach (var step in nonCleanupSteps)
             {
                 if (cancellationToken.IsCancellationRequested || IsFinishedFlag) break;

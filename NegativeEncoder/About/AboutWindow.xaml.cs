@@ -43,23 +43,27 @@ public partial class AboutWindow : Window
         sb.AppendLine($"FFmpeg: {ToolVersionProbe.FormatVersion(ffmpegVersion)}");
 
         var nvencVersion = await ToolVersionProbe.GetToolVersionAsync(
-            Path.Combine(baseDir, "Libs", "NVEncC64.exe"),
+            ToolPaths.Resolve(baseDir, "NVEnc", "NVEncC64.exe"),
             "--version",
             ToolVersionProbe.NvencVersionRegex);
         sb.AppendLine($"NVEnc: {ToolVersionProbe.FormatVersion(nvencVersion)}");
 
         var qsvencVersion = await ToolVersionProbe.GetToolVersionAsync(
-            Path.Combine(baseDir, "Libs", "QSVEncC64.exe"),
+            ToolPaths.Resolve(baseDir, "QSVEnc", "QSVEncC64.exe"),
             "--version",
             ToolVersionProbe.QsvencVersionRegex);
         sb.AppendLine($"QSVEnc: {ToolVersionProbe.FormatVersion(qsvencVersion)}");
 
         var vceencVersion = await ToolVersionProbe.GetToolVersionAsync(
-            Path.Combine(baseDir, "Libs", "VCEEncC64.exe"),
+            ToolPaths.Resolve(baseDir, "VCEEnc", "VCEEncC64.exe"),
             "--version",
             ToolVersionProbe.VceencVersionRegex);
         sb.AppendLine($"VCEEnc: {ToolVersionProbe.FormatVersion(vceencVersion)}");
 
+        var qaac = await QaacProbe.CheckAsync(ToolPaths.Resolve(baseDir, "qaac", "qaac64.exe"));
+        sb.AppendLine(qaac.IsAvailable
+            ? $"qaac: 可用（CoreAudioToolbox {qaac.CoreAudioVersion}）"
+            : $"qaac: 不可用。{qaac.Message}");
         ToolVersionBlock.Text = sb.ToString().TrimEnd();
     }
 }

@@ -16,7 +16,7 @@ public static class SaveCmdTools
                          "@echo 消极压制工具包 %___NE_VER_%\n" +
                          "@echo ====================================\n" +
                          "@title 消极压制工具包 %___NE_VER_%\n" +
-                         "@set PATH=%PATH%;%~dp0\n" +
+                         "@set PATH=%~dp0;%~dp0NVEnc;%~dp0QSVEnc;%~dp0VCEEnc;%~dp0MKVToolNix;%~dp0qaac;%~dp0python;%PATH%\n" +
                          "@pushd %1";
 
         TempFile.SaveTempFile(batFullName, batContent, false);

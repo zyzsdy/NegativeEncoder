@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="关于" Height="360" Width="500" ResizeMode="NoResize">
+        Title="关于" Height="420" Width="500" ResizeMode="NoResize">
     <Grid>
         <Image Source="../Resources/icon.png" HorizontalAlignment="Left" Height="150" Width="150" Margin="10,10,0,0"
                VerticalAlignment="Top" />

@@ -1,4 +1,5 @@
 using System.IO;
+using NegativeEncoder.Utils;
 using NegativeEncoder.FileSelector;
 using NegativeEncoder.Presets;
 
@@ -15,7 +16,7 @@ public class AudioEncoding
         if (input == originInput) audioOutput = extra;
 
         var ffmpegFile = Path.Combine(baseDir, "Libs\\ffmpeg.exe");
-        var qaacFile = Path.Combine(baseDir, "Libs\\qaac64.exe");
+        var qaacFile = ToolPaths.Resolve(baseDir, "qaac", "qaac64.exe");
 
         var plan = new TaskExecutionPlan("AudioEncoding");
         plan.Steps.Add(new PipelineStep(

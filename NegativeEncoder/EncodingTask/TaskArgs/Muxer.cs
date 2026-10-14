@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using NegativeEncoder.FileSelector;
 using NegativeEncoder.Presets;
+using NegativeEncoder.Utils;
 
 namespace NegativeEncoder.EncodingTask.TaskArgs;
 
@@ -30,7 +31,7 @@ public class Muxer
 
         if (preset.MuxFormat == OutputFormat.MKV)
         {
-            var mkvmerge = Path.Combine(baseDir, "Libs\\mkvmerge.exe");
+            var mkvmerge = ToolPaths.Resolve(baseDir, "MKVToolNix", "mkvmerge.exe");
             var mkvArgs = $"-o \"{muxOutput}\" -A \"{input}\" -D \"{audioInput}\"";
 
             return TaskLaunchInfo.FromProcess(mkvmerge, mkvArgs);

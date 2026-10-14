@@ -115,6 +115,8 @@ public static class LibUpdater
         string repoName,
         string exeName)
     {
+        var isolatedDir = Path.Combine(libsDir, repoName);
+        if (Directory.Exists(isolatedDir)) libsDir = isolatedDir;
         var latestTag = await GetLatestRigayaReleaseAsync(httpClient, repoName);
         if (string.IsNullOrWhiteSpace(latestTag)) return new LibUpdateResult(repoName, false, NetworkOrCertError);
 

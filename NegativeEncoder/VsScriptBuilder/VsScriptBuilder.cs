@@ -57,21 +57,20 @@ public static class VsScriptBuilder
         {
             if (vsOption.UseVsfmod)
             {
-                sb.Append("try:\n");
+                sb.Append("if not hasattr(core, 'vsfm'):\n");
                 sb.Append("    core.std.LoadPlugin(r\"" + AppContext.EncodingContext.BaseDir +
                           "\\Libs\\vapoursynth64\\plugins\\VSFilterMod.dll\")\n");
-                sb.Append("except:\n");
-                sb.Append("    sys.stderr.write(\"Unexpected error: \" + str(sys.exc_info()))\n");
                 sb.Append("video = core.vsfm.TextSubMod(video, SUB_PATH)\n");
             }
             else
             {
-                sb.Append("try:\n");
-                sb.Append("    core.std.LoadPlugin(r\"" + AppContext.EncodingContext.BaseDir +
+                sb.Append("if hasattr(core, 'xyvsf'):\n");
+                sb.Append("    video = core.xyvsf.TextSub(video, SUB_PATH)\n");
+                sb.Append("else:\n");
+                sb.Append("    if not hasattr(core, 'vsf'):\n");
+                sb.Append("        core.std.LoadPlugin(r\"" + AppContext.EncodingContext.BaseDir +
                           "\\Libs\\vapoursynth64\\plugins\\VSFilter.dll\")\n");
-                sb.Append("except:\n");
-                sb.Append("    sys.stderr.write(\"Unexpected error: \" + str(sys.exc_info()))\n");
-                sb.Append("video = core.vsf.TextSub(video, SUB_PATH)\n");
+                sb.Append("    video = core.vsf.TextSub(video, SUB_PATH)\n");
             }
         }
 
