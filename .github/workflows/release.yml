@@ -39,8 +39,14 @@ jobs:
       - name: Install NSIS
         shell: pwsh
         run: |
-          choco install nsis --version=3.11 --allow-downgrade --force --yes --no-progress
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            choco install nsis --version=3.11 --allow-downgrade --force --yes --no-progress
+            $installExitCode = $LASTEXITCODE
+            if ($installExitCode -eq 0) { break }
+            if ($attempt -eq 3) { exit $installExitCode }
+            Write-Warning "NSIS installation failed (exit $installExitCode), retrying in 10 seconds ($attempt/3)"
+            Start-Sleep -Seconds 10
+          }
       - name: Build installer
         shell: pwsh
         env:
