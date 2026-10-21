@@ -176,6 +176,7 @@ public class EncodingTask
         var nonCleanupSteps = executionPlan.Steps.Where(x => x is not CleanupStep);
         var cleanupSteps = executionPlan.Steps.OfType<CleanupStep>().ToList();
         var hasFailure = false;
+        var completedSuccessfully = false;
 
         try
         {
@@ -208,10 +209,20 @@ public class EncodingTask
                 AppendLogLine($"[ERR] 步骤失败：{step.Name} (ExitCode={exitCode})");
                 break;
             }
+            completedSuccessfully = !hasFailure && !cancellationToken.IsCancellationRequested && !IsFinishedFlag;
         }
         finally
         {
-            foreach (var cleanupStep in cleanupSteps) RunCleanupStep(cleanupStep);
+            foreach (var cleanupStep in cleanupSteps)
+            {
+                if (cleanupStep.OnlyOnSuccess && !completedSuccessfully)
+                {
+                    if (File.Exists(cleanupStep.TargetPath) || Directory.Exists(cleanupStep.TargetPath))
+                        AppendLogLine($"[WRN] 任务未成功完成，已保留中间文件：{cleanupStep.TargetPath}");
+                    continue;
+                }
+                RunCleanupStep(cleanupStep);
+            }
         }
 
         if (hasFailure) SetIsFinished(true);

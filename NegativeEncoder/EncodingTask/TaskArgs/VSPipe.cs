@@ -10,14 +10,14 @@ public class VSPipe
     internal static TaskLaunchInfo Build(string param, string input, string output, Preset preset,
         bool useHdr, string originInput, string extra)
     {
-        var cleanupTargets = new List<string>();
+        var cleanupTargets = new List<CleanupStep>();
 
         var baseDir = AppContext.EncodingContext.BaseDir;
         var workDir = Path.GetDirectoryName(output) ?? baseDir;
 
         var vpyName = Path.GetFileNameWithoutExtension(output) + "_vpyTemp.vpy";
         var vpyFullname = Path.Combine(workDir, vpyName);
-        cleanupTargets.Add(vpyFullname);
+        cleanupTargets.Add(new CleanupStep("Cleanup", vpyFullname));
 
         var pyExtraLibName = Path.Combine(baseDir, "Libs\\site-packages").Replace("'", "\\'");
         var vpyFullContent = $"import sys\nsys.path.append(r'{pyExtraLibName}')\n\n" + param;
@@ -38,7 +38,7 @@ public class VSPipe
                 var tempVideoOutput = Path.Combine(workDir,
                     Path.GetFileNameWithoutExtension(output) + "_tempVideo" + tempVideoExt);
                 var ioargs = TaskArgBuilder.GetIOArgs("-", tempVideoOutput, preset);
-                cleanupTargets.Add(tempVideoOutput);
+                cleanupTargets.Add(new CleanupStep("Cleanup", tempVideoOutput, onlyOnSuccess: true));
 
                 plan.Steps.Add(new PipelineStep(
                     "VSPipe->Encoder",
@@ -60,7 +60,7 @@ public class VSPipe
                 var tempVideoOutput = Path.Combine(workDir,
                     Path.GetFileNameWithoutExtension(output) + "_tempVideo" + tempVideoExt);
                 var ioargs = TaskArgBuilder.GetIOArgs("-", tempVideoOutput, preset);
-                cleanupTargets.Add(tempVideoOutput);
+                cleanupTargets.Add(new CleanupStep("Cleanup", tempVideoOutput, onlyOnSuccess: true));
 
                 plan.Steps.Add(new PipelineStep(
                     "VSPipe->Encoder",
@@ -70,7 +70,7 @@ public class VSPipe
 
                 var qaacFile = ToolPaths.Resolve(baseDir, "qaac", "qaac64.exe");
                 var audioOutput = Path.Combine(workDir, Path.GetFileNameWithoutExtension(output) + "_tempAudio.m4a");
-                cleanupTargets.Add(audioOutput);
+                cleanupTargets.Add(new CleanupStep("Cleanup", audioOutput, onlyOnSuccess: true));
                 plan.Steps.Add(new PipelineStep(
                     "FFmpeg->QAAC",
                     new ProcessEndpoint(ffmpegFile,
@@ -98,7 +98,7 @@ public class VSPipe
             }
         }
 
-        foreach (var tempFile in cleanupTargets) plan.Steps.Add(new CleanupStep("Cleanup", tempFile));
+        plan.Steps.AddRange(cleanupTargets);
         return TaskLaunchInfo.FromPlan(plan, $"Plan: {plan.Name}");
     }
 }

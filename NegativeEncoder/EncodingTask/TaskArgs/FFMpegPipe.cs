@@ -111,7 +111,8 @@ public class FFMpegPipe
             }
         }
 
-        foreach (var tempFile in cleanupTargets) plan.Steps.Add(new CleanupStep("Cleanup", tempFile));
+        foreach (var tempFile in cleanupTargets)
+            plan.Steps.Add(new CleanupStep("Cleanup", tempFile, onlyOnSuccess: true));
         return TaskLaunchInfo.FromPlan(plan, $"Plan: {plan.Name}");
     }
 }

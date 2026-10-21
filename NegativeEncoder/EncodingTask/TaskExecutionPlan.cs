@@ -106,14 +106,16 @@ internal sealed class PipelineStep : TaskExecutionStep
 
 internal sealed class CleanupStep : TaskExecutionStep
 {
-    public CleanupStep(string name, string targetPath, bool isDirectory = false) : base(name)
+    public CleanupStep(string name, string targetPath, bool isDirectory = false, bool onlyOnSuccess = false) : base(name)
     {
         TargetPath = targetPath ?? string.Empty;
         IsDirectory = isDirectory;
+        OnlyOnSuccess = onlyOnSuccess;
     }
 
     public string TargetPath { get; }
     public bool IsDirectory { get; }
+    public bool OnlyOnSuccess { get; }
 }
 
 internal sealed class ProcessEndpoint
