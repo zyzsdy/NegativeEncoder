@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NegativeEncoder.EncodingTask"
         mc:Ignorable="d"
-        Height="340" Width="600">
+        Height="340" Width="600" ShowInTaskbar="False">
     <Window.Resources>
         <local:TaskNameConverter x:Key="TaskNameConverter" />
     </Window.Resources>

@@ -13,6 +13,14 @@ public partial class TaskDetailWindow : Window
         InitializeComponent();
     }
 
+    protected override void OnActivated(System.EventArgs e)
+    {
+        base.OnActivated(e);
+        // An owned window can be restored while its owner is still minimized.
+        // Restore through Windows so the owner's previous maximized state is preserved.
+        if (Owner?.WindowState == WindowState.Minimized) SystemCommands.RestoreWindow(Owner);
+    }
+
     private void logBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         logBox.ScrollToEnd();

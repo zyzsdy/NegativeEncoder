@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
     <ProjectReference Include="..\NegativeEncoder\NegativeEncoder.csproj" />
   </ItemGroup>
 
