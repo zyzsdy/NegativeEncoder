@@ -139,7 +139,7 @@ public class CheckUpdate
                 "-version",
                 ToolVersionProbe.FfmpegVersionRegex,
                 async () => await GetLatestFfmpegTagAsync(httpClient),
-                "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z"),
+                "https://github.com/GyanD/codexffmpeg/releases/latest"),
             await CheckLibUpdateAsync(
                 "NVEnc",
                 ToolPaths.Resolve(baseDir, "NVEnc", "NVEncC64.exe"),
@@ -193,43 +193,7 @@ public class CheckUpdate
 
     private static async Task<string> GetLatestFfmpegTagAsync(HttpClient httpClient)
     {
-        const string activeBranchesUrl = "https://github.com/FFmpeg/FFmpeg/branches/active";
-        try
-        {
-            using var response = await ToolVersionProbe.GetWithHostValidationAsync(httpClient, activeBranchesUrl);
-            if (response.StatusCode != HttpStatusCode.OK) return string.Empty;
-
-            var html = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(html)) return string.Empty;
-
-            var tags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (Match match in ToolVersionProbe.FfmpegTagRegex.Matches(html))
-                tags.Add(match.Value);
-            foreach (Match match in ToolVersionProbe.FfmpegNightlyTagRegex.Matches(html))
-                tags.Add(match.Value);
-
-            if (tags.Count == 0) return string.Empty;
-
-            var latestTag = string.Empty;
-            var latestVersion = new System.Version(0, 0);
-            foreach (var tag in tags)
-            {
-                var numeric = ToolVersionProbe.NormalizeVersion(tag);
-                if (!System.Version.TryParse(numeric, out var parsed)) continue;
-
-                if (parsed > latestVersion)
-                {
-                    latestVersion = parsed;
-                    latestTag = tag;
-                }
-            }
-
-            return latestTag;
-        }
-        catch
-        {
-            return string.Empty;
-        }
+        return (await FfmpegReleaseSource.GetLatestAsync(httpClient))?.Version ?? string.Empty;
     }
 
     private static async Task<string> GetLatestRigayaReleaseAsync(HttpClient httpClient, string repoName)

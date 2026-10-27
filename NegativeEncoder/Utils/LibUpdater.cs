@@ -78,11 +78,10 @@ public static class LibUpdater
 
     private static async Task<LibUpdateResult> UpdateFfmpegAsync(HttpClient httpClient, string libsDir, string sevenZip)
     {
-        const string downloadUrl = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z";
-        var latestTag = await GetLatestFfmpegTagAsync(httpClient);
-        var latestVersion = ToolVersionProbe.NormalizeVersion(latestTag);
-        if (string.IsNullOrWhiteSpace(latestVersion))
+        var release = await FfmpegReleaseSource.GetLatestAsync(httpClient);
+        if (release == null)
             return new LibUpdateResult("FFmpeg", false, VersionValidationError);
+        var latestVersion = release.Version;
 
         var localVersion = await ToolVersionProbe.GetToolVersionAsync(
             Path.Combine(libsDir, "ffmpeg.exe"),
@@ -100,7 +99,7 @@ public static class LibUpdater
             libsDir,
             sevenZip,
             "FFmpeg",
-            downloadUrl,
+            release.DownloadUrl,
             "ffmpeg.exe",
             latestVersion,
             "-version",
@@ -466,48 +465,6 @@ public static class LibUpdater
             exePath,
             "--version",
             versionRegex));
-    }
-
-    private static async Task<string> GetLatestFfmpegTagAsync(HttpClient httpClient)
-    {
-        const string activeBranchesUrl = "https://github.com/FFmpeg/FFmpeg/branches/active";
-        try
-        {
-            using var response = await ToolVersionProbe.GetWithHostValidationAsync(httpClient, activeBranchesUrl);
-            if (response.StatusCode != HttpStatusCode.OK) return string.Empty;
-
-            var html = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(html)) return string.Empty;
-
-            var tags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (Match match in ToolVersionProbe.FfmpegTagRegex.Matches(html))
-                tags.Add(match.Value);
-
-            foreach (Match match in ToolVersionProbe.FfmpegNightlyTagRegex.Matches(html))
-                tags.Add(match.Value);
-
-            if (tags.Count == 0) return string.Empty;
-
-            var latestTag = string.Empty;
-            var latestVersion = new Version(0, 0);
-            foreach (var tag in tags)
-            {
-                var numeric = ToolVersionProbe.NormalizeVersion(tag);
-                if (!Version.TryParse(numeric, out var parsed)) continue;
-
-                if (parsed > latestVersion)
-                {
-                    latestVersion = parsed;
-                    latestTag = tag;
-                }
-            }
-
-            return latestTag;
-        }
-        catch
-        {
-            return string.Empty;
-        }
     }
 
     private record FileReplacementState(string SourcePath, string TargetPath, string BackupPath, bool TargetExisted);
