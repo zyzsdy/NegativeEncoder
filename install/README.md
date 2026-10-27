@@ -30,6 +30,8 @@ python -m unittest discover -s install/tests -v
 
 应用内 FFmpeg 更新检查与下载共用 GyanD/codexffmpeg 的正式发布元数据，仅接受与发布版本匹配的 `ffmpeg-<version>-full_build.7z` 静态构建附件，与安装包使用同一发行源。安装包继续按锁文件固定版本，运行时更新使用该发行源的最新正式版本。
 
+安装器的 `licence.txt` 使用带 BOM 的 UTF-16LE 和 CRLF 换行，确保许可页不受构建机或用户系统代码页影响；协议正文保持不变。
+
 VapourSynth 插件和脚本采用固定 VSRepo commit 中的记录，直接下载指定发行资产并验证文件。修改依赖时需重新核对版本、URL、哈希及文件映射；不能只修改版本号。VSRepo 2.0.0 的 pip 转交和缺少版本锁定语法，不影响这个固定收集方式。
 
 NVEnc、QSVEnc、VCEEnc、qaac、MKVToolNix 各自保留运行目录，避免 DLL 冲突。应用兼容旧版平铺 Libs。Python 3.13.16 与 VapourSynth R79 位于 `Libs/python`，应用直接调用 wheel 内的原生 VSPipe；插件在该包的 plugins 目录，脚本在 `Libs/site-packages`。
