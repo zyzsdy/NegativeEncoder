@@ -1,8 +1,14 @@
 # Windows x64 安装包
 
-当前应用版本为 **5.2.1.0**。普通 CI 构建并测试主程序和收集脚本。GitHub Actions 的 **Windows Installer** 可手动运行，也会在推送数字版本 tag（例如 `v5.2.1` 或 `v5.2.1.0`）时自动运行。
+当前应用版本为 **5.2.2.0**。普通 CI 构建并测试主程序和收集脚本。GitHub Actions 的 **Windows Installer** 可手动运行，也会在推送数字版本 tag（例如 `v5.2.2` 或 `v5.2.2.0`）时自动运行。
 
 成功后下载 artifact **NegativeEncoder-Windows-x64**，其中包含安装程序、SHA256SUMS、依赖锁文件及第三方声明。tag 构建还会将这些文件上传到对应的 GitHub Release 并自动发布；已有 Release 会更新同名附件，保留标题和说明。新 Release 会先创建为草稿，附件上传成功后再发布。手动运行普通分支采用项目 Version，仅上传 artifact；tag 构建采用 tag 的数字版本并发布 Release。
+
+## 5.2.2.0 更新
+
+- 修复 #79：FFmpeg 更新检查与下载统一使用 GyanD/codexffmpeg 的正式发布元数据及对应完整静态构建附件，避免把尚未发布的源码分支识别为可用更新。
+- 修复 #78：安装器许可协议改用带 BOM 的 UTF-16LE 编码，修复不同系统代码页下的中文乱码，协议正文保持不变。
+- 新增 9 个 FFmpeg 更新回归测试场景及 1 项许可文件编码测试。
 
 ## 5.2.1.0 更新
 
