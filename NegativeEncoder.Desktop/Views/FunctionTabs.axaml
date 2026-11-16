@@ -1,0 +1,478 @@
+<?xml version="1.0" ?>
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:views="using:NegativeEncoder.Desktop.Views" xmlns:edit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit" x:Class="NegativeEncoder.Desktop.Views.FunctionTabs">
+
+
+  <UserControl.Resources>
+    <views:EnumEqualityConverter x:Key="EnumEquals"/>
+  </UserControl.Resources>
+
+
+  <TabControl Name="Tabs">
+    <TabItem Header="编码器">
+      <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+          <StackPanel Spacing="6" Margin="0,12,10,12">
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="编码器" Target="{Binding #EncoderSelect}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <ComboBox Name="EncoderSelect" ItemsSource="{Binding Options.EncoderOptions}" SelectedValue="{Binding CurrentPreset.Encoder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="编码器">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </Panel>
+            </Grid>
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="输出编码" Target="{Binding #CodecSelect}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <ComboBox Name="CodecSelect" ItemsSource="{Binding Options.CodecOptions}" SelectedValue="{Binding CurrentPreset.Codec}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="输出编码">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </Panel>
+            </Grid>
+            <CheckBox Content="使用自定义参数" IsChecked="{Binding CurrentPreset.IsUseCustomParameters}"/>
+            <StackPanel IsVisible="{Binding CurrentPreset.IsUseCustomParameters}" Spacing="6">
+              <TextBlock Text="自定义参数"/>
+              <TextBox Name="CustomParametersField" Text="{Binding CurrentPreset.CustomParameters}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="150" Classes="code" AutomationProperties.Name="自定义参数"/>
+            </StackPanel>
+            <StackPanel IsVisible="{Binding !CurrentPreset.IsUseCustomParameters}" Spacing="6">
+              <TextBlock Classes="section" Text="编码模式"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,2">
+                <RadioButton Content="VBR" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=VBR}"/>
+                <TextBox Grid.Column="1" Text="{Binding CurrentPreset.VbrParam}" AutomationProperties.Name="VBR 参数"/>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,2">
+                <RadioButton Content="CBR" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=CBR}"/>
+                <TextBox Grid.Column="1" Text="{Binding CurrentPreset.CbrParam}" AutomationProperties.Name="CBR 参数"/>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,2">
+                <RadioButton Content="CQP" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=CQP}"/>
+                <TextBox Grid.Column="1" Text="{Binding CurrentPreset.CqpParam}" AutomationProperties.Name="CQP 参数"/>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,2" IsEnabled="{Binding CurrentPreset.IsQsv}">
+                <RadioButton Content="LA" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=LA}"/>
+                <TextBox Grid.Column="1" Text="{Binding CurrentPreset.LaParam}" AutomationProperties.Name="LA 参数"/>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,2" IsEnabled="{Binding CurrentPreset.IsQsv}">
+                <RadioButton Content="LA-ICQ" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=LAICQ}"/>
+                <TextBox Grid.Column="1" Text="{Binding CurrentPreset.LaicqParam}" AutomationProperties.Name="LAICQ 参数"/>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,2" IsEnabled="{Binding CurrentPreset.IsQsv}">
+                <RadioButton Content="QVBR" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=QVBR}"/>
+                <TextBox Grid.Column="1" Text="{Binding CurrentPreset.QvbrParam}" AutomationProperties.Name="QVBR 参数"/>
+              </Grid>
+              <TextBlock Classes="section" Text="编码选项"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="质量预设" Target="{Binding #QualityPresetSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="QualityPresetSelect" ItemsSource="{Binding Options.QualityPresetOptions}" SelectedValue="{Binding CurrentPreset.QualityPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="质量预设">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="色深" Target="{Binding #ColorDepthSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="ColorDepthSelect" ItemsSource="{Binding Options.ColorDepthOptions}" SelectedValue="{Binding CurrentPreset.ColorDepth}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="色深" IsEnabled="{Binding CurrentPreset.SupportsDepth}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="VBR 质量（0–51）" Target="{Binding #VbrQuailtyField}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <TextBox Name="VbrQuailtyField" Text="{Binding CurrentPreset.VbrQuailty}" AutomationProperties.Name="VBR 质量（0–51）" IsEnabled="{Binding CurrentPreset.SupportsDepth}"/>
+                </Panel>
+              </Grid>
+              <CheckBox Content="设置最大 GOP" IsChecked="{Binding CurrentPreset.IsSetMaxGop}"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="最大 GOP" Target="{Binding #MaxGopField}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <TextBox Name="MaxGopField" Text="{Binding CurrentPreset.MaxGop}" AutomationProperties.Name="最大 GOP" IsEnabled="{Binding CurrentPreset.IsSetMaxGop}"/>
+                </Panel>
+              </Grid>
+              <CheckBox Content="设置显示比例 DAR" IsChecked="{Binding CurrentPreset.IsSetDar}"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="显示比例 DAR" Target="{Binding #DarField}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <TextBox Name="DarField" Text="{Binding CurrentPreset.Dar}" AutomationProperties.Name="显示比例 DAR" IsEnabled="{Binding CurrentPreset.IsSetDar}"/>
+                </Panel>
+              </Grid>
+              <CheckBox Content="限制最大码率" IsChecked="{Binding CurrentPreset.IsSetMaxBitrate}"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="最大码率" Target="{Binding #MaxBitrateField}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <TextBox Name="MaxBitrateField" Text="{Binding CurrentPreset.MaxBitrate}" AutomationProperties.Name="最大码率" IsEnabled="{Binding CurrentPreset.IsSetMaxBitrate}"/>
+                </Panel>
+              </Grid>
+              <CheckBox Content="固定 GOP" IsChecked="{Binding CurrentPreset.IsStrictGop}" IsEnabled="{Binding CurrentPreset.IsSetMaxGop}"/>
+              <TextBlock Classes="section" Text="高级选项"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="解码模式" Target="{Binding #DecoderSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="DecoderSelect" ItemsSource="{Binding Options.DecoderOptions}" SelectedValue="{Binding CurrentPreset.Decoder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="解码模式">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="D3D（仅 QSV）" Target="{Binding #D3DModeSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="D3DModeSelect" ItemsSource="{Binding Options.D3DModeOptions}" SelectedValue="{Binding CurrentPreset.D3DMode}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="D3D（仅 QSV）" IsEnabled="{Binding CurrentPreset.IsQsv}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <CheckBox Content="设置音画同步" IsChecked="{Binding CurrentPreset.IsSetAvSync}"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="同步方式" Target="{Binding #AVSyncSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="AVSyncSelect" ItemsSource="{Binding Options.AVSyncOptions}" SelectedValue="{Binding CurrentPreset.AVSync}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="同步方式" IsEnabled="{Binding CurrentPreset.IsSetAvSync}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <TextBlock Classes="section" Text="画面处理"/>
+              <CheckBox Content="反交错" IsChecked="{Binding CurrentPreset.IsUseDeInterlace}"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="场顺序" Target="{Binding #FieldOrderSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="FieldOrderSelect" ItemsSource="{Binding Options.FieldOrderOptions}" SelectedValue="{Binding CurrentPreset.FieldOrder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="场顺序" IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="反交错方式" Target="{Binding #DeInterlaceMethodPresetSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="DeInterlaceMethodPresetSelect" ItemsSource="{Binding Options.DeInterlaceMethodPresetOptions}" SelectedValue="{Binding CurrentPreset.DeInterlaceMethodPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="反交错方式" IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <CheckBox Content="调整分辨率" IsChecked="{Binding CurrentPreset.IsSetOutputRes}"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="宽度（px）" Target="{Binding #OutputResWidthField}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <TextBox Name="OutputResWidthField" Text="{Binding CurrentPreset.OutputResWidth}" AutomationProperties.Name="宽度（px）" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}"/>
+                </Panel>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="高度（px）" Target="{Binding #OUtputResHeightField}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <TextBox Name="OUtputResHeightField" Text="{Binding CurrentPreset.OUtputResHeight}" AutomationProperties.Name="高度（px）" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}"/>
+                </Panel>
+              </Grid>
+              <TextBlock Classes="section" Text="音频"/>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="音频处理" Target="{Binding #AudioEncodeSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="AudioEncodeSelect" ItemsSource="{Binding Options.AudioEncodeOptions}" SelectedValue="{Binding CurrentPreset.AudioEncode}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="音频处理">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="音频码率（kbps）" Target="{Binding #AudioBitrateField}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <TextBox Name="AudioBitrateField" Text="{Binding CurrentPreset.AudioBitrate}" AutomationProperties.Name="音频码率（kbps）" IsEnabled="{Binding CurrentPreset.IsAudioEncoding}"/>
+                </Panel>
+              </Grid>
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
+          <Grid ColumnDefinitions="140,*" Margin="0,3">
+            <Label Content="输出格式" Target="{Binding #OutputFormatSelect}" VerticalAlignment="Center"/>
+            <Panel Grid.Column="1">
+              <ComboBox Name="OutputFormatSelect" ItemsSource="{Binding Options.OutputFormatOptions}" SelectedValue="{Binding CurrentPreset.OutputFormat}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="输出格式">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Name}"/>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </Panel>
+          </Grid>
+          <Button Classes="primary" Content="添加到编码队列" Tag="视频编码" Click="AddTask_Click" HorizontalAlignment="Right"/>
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="HDR">
+      <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+          <StackPanel Spacing="6" Margin="0,12,10,12">
+            <TextBlock Classes="section" Text="HDR 输出"/>
+            <CheckBox Content="输出带有 HDR 标记的视频" IsChecked="{Binding CurrentPreset.IsOutputHdr}"/>
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="输出 HDR 格式" Target="{Binding #OutputHdrTypeSelect}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <ComboBox Name="OutputHdrTypeSelect" ItemsSource="{Binding Options.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.OutputHdrType}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="输出 HDR 格式" IsEnabled="{Binding CurrentPreset.IsOutputHdr}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </Panel>
+            </Grid>
+            <CheckBox Content="每个 IDR 帧重复输出 Header" IsChecked="{Binding CurrentPreset.IsRepeatHeaders}" IsEnabled="{Binding CurrentPreset.IsNvenc}"/>
+            <TextBlock Classes="section" Text="HDR 格式转换（仅 NVENC）"/>
+            <CheckBox Content="启用 HDR 格式转换" IsChecked="{Binding CurrentPreset.IsConvertHdrType}" IsEnabled="{Binding CurrentPreset.IsNvenc}"/>
+            <StackPanel IsEnabled="{Binding CurrentPreset.IsNvenc}">
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="源格式" Target="{Binding #OldHdrTypeSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="OldHdrTypeSelect" ItemsSource="{Binding Options.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.OldHdrType}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="源格式" IsEnabled="{Binding CurrentPreset.IsConvertHdrType}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="目标格式" Target="{Binding #NewHdrTypeSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="NewHdrTypeSelect" ItemsSource="{Binding Options.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.NewHdrType}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="目标格式" IsEnabled="{Binding CurrentPreset.IsConvertHdrType}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="HDR 转 SDR 算法" Target="{Binding #Hdr2SdrMethodSelect}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <ComboBox Name="Hdr2SdrMethodSelect" ItemsSource="{Binding Options.Hdr2SdrOptions}" SelectedValue="{Binding CurrentPreset.Hdr2SdrMethod}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="HDR 转 SDR 算法" IsEnabled="{Binding CurrentPreset.IsSdrConversion}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Panel>
+              </Grid>
+              <Grid ColumnDefinitions="140,*" Margin="0,3">
+                <Label Content="去饱和强度（0–1）" Target="{Binding #Hdr2SdrDeSatStrengthField}" VerticalAlignment="Center"/>
+                <Panel Grid.Column="1">
+                  <TextBox Name="Hdr2SdrDeSatStrengthField" Text="{Binding CurrentPreset.Hdr2SdrDeSatStrength}" AutomationProperties.Name="去饱和强度（0–1）" IsEnabled="{Binding CurrentPreset.IsSdrConversion}"/>
+                </Panel>
+              </Grid>
+            </StackPanel>
+            <TextBlock Classes="section" Text="覆盖 HDR 标记（ffmpeg）"/>
+            <TextBlock Classes="muted" Text="仅修改色彩元数据，不重新编码。当前只创建任务草稿。"/>
+            <WrapPanel>
+              <Button Content="标记为 SDR" Tag="标记为 SDR" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="标记为 HDR10" Tag="标记为 HDR10" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="标记为 HLG" Tag="标记为 HLG" Click="AddTask_Click" Margin="0,0,8,8"/>
+            </WrapPanel>
+          </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
+          <Button Classes="primary" Content="添加到编码队列（HDR）" Tag="HDR 编码" Click="AddTask_Click" HorizontalAlignment="Right"/>
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="VS">
+      <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+          <StackPanel Spacing="6" Margin="0,12,10,12">
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="字幕" Target="{Binding #SubtitleField}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBox Name="SubtitleField" Text="{Binding Subtitle}" AutomationProperties.Name="字幕"/>
+                  <Button Grid.Column="1" Content="浏览…" Tag="subtitle" Click="Browse_Click" Margin="8,0,0,0"/>
+                </Grid>
+              </Panel>
+            </Grid>
+            <TextBlock Classes="section" Text="VS 代码生成器"/>
+            <TextBlock Classes="muted" Text="生成器尚未接入；以下选项仅用于预览，可直接编辑下方脚本。"/>
+            <WrapPanel>
+              <Border Margin="0,0,14,4">
+                <CheckBox Content="VSFilterMod" IsChecked="{Binding UseVsfmod}"/>
+              </Border>
+              <Border Margin="0,0,14,4">
+                <CheckBox Content="Repeat" IsChecked="{Binding UseRepeat}"/>
+              </Border>
+              <Border Margin="0,0,14,4">
+                <CheckBox Content="QTGMC" IsChecked="{Binding UseQtgmc}"/>
+              </Border>
+              <Border Margin="0,0,14,4">
+                <CheckBox Content="IVTC" IsChecked="{Binding UseIvtc}"/>
+              </Border>
+              <Border Margin="0,0,14,4">
+                <CheckBox Content="Yadif Double" IsChecked="{Binding UseYadifDouble}"/>
+              </Border>
+              <Border Margin="0,0,14,4">
+                <CheckBox Content="Yadif Normal" IsChecked="{Binding UseYadifNormal}"/>
+              </Border>
+            </WrapPanel>
+            <CheckBox Content="调整大小" IsChecked="{Binding VsResize}"/>
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="宽度（px）" Target="{Binding #VsWidthField}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <TextBox Name="VsWidthField" Text="{Binding VsWidth}" AutomationProperties.Name="宽度（px）" IsEnabled="{Binding VsResize}"/>
+              </Panel>
+            </Grid>
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="高度（px）" Target="{Binding #VsHeightField}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <TextBox Name="VsHeightField" Text="{Binding VsHeight}" AutomationProperties.Name="高度（px）" IsEnabled="{Binding VsResize}"/>
+              </Panel>
+            </Grid>
+            <TextBlock Classes="section" Text="VapourSynth / Python"/>
+            <edit:TextEditor Name="ScriptEditor" Document="{Binding ScriptDocument}" ShowLineNumbers="True" FontFamily="{StaticResource CodeFont}" FontSize="13" Height="280" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="VapourSynth 脚本编辑器" />
+            <TextBlock Classes="muted" Text="脚本仅用于编辑和预览，不会执行。"/>
+          </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
+          <Button Classes="primary" Content="添加 VS 任务草稿" Tag="VapourSynth" Click="AddTask_Click" HorizontalAlignment="Right"/>
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="音频">
+      <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+          <StackPanel Spacing="6" Margin="0,12,10,12">
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="音频输出" Target="{Binding #AudioOutputField}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBox Name="AudioOutputField" Text="{Binding AudioOutput}" AutomationProperties.Name="音频输出"/>
+                  <Button Grid.Column="1" Content="浏览…" Tag="audio-output" Click="Browse_Click" Margin="8,0,0,0"/>
+                </Grid>
+              </Panel>
+            </Grid>
+            <TextBlock Classes="muted" Text="音频编码沿用原版 qaac 参数界面；跨平台音频后端尚未接入。"/>
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="音频码率（kbps）" Target="{Binding #AudioBitrateAudioField}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <TextBox Name="AudioBitrateAudioField" Text="{Binding CurrentPreset.AudioBitrate}" AutomationProperties.Name="音频码率（kbps）"/>
+              </Panel>
+            </Grid>
+          </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
+          <WrapPanel HorizontalAlignment="Right">
+            <Button Classes="primary" Content="编码音频" Tag="编码音频" Click="AddTask_Click" HorizontalAlignment="Right"/>
+            <Border Width="8"/>
+            <Button Classes="primary" Content="提取音频" Tag="提取音频" Click="AddTask_Click" HorizontalAlignment="Right"/>
+          </WrapPanel>
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="封装">
+      <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+          <StackPanel Spacing="6" Margin="0,12,10,12">
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="音频输入" Target="{Binding #MuxAudioField}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBox Name="MuxAudioField" Text="{Binding MuxAudio}" AutomationProperties.Name="音频输入"/>
+                  <Button Grid.Column="1" Content="浏览…" Tag="mux-audio" Click="Browse_Click" Margin="8,0,0,0"/>
+                </Grid>
+              </Panel>
+            </Grid>
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="封装输出" Target="{Binding #MuxOutputField}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBox Name="MuxOutputField" Text="{Binding MuxOutput}" AutomationProperties.Name="封装输出"/>
+                  <Button Grid.Column="1" Content="浏览…" Tag="mux-output" Click="Browse_Click" Margin="8,0,0,0"/>
+                </Grid>
+              </Panel>
+            </Grid>
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="封装格式" Target="{Binding #MuxFormatSelect}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <ComboBox Name="MuxFormatSelect" ItemsSource="{Binding Options.OutputFormatOptions}" SelectedValue="{Binding CurrentPreset.MuxFormat}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="封装格式">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </Panel>
+            </Grid>
+          </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
+          <Button Classes="primary" Content="添加封装草稿" Tag="封装" Click="AddTask_Click" HorizontalAlignment="Right"/>
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="常用">
+      <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+          <StackPanel Spacing="6" Margin="0,12,10,12">
+            <TextBlock Classes="section" Text="ffmpeg pipe"/>
+            <TextBlock Classes="muted" Text="通过 FFmpeg 解码和处理视频，并尝试修复音画同步。"/>
+            <WrapPanel>
+              <Button Content="无音频" Tag="ffmpeg pipe · 无音频" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="复制音频" Tag="ffmpeg pipe · 复制音频" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="处理音频与视频" Tag="ffmpeg pipe · 处理音频与视频" Click="AddTask_Click" Margin="0,0,8,8"/>
+            </WrapPanel>
+            <TextBlock Classes="section" Text="内置字幕压制"/>
+            <Grid ColumnDefinitions="140,*" Margin="0,3">
+              <Label Content="ASS 文件" Target="{Binding #BurnSubtitleField}" VerticalAlignment="Center"/>
+              <Panel Grid.Column="1">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBox Name="BurnSubtitleField" Text="{Binding Subtitle}" AutomationProperties.Name="ASS 文件"/>
+                  <Button Grid.Column="1" Content="浏览…" Tag="subtitle" Click="Browse_Click" Margin="8,0,0,0"/>
+                </Grid>
+              </Panel>
+            </Grid>
+            <TextBlock Classes="muted" Text="使用编码器的内置 libass 压制字幕。"/>
+            <Button Classes="primary" Content="添加字幕压制草稿" Tag="字幕压制" Click="AddTask_Click" HorizontalAlignment="Right"/>
+            <Button Classes="primary" Content="添加 HDR 字幕草稿" Tag="字幕压制（HDR）" Click="AddTask_Click" HorizontalAlignment="Right"/>
+          </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0"/>
+      </Grid>
+    </TabItem>
+  </TabControl>
+</UserControl>

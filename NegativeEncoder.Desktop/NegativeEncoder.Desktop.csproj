@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>../NegativeEncoder/ne.ico</ApplicationIcon>
+    <Version>6.0.0-ui-preview</Version>
+    <Description>NegativeEncoder cross-platform UI preview</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.23" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.23" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
+    <AvaloniaResource Include="../NegativeEncoder/Resources/icon.png" Link="Assets/icon.png" />
+    <AvaloniaResource Include="../NegativeEncoder/ne.ico" Link="Assets/ne.ico" />
+  </ItemGroup>
+</Project>

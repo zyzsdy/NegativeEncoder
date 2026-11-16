@@ -1,0 +1,28 @@
+name: Cross-platform desktop UI
+on:
+  push:
+    branches: [next]
+  pull_request:
+    paths:
+      - 'NegativeEncoder.Desktop/**'
+      - 'NegativeEncoder.Desktop.Tests/**'
+      - 'NegativeEncoder.Desktop.slnx'
+      - 'global.json'
+      - '.github/workflows/desktop-ui.yml'
+permissions:
+  contents: read
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet restore NegativeEncoder.Desktop.slnx
+      - run: dotnet build NegativeEncoder.Desktop.slnx -c Release --no-restore
+      - run: dotnet test NegativeEncoder.Desktop.slnx -c Release --no-build

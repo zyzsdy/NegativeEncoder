@@ -1,0 +1,124 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:NegativeEncoder.Desktop.Views" xmlns:models="using:NegativeEncoder.Desktop.Models"
+        x:Class="NegativeEncoder.Desktop.Views.MainWindow" Title="{Binding Title}"
+        Width="1320" Height="850" MinWidth="1000" MinHeight="620"
+        WindowStartupLocation="CenterScreen" Icon="avares://NegativeEncoder.Desktop/Assets/ne.ico">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+    <Menu>
+      <MenuItem Header="文件(_F)">
+        <MenuItem Header="导入视频…" Click="ImportFiles_Click" />
+        <MenuItem Header="清空待处理列表" Click="ClearFiles_Click" />
+        <MenuItem Header="强制开始任务调度（尚未接入）" IsEnabled="False" />
+        <Separator /><MenuItem Header="退出" Click="Exit_Click" />
+      </MenuItem>
+      <MenuItem Header="预设(_P)">
+        <MenuItem Header="新建…" Click="NewPreset_Click" />
+        <MenuItem Header="保存预设（当前会话）" Click="SavePreset_Click" />
+        <MenuItem Header="另存为…" Click="CopyPreset_Click" />
+        <MenuItem Header="重命名…" Click="RenamePreset_Click" />
+        <MenuItem Header="删除…" Click="DeletePreset_Click" />
+        <Separator />
+        <MenuItem Header="导入预设集合（尚未接入）" IsEnabled="False" />
+        <MenuItem Header="导出预设集合（尚未接入）" IsEnabled="False" />
+      </MenuItem>
+      <MenuItem Header="帮助(_H)">
+        <MenuItem Header="检查更新（尚未接入）" IsEnabled="False" />
+        <MenuItem Header="更新工具库（尚未接入）" IsEnabled="False" />
+        <MenuItem Header="启动工具包命令行（尚未接入）" IsEnabled="False" />
+        <Separator /><MenuItem Header="关于消极压制" Click="About_Click" />
+      </MenuItem>
+    </Menu>
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,220,Auto" Margin="20,10,20,14">
+      <Image Source="avares://NegativeEncoder.Desktop/Assets/icon.png" Width="42" Height="42" Margin="0,0,12,0" />
+      <StackPanel Grid.Column="1" Spacing="2">
+        <TextBlock Text="消极压制" FontSize="22" FontWeight="SemiBold" />
+        <TextBlock Text="NegativeEncoder" Classes="muted" FontSize="12" />
+      </StackPanel>
+      <TextBlock Grid.Column="2" Text="当前预设" VerticalAlignment="Center" Margin="0,0,10,0" />
+      <ComboBox Grid.Column="3" Name="PresetSelector" ItemsSource="{Binding Presets}" SelectedItem="{Binding CurrentPreset}"
+                AutomationProperties.Name="当前预设" VerticalAlignment="Center">
+        <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding PresetName}" /></DataTemplate></ComboBox.ItemTemplate>
+      </ComboBox>
+      <Button Grid.Column="4" Content="保存预设" Click="SavePreset_Click" Margin="8,0,0,0" VerticalAlignment="Center" />
+    </Grid>
+    <Border Grid.Row="2" Background="{StaticResource NoticeBrush}" Padding="14,10" Margin="16,0,16,12" CornerRadius="4">
+      <TextBlock Text="界面预览 · 参数与预设仅在当前会话保留。编码、硬件检测及工具库尚未接入，不会处理或生成媒体文件。" />
+    </Border>
+    <Grid Grid.Row="3" Margin="16,0,16,12">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="220" MinWidth="180" />
+        <ColumnDefinition Width="6" />
+        <ColumnDefinition Width="*" MinWidth="440" />
+        <ColumnDefinition Width="6" />
+        <ColumnDefinition Width="230" MinWidth="180" />
+      </Grid.ColumnDefinitions>
+      <Border Classes="panel">
+        <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+          <Grid ColumnDefinitions="*,Auto"><TextBlock Text="待处理视频" Classes="heading" /><TextBlock Grid.Column="1" Text="{Binding FileCount}" Classes="muted" VerticalAlignment="Center" /></Grid>
+          <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,12,0,8">
+            <Button Name="ImportButton" Content="＋ 导入视频" Click="ImportFiles_Click" HorizontalAlignment="Stretch" />
+            <Button Grid.Column="1" Content="移除" Click="RemoveFiles_Click" Margin="6,0,0,0" />
+          </Grid>
+          <Grid Grid.Row="2" DragDrop.AllowDrop="True" Name="FileDropArea">
+            <ListBox Name="FileList" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" SelectionMode="Multiple,Toggle" SelectionChanged="Files_SelectionChanged">
+              <ListBox.ItemTemplate><DataTemplate x:DataType="models:VideoFile">
+                <StackPanel Spacing="4"><TextBlock Text="{Binding Name}" /><TextBlock Text="{Binding Path}" Classes="muted" FontSize="11" MaxHeight="44" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Path}" /></StackPanel>
+              </DataTemplate></ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel IsVisible="{Binding FilesEmpty}" VerticalAlignment="Center" Spacing="8" IsHitTestVisible="False" Margin="8">
+              <TextBlock Text="从一个视频开始" FontWeight="SemiBold" HorizontalAlignment="Center" />
+              <TextBlock Text="拖入文件，或点击上方“导入视频”。" Classes="muted" TextAlignment="Center" />
+            </StackPanel>
+          </Grid>
+          <CheckBox Grid.Row="3" Content="批量处理全部文件" IsChecked="{Binding ProcessAll}" Margin="0,8,0,0" />
+          <TextBlock Grid.Row="4" Text="移除只影响此列表，不删除文件。" Classes="muted" FontSize="11" />
+        </Grid>
+      </Border>
+      <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="Transparent" />
+      <Border Grid.Column="2" Classes="panel" Padding="16">
+        <Grid RowDefinitions="Auto,Auto,*">
+          <Grid ColumnDefinitions="48,*,Auto" Margin="0,0,0,8">
+            <Label Content="输入" Target="{Binding #InputPath}" VerticalAlignment="Center" />
+            <TextBox Grid.Column="1" Grid.ColumnSpan="2" Name="InputPath" Text="{Binding InputPath}" IsReadOnly="True" Watermark="从左侧选择视频" AutomationProperties.Name="视频输入路径" />
+          </Grid>
+          <Grid Grid.Row="1" ColumnDefinitions="48,*,Auto" Margin="0,0,0,12">
+            <Label Content="输出" Target="{Binding #OutputPath}" VerticalAlignment="Center" />
+            <TextBox Grid.Column="1" Name="OutputPath" Text="{Binding OutputPath}" Watermark="选择输出位置" AutomationProperties.Name="视频输出路径" />
+            <Button Grid.Column="2" Content="浏览…" Click="OutputBrowse_Click" Margin="8,0,0,0" />
+          </Grid>
+          <views:FunctionTabs Grid.Row="2" Name="EditorTabs" />
+        </Grid>
+      </Border>
+      <GridSplitter Grid.Column="3" Width="6" HorizontalAlignment="Stretch" Background="Transparent" />
+      <Border Grid.Column="4" Classes="panel">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+          <Grid ColumnDefinitions="*,Auto"><TextBlock Text="任务队列" Classes="heading" /><TextBlock Grid.Column="1" Text="{Binding TaskCount}" Classes="muted" VerticalAlignment="Center" /></Grid>
+          <TextBlock Grid.Row="1" Text="仅预览 · 不会自动执行" Classes="muted" Margin="0,6,0,8" />
+          <Grid Grid.Row="2">
+            <ListBox Name="TaskList" ItemsSource="{Binding Tasks}" DoubleTapped="Task_DoubleTapped">
+              <ListBox.ItemTemplate><DataTemplate x:DataType="models:TaskDraft">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding Operation}" />
+                  <ProgressBar Value="0" Height="4" />
+                  <TextBlock Text="{Binding Status}" Classes="muted" FontSize="11" />
+                </StackPanel>
+              </DataTemplate></ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel IsVisible="{Binding TasksEmpty}" VerticalAlignment="Center" Spacing="8" IsHitTestVisible="False">
+              <TextBlock Text="还没有任务草稿" HorizontalAlignment="Center" FontWeight="SemiBold" />
+              <TextBlock Text="调整参数后，将任务添加到队列查看详情。" TextAlignment="Center" Classes="muted" />
+            </StackPanel>
+          </Grid>
+          <StackPanel Grid.Row="3" Spacing="6"><Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+            <Button Content="查看详情" Click="TaskDetails_Click" />
+            <Button Grid.Column="1" Content="移除" Click="RemoveTask_Click" />
+          </Grid><Button Name="UndoTaskButton" Content="撤销移除" Click="UndoTask_Click" IsVisible="False" /></StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+    <Border Grid.Row="4" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Padding="16,9">
+      <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Status}" Name="StatusText" AutomationProperties.LiveSetting="Polite" /><TextBlock Grid.Column="1" Text="{Binding Platform}" Classes="muted" Margin="16,0,0,0" /></Grid>
+    </Border>
+  </Grid>
+</Window>

@@ -1,5 +1,47 @@
 # NegativeEncoder
 
+## next：跨平台 UI 预览
+
+`next` 分支新增 **.NET 10 + Avalonia UI** 的 `NegativeEncoder.Desktop`，目标为
+Windows / macOS / Linux。原有 WPF 项目与底层实现保留，本阶段只迁移 UI。
+
+```sh
+# 所有桌面平台：需要稳定版 .NET 10 SDK
+dotnet run --project NegativeEncoder.Desktop/NegativeEncoder.Desktop.csproj
+
+# 构建、测试新前端（不依赖 Windows、Libs 或编码工具）
+dotnet build NegativeEncoder.Desktop.slnx -c Release
+dotnet test NegativeEncoder.Desktop.slnx -c Release
+```
+
+macOS / Linux 也可运行 `./scripts/run-desktop.sh`，它会查找 PATH 或
+`~/.dotnet/dotnet`。macOS 本地独立应用：
+
+```sh
+./scripts/package-macos.sh osx-arm64
+open artifacts/osx-arm64/NegativeEncoder.app
+```
+
+该脚本生成包含 .NET 运行时的本地预览包；正式签名、公证与发行安装包尚未实现。
+Intel Mac 使用 `osx-x64`。其他平台可用 `dotnet publish` 的 `win-x64`、
+`win-arm64`、`linux-x64` 或 `linux-arm64` RID；这些目标需要各自的交互验证。
+Linux 需要 Avalonia 的桌面原生依赖和中文字体，参见
+[Avalonia 支持平台](https://v11.docs.avaloniaui.net/docs/get-started/supported-platforms)。
+
+已迁移：三栏主窗口、六个功能页（编码器 / HDR / VS / 音频 / 封装 / 常用）、
+文件选择及拖放、预设编辑弹窗、任务草稿详情、状态栏和关于窗口。
+参数、预设和队列仅保留于本次会话。VS 编辑器使用 AvaloniaEdit，保留 Python 语法高亮、行号和缩进；
+代码生成器后续接入。所有编码操作只创建 **未执行的任务草稿**；不会写输出文件。
+
+未接入：编码与调度、硬件检测、FFmpeg/VideoToolbox、VapourSynth/Libs、
+预设磁盘持久化及导入导出、更新器、系统命令行集成。UI 中的编码器选项来自原版，
+不代表当前机器具备这些硬件。VideoToolbox 的能力与参数将在后端阶段单独建模，
+不把现有 NVENC/QSV 参数直接当作 VideoToolbox 参数。
+
+原 Windows 版继续使用 `NegativeEncoder.sln`；仓库现在有两个解决方案，
+构建和测试时请显式选择。迁移结构与验证记录见 [MIGRATION.md](MIGRATION.md)。
+
+
 ### **“消极压制(NegativeEncoder)”是什么？**
 
 “消极压制”是指最大程度的节约系统资源，加快编码速度的一种压制方式。有时候视频质量并不是首要考虑因素，可以不用“积极的”进行一个精致的压制，何不“消极一把”呢？

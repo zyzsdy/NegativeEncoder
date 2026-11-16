@@ -1,0 +1,40 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <SolidColorBrush x:Key="WorkspaceBrush">#F3F5F7</SolidColorBrush>
+    <SolidColorBrush x:Key="SurfaceBrush">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="InkBrush">#202B36</SolidColorBrush>
+    <SolidColorBrush x:Key="MutedBrush">#536273</SolidColorBrush>
+    <SolidColorBrush x:Key="LineBrush">#D9E0E7</SolidColorBrush>
+    <SolidColorBrush x:Key="AccentBrush">#176B91</SolidColorBrush>
+    <SolidColorBrush x:Key="NoticeBrush">#EAF3F8</SolidColorBrush>
+    <FontFamily x:Key="UiFont">PingFang SC, Microsoft YaHei UI, Noto Sans CJK SC, sans-serif</FontFamily>
+    <FontFamily x:Key="CodeFont">Menlo, Cascadia Mono, DejaVu Sans Mono, monospace</FontFamily>
+  </Styles.Resources>
+  <Style Selector="Window">
+    <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+    <Setter Property="Background" Value="{StaticResource WorkspaceBrush}" />
+  </Style>
+  <Style Selector="TextBlock"><Setter Property="TextWrapping" Value="Wrap" /></Style>
+  <Style Selector="TextBlock.heading"><Setter Property="FontSize" Value="16" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+  <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{StaticResource MutedBrush}" /></Style>
+  <Style Selector="TextBlock.section"><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Margin" Value="0,14,0,4" /></Style>
+  <Style Selector="Border.panel">
+    <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Padding" Value="14" />
+  </Style>
+  <Style Selector="Button"><Setter Property="MinHeight" Value="32" /><Setter Property="Padding" Value="12,6" /></Style>
+  <Style Selector="Button:enabled"><Setter Property="Cursor" Value="Hand" /></Style>
+  <Style Selector="Button.primary"><Setter Property="Background" Value="{StaticResource AccentBrush}" /><Setter Property="Foreground" Value="White" /></Style>
+  <Style Selector="ComboBox"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="MinHeight" Value="32" /></Style>
+  <Style Selector="TextBox"><Setter Property="MinHeight" Value="32" /></Style>
+  <Style Selector="TextBox.code"><Setter Property="FontFamily" Value="{StaticResource CodeFont}" /></Style>
+  <Style Selector="ListBox"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /></Style>
+  <Style Selector="ListBoxItem"><Setter Property="Padding" Value="8" /><Setter Property="HorizontalContentAlignment" Value="Stretch" /></Style>
+  <Style Selector="TabItem"><Setter Property="Padding" Value="12,8" /><Setter Property="FontSize" Value="14" /></Style>
+  <Style Selector="ScrollViewer"><Setter Property="HorizontalScrollBarVisibility" Value="Disabled" /><Setter Property="VerticalScrollBarVisibility" Value="Auto" /></Style>
+</Styles>

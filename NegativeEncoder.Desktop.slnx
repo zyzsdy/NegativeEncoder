@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="NegativeEncoder.Desktop/NegativeEncoder.Desktop.csproj" />
+  <Project Path="NegativeEncoder.Desktop.Tests/NegativeEncoder.Desktop.Tests.csproj" />
+</Solution>
