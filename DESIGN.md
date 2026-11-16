@@ -55,6 +55,9 @@ splitters; the center reserves space for paths and a footer action. Each tab own
 one vertically scrolling form. Lists virtualize through Avalonia ListBox. Long
 paths wrap or offer full-value tooltips; text fields allow selection/copy.
 
+On macOS, the system menu bar owns File, Presets and Help; the in-window menu
+collapses without reserving space. Windows and Linux retain the Fluent window menu.
+
 ## Elevation & Depth
 
 White panes on a cool gray workspace, one-pixel separators. No decorative shadows

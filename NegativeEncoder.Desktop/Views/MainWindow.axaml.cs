@@ -21,7 +21,9 @@ public partial class MainWindow : Window
         FileDropArea.AddHandler(DragDrop.DropEvent, Files_Drop);
     }
 
-    private async void ImportFiles_Click(object? sender, RoutedEventArgs e) => await BrowseAsync("videos");
+    // XAML requires exact event argument types; both menu surfaces share the same actions.
+    private void ImportFiles_Click(object? sender, RoutedEventArgs e) => ImportFiles_NativeClick(sender, e);
+    private async void ImportFiles_NativeClick(object? sender, EventArgs e) => await BrowseAsync("videos");
     private async void OutputBrowse_Click(object? sender, RoutedEventArgs e) => await BrowseAsync("output");
 
     public async Task BrowseAsync(string target)
@@ -92,20 +94,27 @@ public partial class MainWindow : Window
     }
 
     private void RemoveFiles_Click(object? sender, RoutedEventArgs e) => Model.RemoveFiles(FileList.SelectedItems?.OfType<VideoFile>().ToArray() ?? []);
-    private void ClearFiles_Click(object? sender, RoutedEventArgs e) => Model.ClearFiles();
+    private void ClearFiles_Click(object? sender, RoutedEventArgs e) => ClearFiles_NativeClick(sender, e);
+    private void ClearFiles_NativeClick(object? sender, EventArgs e) => Model.ClearFiles();
     private void Exit_Click(object? sender, RoutedEventArgs e) => Close();
-    private void SavePreset_Click(object? sender, RoutedEventArgs e) => Model.SavePreset();
-    private async void NewPreset_Click(object? sender, RoutedEventArgs e) => await PreviewDialog.EditNameAsync(this, "新建预设", "", name => Model.CreatePreset(name, false), () => Model.Status);
-    private async void CopyPreset_Click(object? sender, RoutedEventArgs e) => await PreviewDialog.EditNameAsync(this, "另存为预设", Model.CurrentPreset.PresetName + " 副本", name => Model.CreatePreset(name, true), () => Model.Status);
-    private async void RenamePreset_Click(object? sender, RoutedEventArgs e) => await PreviewDialog.EditNameAsync(this, "重命名预设", Model.CurrentPreset.PresetName, Model.RenamePreset, () => Model.Status);
+    private void SavePreset_Click(object? sender, RoutedEventArgs e) => SavePreset_NativeClick(sender, e);
+    private void SavePreset_NativeClick(object? sender, EventArgs e) => Model.SavePreset();
+    private void NewPreset_Click(object? sender, RoutedEventArgs e) => NewPreset_NativeClick(sender, e);
+    private async void NewPreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, "新建预设", "", name => Model.CreatePreset(name, false), () => Model.Status);
+    private void CopyPreset_Click(object? sender, RoutedEventArgs e) => CopyPreset_NativeClick(sender, e);
+    private async void CopyPreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, "另存为预设", Model.CurrentPreset.PresetName + " 副本", name => Model.CreatePreset(name, true), () => Model.Status);
+    private void RenamePreset_Click(object? sender, RoutedEventArgs e) => RenamePreset_NativeClick(sender, e);
+    private async void RenamePreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, "重命名预设", Model.CurrentPreset.PresetName, Model.RenamePreset, () => Model.Status);
 
-    private async void DeletePreset_Click(object? sender, RoutedEventArgs e)
+    private void DeletePreset_Click(object? sender, RoutedEventArgs e) => DeletePreset_NativeClick(sender, e);
+    private async void DeletePreset_NativeClick(object? sender, EventArgs e)
     {
         if (await PreviewDialog.ConfirmAsync(this, "删除预设", $"删除“{Model.CurrentPreset.PresetName}”？当前会话中的参数将丢失，已添加的任务草稿不受影响。"))
             Model.DeletePreset();
     }
 
-    private async void About_Click(object? sender, RoutedEventArgs e) => await PreviewDialog.NoticeAsync(this, "关于消极压制",
+    private void About_Click(object? sender, RoutedEventArgs e) => About_NativeClick(sender, e);
+    private async void About_NativeClick(object? sender, EventArgs e) => await PreviewDialog.NoticeAsync(this, "关于消极压制",
         "NegativeEncoder · 跨平台 UI 预览\n.NET 10 / Avalonia UI\n\nAuthor: Ted Zyzsdy\nSpecial Thanks to MeowSound Idols and other supporters.\n\nhttps://github.com/zyzsdy/NegativeEncoder\n\n本软件按照 MIT 协议授权。工具库尚未接入或分发。\n\n当前仅实现界面与会话内交互，关闭应用后不会保留参数、预设和任务草稿。");
 
     private async void TaskDetails_Click(object? sender, RoutedEventArgs e) => await ShowTaskAsync();

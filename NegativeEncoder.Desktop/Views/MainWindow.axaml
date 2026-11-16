@@ -3,8 +3,43 @@
         x:Class="NegativeEncoder.Desktop.Views.MainWindow" Title="{Binding Title}"
         Width="1320" Height="850" MinWidth="1000" MinHeight="620"
         WindowStartupLocation="CenterScreen" Icon="avares://NegativeEncoder.Desktop/Assets/ne.ico">
+  <NativeMenu.Menu>
+    <OnPlatform>
+      <On Options="macOS">
+        <NativeMenu>
+          <NativeMenuItem Header="文件">
+            <NativeMenu>
+              <NativeMenuItem Header="导入视频…" Gesture="Meta+O" Click="ImportFiles_NativeClick" />
+              <NativeMenuItem Header="清空待处理列表" Click="ClearFiles_NativeClick" />
+              <NativeMenuItem Header="强制开始任务调度（尚未接入）" IsEnabled="False" />
+            </NativeMenu>
+          </NativeMenuItem>
+          <NativeMenuItem Header="预设">
+            <NativeMenu>
+              <NativeMenuItem Header="新建…" Click="NewPreset_NativeClick" />
+              <NativeMenuItem Header="保存预设（当前会话）" Gesture="Meta+S" Click="SavePreset_NativeClick" />
+              <NativeMenuItem Header="另存为…" Click="CopyPreset_NativeClick" />
+              <NativeMenuItem Header="重命名…" Click="RenamePreset_NativeClick" />
+              <NativeMenuItem Header="删除…" Click="DeletePreset_NativeClick" />
+              <NativeMenuItemSeparator />
+              <NativeMenuItem Header="导入预设集合（尚未接入）" IsEnabled="False" />
+              <NativeMenuItem Header="导出预设集合（尚未接入）" IsEnabled="False" />
+            </NativeMenu>
+          </NativeMenuItem>
+          <NativeMenuItem Header="帮助">
+            <NativeMenu>
+              <NativeMenuItem Header="检查更新（尚未接入）" IsEnabled="False" />
+              <NativeMenuItem Header="更新工具库（尚未接入）" IsEnabled="False" />
+              <NativeMenuItem Header="启动工具包命令行（尚未接入）" IsEnabled="False" />
+              <NativeMenuItemSeparator /><NativeMenuItem Header="关于消极压制" Click="About_NativeClick" />
+            </NativeMenu>
+          </NativeMenuItem>
+        </NativeMenu>
+      </On>
+    </OnPlatform>
+  </NativeMenu.Menu>
   <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
-    <Menu>
+    <Menu IsVisible="{OnPlatform macOS=False, Default=True}">
       <MenuItem Header="文件(_F)">
         <MenuItem Header="导入视频…" Click="ImportFiles_Click" />
         <MenuItem Header="清空待处理列表" Click="ClearFiles_Click" />

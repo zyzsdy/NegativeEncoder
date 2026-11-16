@@ -2,6 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="NegativeEncoder.Desktop.App"
              Name="NegativeEncoder" RequestedThemeVariant="Light">
+  <!-- Keep the standard macOS application actions; About belongs to our Help menu. -->
+  <NativeMenu.Menu>
+    <OnPlatform>
+      <On Options="macOS"><NativeMenu /></On>
+    </OnPlatform>
+  </NativeMenu.Menu>
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />

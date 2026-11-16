@@ -18,6 +18,7 @@ exists in this preview. No legacy configuration is read or written.
 | Scrollbar | Avalonia Fluent + Theme.axaml | DESIGN.md | form / list / code editor | minimum-size and long-form checks |
 | Toast | MainWindowViewModel.Status / StatusText | this contract | persistent status, no transient toast | queue validation tests |
 | CRUD | MainWindowViewModel + PreviewDialog | this contract | in-memory preset operations | snapshot/name tests |
+| Menu | MainWindow menu handlers | this contract | macOS NativeMenu; Windows/Linux Fluent Menu | native macOS menu check + desktop layout smoke test |
 | Dialog | PreviewDialog | this contract | notice / name edit / delete confirmation | Escape + initial focus on macOS |
 
 ## Workflows
@@ -43,6 +44,11 @@ exists in this preview. No legacy configuration is read or written.
   are visibly unavailable. Windows registry integration is intentionally absent.
 
 ## Platform and accessibility
+
+macOS uses the system menu bar, with Command+O for import and Command+S for
+session preset save; Quit remains in the standard application menu. Windows and
+Linux retain the in-window menu, including Linux desktops that support global menus.
+Both menu presentations invoke the same handlers and preserve disabled preview actions.
 
 Chinese application copy with OS-owned file picker chrome. Desktop has no URL state.
 All state is session-local. Native controls own keyboard/focus behavior; no global
