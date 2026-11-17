@@ -14,11 +14,11 @@ exists in this preview. No legacy configuration is read or written.
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
 | Select/Listbox | Avalonia Fluent ComboBox / ListBox | DESIGN.md | authored dropdown; virtualized local list | headless binding tests and macOS popup check |
-| Form | FunctionTabs.axaml + Preset | legacy parameter fields | editable session drafts | headless tab/binding tests |
+| Form | FunctionTabs.axaml + ResponsiveFormPanel + Preset | legacy parameter fields | editable session drafts | headless tab/binding tests |
 | Scrollbar | Avalonia Fluent + Theme.axaml | DESIGN.md | form / list / code editor | minimum-size and long-form checks |
 | Toast | MainWindowViewModel.Status / StatusText | this contract | persistent status, no transient toast | queue validation tests |
 | CRUD | MainWindowViewModel + PreviewDialog | this contract | in-memory preset operations | snapshot/name tests |
-| Menu | MainWindow menu handlers | this contract | macOS NativeMenu; Windows/Linux Fluent Menu | native macOS menu check + desktop layout smoke test |
+| Menu | MainWindow menu handlers + preset menu synchronization | this contract | macOS NativeMenu; Windows/Linux Fluent Menu | native macOS menu check + desktop layout smoke test |
 | Dialog | PreviewDialog | this contract | notice / name edit / delete confirmation | Escape + initial focus on macOS |
 
 ## Workflows
@@ -31,15 +31,18 @@ exists in this preview. No legacy configuration is read or written.
 - Forms: controls bind to the current preset; dependencies follow original encoder
   restrictions. UI options are not evidence of detected hardware capabilities.
 - Presets: create, rename, copy, save and delete operate only in memory. Switching
-  presets retains edits. Save clears the dirty marker for this session. Deletion
+  presets retains edits. Switching and management share the Presets menu; checked
+  entries track creation, rename, deletion and selection in both menu surfaces.
+  Save clears the dirty marker for this session. Deletion
   requires confirmation, initially focused on Cancel. Duplicate/blank names show
   an error in the name dialog. Import/export and persistent storage are deferred.
 - Queue: Add creates a snapshot with zero progress and an explicit unexecuted status.
   Missing inputs/outputs show a stable status message. Changes to the current preset
   do not mutate earlier task snapshots. Remove offers Undo in the queue pane.
 - Script: AvaloniaEdit with Python highlighting, line numbers and indentation; no execution or generation.
-- Exit: the persistent preview notice and About explain that session state is not
-  saved. There is no implicit persistent-save promise.
+- Copy: no persistent preview banner, duplicate preset header or tutorial empty states.
+  README documents the session-only boundary. Task statuses continue to identify
+  unexecuted drafts; validation and operation results remain visible in the status bar.
 - External functions (updates, toolkit command line, encoding and library discovery)
   are visibly unavailable. Windows registry integration is intentionally absent.
 
@@ -48,7 +51,9 @@ exists in this preview. No legacy configuration is read or written.
 macOS uses the system menu bar, with Command+O for import and Command+S for
 session preset save; Quit remains in the standard application menu. Windows and
 Linux retain the in-window menu, including Linux desktops that support global menus.
-Both menu presentations invoke the same handlers and preserve disabled preview actions.
+Both menu presentations invoke the same handlers and preserve disabled unavailable actions.
+NativeMenu is assigned directly in XAML and removed on non-macOS platforms.
+Native menu inspection requires the main window to be active in the foreground.
 
 Chinese application copy with OS-owned file picker chrome. Desktop has no URL state.
 All state is session-local. Native controls own keyboard/focus behavior; no global

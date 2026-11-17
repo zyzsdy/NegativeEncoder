@@ -12,13 +12,59 @@ public partial class MainWindow : Window
     public MainWindowViewModel Model { get; } = new();
     private bool _pickerOpen;
     private readonly Stack<TaskDraft> _removedTasks = new();
+    private readonly NativeMenu? _nativePresetMenu;
+    private readonly Dictionary<Preset, (MenuItem Menu, NativeMenuItem Native)> _presetItems = new();
 
     public MainWindow()
     {
         InitializeComponent();
         DataContext = Model;
+        if (!OperatingSystem.IsMacOS()) NativeMenu.SetMenu(this, null);
+        _nativePresetMenu = NativeMenu.GetMenu(this)?.Items.OfType<NativeMenuItem>().Single(item => item.Header == "预设").Menu;
+        RebuildPresetMenu();
+        Model.Presets.CollectionChanged += (_, _) => RebuildPresetMenu();
+        Model.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(Model.CurrentPreset) or nameof(Model.Title)) UpdatePresetMenu();
+        };
         FileDropArea.AddHandler(DragDrop.DragOverEvent, Files_DragOver);
         FileDropArea.AddHandler(DragDrop.DropEvent, Files_Drop);
+    }
+
+    private void RebuildPresetMenu()
+    {
+        foreach (var item in _presetItems.Values)
+        {
+            PresetMenu.Items.Remove(item.Menu);
+            _nativePresetMenu?.Items.Remove(item.Native);
+        }
+        if (_presetItems.Count == 0)
+        {
+            PresetMenu.Items.Add(new Separator());
+            _nativePresetMenu?.Items.Add(new NativeMenuItemSeparator());
+        }
+        _presetItems.Clear();
+        foreach (var preset in Model.Presets)
+        {
+            var menu = new MenuItem { ToggleType = MenuItemToggleType.Radio, GroupName = "Presets" };
+            var native = new NativeMenuItem { ToggleType = NativeMenuItemToggleType.Radio };
+            menu.Click += (_, _) => { Model.CurrentPreset = preset; UpdatePresetMenu(); };
+            native.Click += (_, _) => { Model.CurrentPreset = preset; UpdatePresetMenu(); };
+            _presetItems.Add(preset, (menu, native));
+            PresetMenu.Items.Add(menu);
+            _nativePresetMenu?.Items.Add(native);
+        }
+        UpdatePresetMenu();
+    }
+
+    private void UpdatePresetMenu()
+    {
+        foreach (var (preset, item) in _presetItems)
+        {
+            item.Menu.Header = preset.PresetName;
+            item.Native.Header = preset.PresetName;
+            item.Menu.IsChecked = item.Native.IsChecked = preset == Model.CurrentPreset;
+        }
     }
 
     // XAML requires exact event argument types; both menu surfaces share the same actions.
@@ -38,7 +84,7 @@ public partial class MainWindow : Window
                 var current = target == "audio-output" ? Model.AudioOutput : target == "mux-output" ? Model.MuxOutput : Model.OutputPath;
                 var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
-                    Title = "选择输出位置（不创建文件）",
+                    Title = "选择输出位置",
                     SuggestedFileName = string.IsNullOrWhiteSpace(current) ? (target == "audio-output" ? "audio.m4a" : "output.mp4") : Path.GetFileName(current),
                     ShowOverwritePrompt = true
                 });
@@ -109,13 +155,13 @@ public partial class MainWindow : Window
     private void DeletePreset_Click(object? sender, RoutedEventArgs e) => DeletePreset_NativeClick(sender, e);
     private async void DeletePreset_NativeClick(object? sender, EventArgs e)
     {
-        if (await PreviewDialog.ConfirmAsync(this, "删除预设", $"删除“{Model.CurrentPreset.PresetName}”？当前会话中的参数将丢失，已添加的任务草稿不受影响。"))
+        if (await PreviewDialog.ConfirmAsync(this, "删除预设", $"删除“{Model.CurrentPreset.PresetName}”？"))
             Model.DeletePreset();
     }
 
     private void About_Click(object? sender, RoutedEventArgs e) => About_NativeClick(sender, e);
     private async void About_NativeClick(object? sender, EventArgs e) => await PreviewDialog.NoticeAsync(this, "关于消极压制",
-        "NegativeEncoder · 跨平台 UI 预览\n.NET 10 / Avalonia UI\n\nAuthor: Ted Zyzsdy\nSpecial Thanks to MeowSound Idols and other supporters.\n\nhttps://github.com/zyzsdy/NegativeEncoder\n\n本软件按照 MIT 协议授权。工具库尚未接入或分发。\n\n当前仅实现界面与会话内交互，关闭应用后不会保留参数、预设和任务草稿。");
+        $"NegativeEncoder {AppVersion.Current}\n\nAuthor: Ted Zyzsdy\nSpecial Thanks to MeowSound Idols and other supporters.\n\nhttps://github.com/zyzsdy/NegativeEncoder\n\n本软件按照 MIT 协议授权。");
 
     private async void TaskDetails_Click(object? sender, RoutedEventArgs e) => await ShowTaskAsync();
     private async void Task_DoubleTapped(object? sender, TappedEventArgs e) => await ShowTaskAsync();

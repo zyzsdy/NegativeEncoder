@@ -15,5 +15,5 @@ public sealed record TaskDraft(string Operation, string InputPath, string Output
     public override string ToString() => $"{Name} · {Operation} · {Status}";
     public string Details => $"任务：{Operation}\n输入：{InputPath}\n输出：{OutputPath}\n预设：{Preset.PresetName}\n" +
         $"编码器：{Preset.Encoder}\n视频编码：{Preset.Codec}\n码率模式：{Preset.EncodeMode}\n" +
-        $"字幕：{SubtitlePath}\n音频输入：{AudioInputPath}\n\n当前为界面预览，未启动编码器，也未创建输出文件。";
+        $"字幕：{SubtitlePath}\n音频输入：{AudioInputPath}\n状态：{Status}";
 }

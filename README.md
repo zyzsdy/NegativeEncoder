@@ -1,6 +1,6 @@
 # NegativeEncoder
 
-## next：跨平台 UI 预览
+## next：6.0.0-alpha.1
 
 `next` 分支新增 **.NET 10 + Avalonia UI** 的 `NegativeEncoder.Desktop`，目标为
 Windows / macOS / Linux。原有 WPF 项目与底层实现保留，本阶段只迁移 UI。
@@ -22,14 +22,14 @@ macOS / Linux 也可运行 `./scripts/run-desktop.sh`，它会查找 PATH 或
 open artifacts/osx-arm64/NegativeEncoder.app
 ```
 
-该脚本生成包含 .NET 运行时的本地预览包；正式签名、公证与发行安装包尚未实现。
+该脚本生成包含 .NET 运行时和 macOS 应用图标的本地应用包；正式签名、公证与发行安装包尚未实现。
 Intel Mac 使用 `osx-x64`。其他平台可用 `dotnet publish` 的 `win-x64`、
 `win-arm64`、`linux-x64` 或 `linux-arm64` RID；这些目标需要各自的交互验证。
 Linux 需要 Avalonia 的桌面原生依赖和中文字体，参见
 [Avalonia 支持平台](https://v11.docs.avaloniaui.net/docs/get-started/supported-platforms)。
 
-已迁移：三栏主窗口、六个功能页（编码器 / HDR / VS / 音频 / 封装 / 常用）、
-文件选择及拖放、预设编辑弹窗、任务草稿详情、状态栏和关于窗口。
+已迁移：三栏主窗口、宽窗口下的编码器两栏表单、六个功能页（编码器 / HDR / VS / 音频 / 封装 / 常用）、
+文件选择及拖放、预设菜单切换和管理、任务草稿详情、状态栏和关于窗口。
 参数、预设和队列仅保留于本次会话。VS 编辑器使用 AvaloniaEdit，保留 Python 语法高亮、行号和缩进；
 代码生成器后续接入。所有编码操作只创建 **未执行的任务草稿**；不会写输出文件。
 

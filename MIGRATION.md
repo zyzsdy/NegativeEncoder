@@ -20,7 +20,7 @@ The legacy Windows project was already on .NET 10; the new project targets plain
 The UI models preserve the original names/defaults but do not reference the old
 PresetProvider, SystemOption, AppContext, tool discovery or encoding services.
 The property inventory covers all 44 original preset properties: 43 in parameter
-tabs and PresetName in the preset header/dialog. Backend-specific controls retain
+tabs and PresetName in the preset menu/dialog. Backend-specific controls retain
 their original enable conditions. Their presence does not assert hardware support.
 
 Avalonia 11.3.23 and AvaloniaEdit 11.4.1 are pinned explicitly. `global.json` selects
@@ -30,7 +30,7 @@ stable .NET 10 feature bands. No additional .NET workloads are required.
 
 | Original surface | Avalonia implementation |
 |---|---|
-| Main window / status bar | Three resizable panes, persistent preview notice, platform/status text |
+| Main window / status bar | Three resizable panes, version/preset window title, platform/status text |
 | Input list | Native multi-file picker, drag/drop, selection, removal and batch mode |
 | Encoder | All original modes, quality, depth, GOP, aspect ratio, decoding, deinterlace, resize and audio controls |
 | HDR | HDR output/conversion, tone mapping fields and metadata task placeholders |
@@ -75,6 +75,25 @@ Local evidence lives under ignored `artifacts/`: `test-results/desktop-ui.trx`,
 `premium-audit.json`, the macOS app, and Windows/Linux publish directories.
 The added CI matrix runs build and headless tests on all three OSes when pushed;
 that remote workflow has not been run in this session.
+
+## Workbench refinement — 2026-11-17
+
+- Desktop version is `6.0.0-alpha.1`; window title and About use assembly metadata.
+- Preset switching joins create/save/copy/rename/delete in the native/Fluent menu.
+  Selection, renamed entries and dirty markers remain synchronized.
+- Removed the branding/preset header, preview banner and nonfunctional explanation
+  copy. This intentionally replaces the prior persistent-notice design contract;
+  backend/persistence scope remains documented here and in README.
+- Encoder fields reflow in place at 660 units of form width; related option switches
+  share their value row. Output format and the queue action share one footer row.
+- The new fish icon is packaged as PNG/ICO/ICNS; macOS Info.plist declares its icon
+  and derives release/build metadata from the desktop project version.
+- Focused checks: preset model behavior, menu lifecycle/selection, six-tab binding
+  smoke test and repeated 1000/1320/1600-wide layout transitions (4 tests).
+- macOS interactive checks: menu create/switch with a Chinese name, encoder popup,
+  wide layout and Finder app icon. Narrow layout was verified headlessly; native
+  resize automation did not resize the window. Windows/Linux interaction remains
+  unverified. No legacy/full-suite tests were run for this refinement.
 
 ## Next phase
 

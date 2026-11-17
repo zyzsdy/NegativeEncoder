@@ -6,7 +6,6 @@
     <SolidColorBrush x:Key="MutedBrush">#536273</SolidColorBrush>
     <SolidColorBrush x:Key="LineBrush">#D9E0E7</SolidColorBrush>
     <SolidColorBrush x:Key="AccentBrush">#176B91</SolidColorBrush>
-    <SolidColorBrush x:Key="NoticeBrush">#EAF3F8</SolidColorBrush>
     <FontFamily x:Key="UiFont">PingFang SC, Microsoft YaHei UI, Noto Sans CJK SC, sans-serif</FontFamily>
     <FontFamily x:Key="CodeFont">Menlo, Cascadia Mono, DejaVu Sans Mono, monospace</FontFamily>
   </Styles.Resources>

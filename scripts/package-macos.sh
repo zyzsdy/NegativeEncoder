@@ -15,8 +15,11 @@ app_dir="$repo_dir/artifacts/$runtime/NegativeEncoder.app"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cd "$repo_dir"
 "$dotnet_bin" publish NegativeEncoder.Desktop/NegativeEncoder.Desktop.csproj -c Release -r "$runtime" --self-contained true -o "$app_dir/Contents/MacOS"
-cp NegativeEncoder/Resources/icon.png "$app_dir/Contents/Resources/icon.png"
-cat > "$app_dir/Contents/Info.plist" <<'PLIST'
+cp NegativeEncoder.Desktop/Assets/app-icon.icns "$app_dir/Contents/Resources/app-icon.icns"
+app_version="$("$dotnet_bin" msbuild NegativeEncoder.Desktop/NegativeEncoder.Desktop.csproj -getProperty:Version)"
+release_version="${app_version%%-*}"
+bundle_version="${app_version/-alpha./a}"
+cat > "$app_dir/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
@@ -25,10 +28,12 @@ cat > "$app_dir/Contents/Info.plist" <<'PLIST'
 <key>CFBundleDisplayName</key><string>消极压制</string>
 <key>CFBundleExecutable</key><string>NegativeEncoder.Desktop</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>6.0.0</string>
-<key>CFBundleVersion</key><string>6.0.0</string>
+<key>CFBundleShortVersionString</key><string>$release_version</string>
+<key>CFBundleVersion</key><string>$bundle_version</string>
+<key>CFBundleGetInfoString</key><string>NegativeEncoder $app_version</string>
+<key>CFBundleIconFile</key><string>app-icon.icns</string>
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST
-printf 'Local preview bundle: %s\n' "$app_dir"
+printf 'Local app bundle: %s\n' "$app_dir"
 printf 'Open with: open "%s"\n' "$app_dir"

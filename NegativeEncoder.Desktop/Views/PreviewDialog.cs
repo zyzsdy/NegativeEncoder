@@ -21,7 +21,7 @@ public sealed class PreviewDialog : Window
         CanResize = false;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         _body = new StackPanel { Spacing = 12, Margin = new Thickness(20) };
-        _body.Children.Add(new TextBlock { Text = message });
+        if (!string.IsNullOrEmpty(message)) _body.Children.Add(new TextBlock { Text = message });
         _actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(20, 0, 20, 20) };
         var grid = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
         grid.Children.Add(new ScrollViewer { Content = _body, MaxHeight = 510 });
@@ -50,7 +50,7 @@ public sealed class PreviewDialog : Window
 
     public static async Task EditNameAsync(Window owner, string title, string initial, Func<string, bool> apply, Func<string> error)
     {
-        var dialog = new PreviewDialog(title, "预设仅保存在当前会话中。");
+        var dialog = new PreviewDialog(title, "");
         var input = new TextBox { Text = initial, Watermark = "预设名称" };
         Avalonia.Automation.AutomationProperties.SetName(input, "预设名称");
         var validation = new TextBlock { MinHeight = 22 };

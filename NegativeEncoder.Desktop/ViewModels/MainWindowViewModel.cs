@@ -29,7 +29,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public bool IsPresetDirty => !_savedPresets.TryGetValue(CurrentPreset, out var saved) ||
                                  saved != JsonSerializer.Serialize(CurrentPreset);
-    public string Title => $"消极压制 · UI 预览 — {(IsPresetDirty ? "*" : "")}{CurrentPreset.PresetName}";
+    public string Title => $"消极压制 v{AppVersion.Current}（预设：{(IsPresetDirty ? "*" : "")}{CurrentPreset.PresetName}）";
     public bool FilesEmpty => Files.Count == 0;
     public bool TasksEmpty => Tasks.Count == 0;
     public string FileCount => $"{Files.Count} 个文件";
@@ -53,7 +53,7 @@ public sealed class MainWindowViewModel : ObservableObject
     public string OutputPath { get => _outputPath; set => Set(ref _outputPath, value); }
     private bool _processAll;
     public bool ProcessAll { get => _processAll; set => Set(ref _processAll, value); }
-    private string _status = "就绪 · 导入视频以预览工作流程";
+    private string _status = "就绪";
     public string Status { get => _status; set => Set(ref _status, value); }
     private string _audioOutput = "";
     public string AudioOutput { get => _audioOutput; set => Set(ref _audioOutput, value); }
@@ -63,7 +63,7 @@ public sealed class MainWindowViewModel : ObservableObject
     public string MuxOutput { get => _muxOutput; set => Set(ref _muxOutput, value); }
     private string _subtitle = "";
     public string Subtitle { get => _subtitle; set => Set(ref _subtitle, value); }
-    public AvaloniaEdit.Document.TextDocument ScriptDocument { get; } = new("# VapourSynth 脚本编辑区\n# 当前仅编辑文本，不加载或执行 Python / VapourSynth。\nimport vapoursynth as vs\ncore = vs.core\n");
+    public AvaloniaEdit.Document.TextDocument ScriptDocument { get; } = new("import vapoursynth as vs\ncore = vs.core\n");
     public string Script { get => ScriptDocument.Text; set => ScriptDocument.Text = value; }
     public bool UseVsfmod { get; set; }
     public bool UseRepeat { get; set; }
@@ -80,7 +80,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _currentPreset = new Preset();
         RegisterPreset(_currentPreset);
         SavePreset();
-        Status = "就绪 · 导入视频以预览工作流程";
+        Status = "就绪";
         Files.CollectionChanged += (_, _) => { Raise(nameof(FilesEmpty)); Raise(nameof(FileCount)); };
         Tasks.CollectionChanged += (_, _) => { Raise(nameof(TasksEmpty)); Raise(nameof(TaskCount)); };
     }
@@ -105,7 +105,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _savedPresets[CurrentPreset] = JsonSerializer.Serialize(CurrentPreset);
         Raise(nameof(IsPresetDirty));
         Raise(nameof(Title));
-        Status = "预设已保存在当前会话；关闭应用后不保留。";
+        Status = "预设已保存。";
     }
 
     public bool CreatePreset(string name, bool copy)
@@ -143,7 +143,7 @@ public sealed class MainWindowViewModel : ObservableObject
         Presets.Remove(old);
         _savedPresets.Remove(old);
         Raise(nameof(IsPresetDirty));
-        Status = "已删除会话中的预设。";
+        Status = "已删除预设。";
     }
 
     public void AddFiles(IEnumerable<string> paths)
@@ -157,14 +157,14 @@ public sealed class MainWindowViewModel : ObservableObject
             SelectedFile ??= file;
             count++;
         }
-        Status = count == 0 ? "没有添加新文件。" : $"已添加 {count} 个文件；尚未读取媒体信息。";
+        Status = count == 0 ? "没有添加新文件。" : $"已添加 {count} 个文件。";
     }
 
     public void RemoveFiles(IEnumerable<VideoFile> selected)
     {
         foreach (var file in selected.ToArray()) Files.Remove(file);
         if (SelectedFile is null || !Files.Contains(SelectedFile)) SelectedFile = Files.FirstOrDefault();
-        Status = "已从待处理列表移除，磁盘文件未改动。";
+        Status = "已从待处理列表移除。";
     }
 
     public void ClearFiles() => RemoveFiles(Files.ToArray());
@@ -195,7 +195,7 @@ public sealed class MainWindowViewModel : ObservableObject
         if (drafts.Select(draft => draft.OutputPath).Distinct(pathComparer).Count() != drafts.Count)
         { Status = "多个文件会使用同一输出名称，请分别添加任务或调整输出路径。"; return false; }
         foreach (var draft in drafts) Tasks.Add(draft);
-        Status = $"已添加 {inputs.Length} 个任务草稿；编码功能尚未接入，不会生成输出文件。";
+        Status = $"已添加 {inputs.Length} 个任务草稿。";
         return true;
     }
 
