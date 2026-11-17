@@ -330,12 +330,21 @@
               <MenuItem Header="VS代码生成器">
                 <MenuItem Name="GenerateVsScriptItem" Header="生成" Click="GenerateVsScript_Click"/>
                 <Separator/>
-                <MenuItem Name="UseVsfmodItem" Header="使用VSFilterMod" ToggleType="CheckBox" IsChecked="{Binding UseVsfmod, Mode=TwoWay}"/>
-                <MenuItem Name="UseRepeatItem" Header="Repeat" ToggleType="CheckBox" IsChecked="{Binding UseRepeat, Mode=TwoWay}"/>
-                <MenuItem Name="UseQtgmcItem" Header="QTGMC" ToggleType="CheckBox" IsChecked="{Binding UseQtgmc, Mode=TwoWay}"/>
-                <MenuItem Name="UseIvtcItem" Header="IVTC" ToggleType="CheckBox" IsChecked="{Binding UseIvtc, Mode=TwoWay}"/>
-                <MenuItem Name="UseYadifDoubleItem" Header="Yadif Double" ToggleType="CheckBox" IsChecked="{Binding UseYadifDouble, Mode=TwoWay}"/>
-                <MenuItem Name="UseYadifNormalItem" Header="Yadif Normal" ToggleType="CheckBox" IsChecked="{Binding UseYadifNormal, Mode=TwoWay}"/>
+                <MenuItem Header="字幕渲染器">
+                  <MenuItem Header="Subtext / libass" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseSubtext, Mode=TwoWay}" IsEnabled="{Binding CanSubtext}"/>
+                  <MenuItem Header="xy-VSFilter" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseXyVsf, Mode=TwoWay}" IsEnabled="{Binding CanXyVsf}"/>
+                  <MenuItem Header="VSFilter（旧版）" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseLegacyVsf, Mode=TwoWay}" IsEnabled="{Binding CanLegacyVsf}"/>
+                  <MenuItem Name="UseVsfmodItem" Header="VSFilterMod" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseVsfmod, Mode=TwoWay}" IsEnabled="{Binding CanVsfmod}"/>
+                </MenuItem>
+                <MenuItem Name="UseRepeatItem" Header="Repeat" ToggleType="CheckBox" IsChecked="{Binding UseRepeat, Mode=TwoWay}" IsEnabled="{Binding CanVsSource}"/>
+                <MenuItem Name="UseQtgmcItem" Header="QTGMC" ToggleType="CheckBox" IsChecked="{Binding UseQtgmc, Mode=TwoWay}" IsEnabled="{Binding CanQtgmc}"/>
+                <MenuItem Name="UseIvtcItem" Header="IVTC" ToggleType="CheckBox" IsChecked="{Binding UseIvtc, Mode=TwoWay}" IsEnabled="{Binding CanIvtc}"/>
+                <MenuItem Name="UseYadifDoubleItem" Header="Yadif Double" ToggleType="CheckBox" IsChecked="{Binding UseYadifDouble, Mode=TwoWay}" IsEnabled="{Binding CanYadif}"/>
+                <MenuItem Name="UseYadifNormalItem" Header="Yadif Normal" ToggleType="CheckBox" IsChecked="{Binding UseYadifNormal, Mode=TwoWay}" IsEnabled="{Binding CanYadif}"/>
+                <MenuItem Name="UseBwdifNormalItem" Header="Bwdif 普通帧率" ToggleType="CheckBox" IsChecked="{Binding UseBwdifNormal, Mode=TwoWay}" IsEnabled="{Binding CanBwdif}"/>
+                <MenuItem Name="UseBwdifDoubleItem" Header="Bwdif 双倍帧率" ToggleType="CheckBox" IsChecked="{Binding UseBwdifDouble, Mode=TwoWay}" IsEnabled="{Binding CanBwdif}"/>
+                <Separator/>
+                <MenuItem Header="工具库管理…" Click="ToolLibrary_Click"/>
               </MenuItem>
             </Menu>
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
@@ -348,6 +357,7 @@
           <edit:TextEditor Grid.Row="2" Name="ScriptEditor" Document="{Binding ScriptDocument}" ShowLineNumbers="True" FontFamily="{StaticResource CodeFont}" FontSize="13" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="VapourSynth 脚本编辑器" />
         </Grid>
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
+          <TextBlock Text="{Binding VsIssue}" Classes="muted" MaxHeight="52" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding VsIssue}"/>
           <Button Classes="primary" Content="添加 VS 任务草稿" Tag="VapourSynth" Click="AddTask_Click" HorizontalAlignment="Right"/>
         </StackPanel>
       </Grid>

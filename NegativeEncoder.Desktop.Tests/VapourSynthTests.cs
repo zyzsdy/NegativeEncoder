@@ -4,6 +4,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using NegativeEncoder.Desktop.ViewModels;
+using NegativeEncoder.Desktop.ToolLibrary;
 using NegativeEncoder.Desktop.Views;
 using Xunit;
 
@@ -11,9 +12,10 @@ namespace NegativeEncoder.Desktop.Tests;
 
 public sealed class VapourSynthTests
 {
+    internal static VsCapabilities FullCapabilities => new("/libs/python", "/libs/site-packages", "/libs/user-plugins", "/libs/user-scripts",
+        new[] { "runtime", "source", "ivtc", "qtgmc", "yadif", "bwdif", "subtext", "xyvsf", "vsf", "vsfm" }.ToDictionary(x => x, _ => "tested"), new());
     [Theory]
-    [InlineData(nameof(MainWindowViewModel.UseVsfmod), "core.vsfm.TextSubMod(video, SUB_PATH)")]
-    [InlineData(nameof(MainWindowViewModel.UseRepeat), "repeat=True")]
+    [InlineData(nameof(MainWindowViewModel.UseRepeat), "repeat=1")]
     [InlineData(nameof(MainWindowViewModel.UseQtgmc), "video = QTGMC(video, Preset='fast', TFF=True)")]
     [InlineData(nameof(MainWindowViewModel.UseIvtc), "core.vivtc.VDecimate(video)")]
     [InlineData(nameof(MainWindowViewModel.UseYadifDouble), "field=3), order=1, field=-1, mode=1")]
@@ -21,7 +23,7 @@ public sealed class VapourSynthTests
     [InlineData(nameof(MainWindowViewModel.VsResize), "core.resize.Lanczos(video, 1920, 1080)")]
     public void EveryOptionRegeneratesOnEnableAndDisable(string propertyName, string generatedCode)
     {
-        var model = new MainWindowViewModel { Subtitle = "/videos/subtitle.ass" };
+        var model = new MainWindowViewModel(FullCapabilities) { Subtitle = "/videos/subtitle.ass" };
         var original = model.Script;
         var property = typeof(MainWindowViewModel).GetProperty(propertyName)!;
         var notifications = new List<string?>();
@@ -37,7 +39,7 @@ public sealed class VapourSynthTests
     [Fact]
     public void PathsDimensionsAndInputSelectionAlwaysRebuildTheSameDocument()
     {
-        var model = new MainWindowViewModel();
+        var model = new MainWindowViewModel(FullCapabilities);
         var document = model.ScriptDocument;
         Assert.Contains("VIDEO_PATH = ''", model.Script);
         Assert.EndsWith("video.set_output()\n", model.Script);
@@ -46,8 +48,8 @@ public sealed class VapourSynthTests
         Assert.Contains("VIDEO_PATH = '/videos/中文 \\'片名\\'.mp4'", model.Script);
         model.Subtitle = "C:\\字幕\\it's\n字幕.ass";
         Assert.Contains("SUB_PATH = 'C:\\\\字幕\\\\it\\'s\\n字幕.ass'", model.Script);
-        Assert.Contains("core.xyvsf.TextSub(video, SUB_PATH)", model.Script);
-        Assert.Contains("core.vsf.TextSub(video, SUB_PATH)", model.Script);
+        Assert.Contains("core.sub.TextFile(video, SUB_PATH)", model.Script);
+        Assert.DoesNotContain("core.xyvsf", model.Script);
 
         model.VsResize = true;
         model.VsWidth = "1280";
@@ -76,7 +78,8 @@ public sealed class VapourSynthTests
     [AvaloniaFact]
     public void CompactToolbarEnablesDimensionsAndMenuChangesRegenerateTheEditor()
     {
-        var window = new MainWindow { Width = 1000, Height = 620 };
+        var window = new MainWindow(false) { Width = 1000, Height = 620 };
+        window.Model.ApplyVsCapabilities(FullCapabilities);
         window.Show();
         try
         {
@@ -99,7 +102,7 @@ public sealed class VapourSynthTests
             Dispatcher.UIThread.RunJobs();
             Assert.Contains("Lanczos(video, 1280, 720)", editor.Document.Text);
 
-            foreach (var name in new[] { "UseVsfmod", "UseRepeat", "UseQtgmc", "UseIvtc", "UseYadifDouble", "UseYadifNormal" })
+            foreach (var name in new[] { "UseRepeat", "UseQtgmc", "UseIvtc", "UseYadifDouble", "UseYadifNormal" })
             {
                 var item = view.FindControl<MenuItem>(name + "Item")!;
                 editor.Document.Text = "# 手动编辑\n";

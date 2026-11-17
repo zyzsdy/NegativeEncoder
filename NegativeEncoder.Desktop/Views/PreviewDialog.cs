@@ -10,7 +10,7 @@ using Avalonia.Threading;
 namespace NegativeEncoder.Desktop.Views;
 
 // All app-owned dialogs share modal ownership, Escape, scrolling and initial focus.
-public sealed class PreviewDialog : Window
+public sealed class PreviewDialog : OwnedDialog
 {
     private readonly StackPanel _body;
     private readonly StackPanel _actions;
@@ -22,7 +22,6 @@ public sealed class PreviewDialog : Window
         MaxHeight = 650;
         SizeToContent = SizeToContent.Height;
         CanResize = false;
-        WindowStartupLocation = WindowStartupLocation.CenterOwner;
         _body = new StackPanel { Spacing = 12, Margin = new Thickness(20) };
         if (!string.IsNullOrEmpty(message)) _body.Children.Add(new TextBlock { Text = message });
         _actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(20, 0, 20, 20) };
@@ -31,7 +30,6 @@ public sealed class PreviewDialog : Window
         Grid.SetRow(_actions, 1);
         grid.Children.Add(_actions);
         Content = grid;
-        KeyDown += (_, e) => { if (e.Key == Key.Escape) { Close(); e.Handled = true; } };
     }
 
     public static async Task NoticeAsync(Window owner, string title, string message)

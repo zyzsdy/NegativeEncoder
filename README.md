@@ -3,7 +3,7 @@
 ## next：6.0.0-alpha.1
 
 `next` 分支新增 **.NET 10 + Avalonia UI** 的 `NegativeEncoder.Desktop`，目标为
-Windows / macOS / Linux。原有 WPF 项目与底层实现保留，本阶段只迁移 UI。
+Windows / macOS / Linux。原有 WPF 项目与底层实现保留，已接入工具库管理；编码任务执行仍待迁移。
 
 ```sh
 # 所有桌面平台：需要稳定版 .NET 10 SDK
@@ -31,12 +31,22 @@ Linux 需要 Avalonia 的桌面原生依赖和中文字体，参见
 已迁移：三栏主窗口、宽窗口下的编码器两栏表单、六个功能页（编码器 / HDR / VS / 音频 / 封装 / 常用）、
 文件选择及拖放、预设菜单切换和管理、任务草稿详情、状态栏和关于窗口。
 参数、预设和队列仅保留于本次会话。VS 编辑器使用 AvaloniaEdit，保留 Python 语法高亮、行号和缩进；
-代码生成器会随输入视频、字幕、滤镜选项和尺寸变化自动重建脚本（覆盖手动编辑），也可从菜单手动生成。生成的脚本依赖执行环境已安装的 VapourSynth 插件。所有编码操作只创建 **未执行的任务草稿**；不会写输出文件。
+代码生成器会随输入视频、字幕、滤镜选项和尺寸变化自动重建脚本（覆盖手动编辑），也可从菜单手动生成。生成器根据当前 Libs 的实际取帧检测启用功能；缺失或无效选项会阻止生成并保留原脚本。所有编码操作只创建 **未执行的任务草稿**；不会写输出文件。
 
-未接入：编码与调度、硬件检测、FFmpeg/VideoToolbox、VapourSynth/Libs、
+未接入：编码与调度、VideoToolbox 编码参数、
 预设磁盘持久化及导入导出、更新器、系统命令行集成。UI 中的编码器选项来自原版，
 不代表当前机器具备这些硬件。VideoToolbox 的能力与参数将在后端阶段单独建模，
 不把现有 NVENC/QSV 参数直接当作 VideoToolbox 参数。
+
+“帮助 → 工具库管理”可切换 Libs 位置、检测显卡、安装／升级独立工具及 VS 推荐插件。
+Windows/Linux 默认使用可执行文件目录的 `../Libs`；macOS 默认使用
+`~/Library/Application Support/NegativeEncoder/Libs`。只切换目录，不搬迁原文件。
+FFmpeg 和硬件编码器追踪最新稳定版；Python／VapourSynth／插件使用固定推荐组合。
+没有当前平台发行包时禁用安装；未检测到相应显卡仍允许安装。
+macOS VS 推荐组合要求 15+，Linux 要求 glibc 2.28+。手工插件放在
+`Libs/vapoursynth/user-plugins`，Python 脚本放在 `Libs/vapoursynth/user-scripts`。
+下载使用 SHA256 校验，新环境通过运行检查后才启用，旧版本保留。
+发行包来源、支持矩阵和维护验证方式见 [工具库说明](TOOL-LIBRARY.md)。
 
 原 Windows 版继续使用 `NegativeEncoder.sln`；仓库现在有两个解决方案，
 构建和测试时请显式选择。迁移结构与验证记录见 [MIGRATION.md](MIGRATION.md)。
@@ -53,7 +63,7 @@ Linux 需要 Avalonia 的桌面原生依赖和中文字体，参见
 
 请去[Releases](https://github.com/zyzsdy/NegativeEncoder/releases)找安装包。原有百度网盘的下载不再提供了。
 
-## VapourSynth相关
+## 旧 Windows 版 VapourSynth 相关
 
 **我如何安装新的插件**
 

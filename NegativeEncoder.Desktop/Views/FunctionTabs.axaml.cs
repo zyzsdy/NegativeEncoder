@@ -23,6 +23,11 @@ public partial class FunctionTabs : UserControl
         if (DataContext is MainWindowViewModel model) model.GenerateVsScript();
     }
 
+    private async void ToolLibrary_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TopLevel.GetTopLevel(this) is MainWindow window) await window.ShowToolLibraryAsync();
+    }
+
     private async void Browse_Click(object? sender, RoutedEventArgs e)
     {
         if (TopLevel.GetTopLevel(this) is MainWindow window && sender is Button { Tag: string target })

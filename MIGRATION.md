@@ -39,10 +39,10 @@ stable .NET 10 feature bands. No additional .NET workloads are required.
 | Preset management | Session-only create/save/copy/rename/delete with dirty marker and name validation |
 | Task detail / About | Owned modal windows, Escape dismissal, initial focus and return to owner |
 
-No encoding, tool installation, subprocess execution, hardware probing, Python
-execution, registry integration or legacy settings access occurs. Queue progress
-remains zero and explicitly says the draft has not executed. Presets, paths and
-scripts are session-local. Native output pickers choose a path but never open a
+Encoding execution, registry integration and legacy settings access remain deferred.
+Tool-library management now downloads, installs and probes private binaries and Python.
+Queue progress remains zero and explicitly says the draft has not executed. Presets,
+video paths and scripts remain session-local; the library path and manifest persist. Native output pickers choose a path but never open a
 write stream. The test fixture named `ui-preview.mp4` contains placeholder text,
 not playable media; UI import intentionally does not inspect file contents.
 
@@ -112,3 +112,32 @@ media processing is introduced.
 
 References: [Avalonia desktop platform support](https://v11.docs.avaloniaui.net/docs/get-started/supported-platforms)
 and [AvaloniaEdit](https://github.com/AvaloniaUI/AvaloniaEdit).
+
+## Tool-library management — 2026-11-18
+
+- `ToolLibrary/` owns platform/source resolution, pinned runtime catalog, safe extraction,
+  SHA256 downloads, subprocess diagnostics, actual VS frame probes and atomic activation.
+- Help opens an owned manager with tool/plugin tabs, editable persistent location,
+  hardware hints, install/update, cancellation and copyable logs. No system-tool fallback.
+- Python and VS are separate rows backed by one environment generation. Managed files
+  live below `.managed`; explicitly added files are preserved, collisions abort activation.
+- Generator selects an explicit subtitle backend; Subtext and Bwdif join the available
+  options. Missing capabilities and invalid dimensions block generation without replacing
+  the existing document. Capability refresh does not overwrite hand edits.
+- macOS ARM64: real independent Python 3.13.18 / VS R79 install and repeat upgrade passed;
+  L-SMASH-Works, VIVTC, Subtext, Bwdif, QTGMC and native vspipe frame checks passed.
+  Upgrade retained old generations and manually added Python scripts.
+- FFmpeg 9.0.2 stable ZIPs: real download, SHA256, ffprobe/version and lavfi frame check passed.
+- Native macOS UI: Help menu, hardware discovery, version rows, plugin states, switching to
+  the installed test library, invalid-path error, restoring default path and Escape verified.
+- Windows/Linux runtime execution and screen-reader speech have not been verified on this Mac.
+  Every target installation must pass its own subprocess/frame checks before activation.
+- Explicit opt-in verification harness: `scripts/ToolLibrary.Verify`; metadata refresh script:
+  `scripts/refresh-vs-catalog.py`. No automatic network installs in the unit tests.
+
+- Focused ToolLibraryTests/VapourSynthTests: 23 passed (no full-suite run). Covers SHA256,
+  failed process/cancel activation, archive traversal, path persistence, user-file collision,
+  unsupported ABI, explicit subtitle selection, invalid dimensions and minimum window layout.
+- Generator output for source, IVTC, Bwdif, QTGMC and Subtext passed native vspipe execution
+  against a synthetic clip. Windows/Linux x64 framework-dependent publish passed; no native
+  Windows/Linux execution is claimed. Strict premium audit: zero findings.

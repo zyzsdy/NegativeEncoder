@@ -28,7 +28,7 @@ right. This is a product surface for configuring many related encoding parameter
 not a marketing page. The familiar three-pane workbench is the signature.
 
 The next branch introduces a separate Avalonia desktop app. Task drafts must never
-imply an encoder ran, hardware was detected, or an output file was created. The old WPF app
+imply an encoder ran or an output file was created. Hardware reports come only from the tool-library detector. The old WPF app
 remains the reference for terminology and field coverage.
 
 ## Colors
@@ -74,7 +74,7 @@ Panel radius 6. Controls retain the Avalonia Fluent shape language.
 ## Components
 
 Avalonia Fluent owns buttons, radio groups, authored ComboBox popups, checkboxes,
-tabs, scrollbars and focus indicators. PreviewDialog owns application modals.
+tabs, scrollbars and focus indicators. OwnedDialog owns centering and Escape for application modals; PreviewDialog owns notices/confirmation and ToolLibraryWindow owns component management.
 Text fields have labels and accessible names. StatusText is the shared feedback
 surface. Keep copy focused on controls, validation and operation results; omit
 preview disclaimers, tutorial empty states and repeated implementation notes.
@@ -93,3 +93,13 @@ information, following the original Windows layout with a 20-unit gap.
 - Distinguish task drafts from running tasks. No synthetic progress or success.
 - Keep platform details in About/status and migration docs, not every form field.
 - Avoid a dashboard rebrand, fake video thumbnails, or decorative KPI cards.
+
+## Tool-library manager
+
+Use the existing light tokens and list/form controls. Owned modal: 980 × 780, minimum
+820 × 640. Path, switch-only warning and detected hardware stay above the tabs; tool
+and plugin lists scroll independently. Progress, result, expandable copyable diagnostics,
+cancel and close stay below. During operations disable mutations, keep list scrolling
+available. Unsupported distributions explain the reason beside a disabled action.
+Source paths truncate with full tooltips. Keep plugin descriptions Chinese and native
+component names unchanged. No new global shortcuts or custom animation.

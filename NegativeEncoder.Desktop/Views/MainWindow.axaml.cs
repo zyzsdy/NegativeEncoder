@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using NegativeEncoder.Desktop.Models;
 using NegativeEncoder.Desktop.ViewModels;
+using NegativeEncoder.Desktop.ToolLibrary;
 
 namespace NegativeEncoder.Desktop.Views;
 
@@ -15,7 +16,14 @@ public partial class MainWindow : Window
     private readonly NativeMenu? _nativePresetMenu;
     private readonly Dictionary<Preset, (MenuItem Menu, NativeMenuItem Native)> _presetItems = new();
 
-    public MainWindow()
+    private ToolLibraryViewModel? _toolLibrary;
+    private DistributionClient? _distributionClient;
+    private ToolLibraryWindow? _toolWindow;
+    private readonly CancellationTokenSource _lifetime = new();
+
+    public MainWindow() : this(true) { }
+
+    public MainWindow(bool initializeLibrary)
     {
         InitializeComponent();
         DataContext = Model;
@@ -29,6 +37,38 @@ public partial class MainWindow : Window
         };
         FileDropArea.AddHandler(DragDrop.DragOverEvent, Files_DragOver);
         FileDropArea.AddHandler(DragDrop.DropEvent, Files_Drop);
+        if (initializeLibrary) Opened += async (_, _) =>
+        {
+            try { Model.ApplyVsCapabilities(await GetToolLibrary().Service.ProbeVsAsync(_lifetime.Token)); }
+            catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+            catch (Exception ex) { Model.SetVsDetectionError("工具库检测失败：" + ex.Message); }
+        };
+        Closed += (_, _) => { _lifetime.Cancel(); _distributionClient?.Dispose(); _lifetime.Dispose(); };
+    }
+
+    private ToolLibraryViewModel GetToolLibrary()
+    {
+        if (_toolLibrary is not null) return _toolLibrary;
+        var paths = new LibraryPaths();
+        _distributionClient = new DistributionClient();
+        var runner = new ProcessRunner();
+        _toolLibrary = new ToolLibraryViewModel(new ToolLibraryService(paths, HostPlatform.Current, _distributionClient, runner), runner);
+        _toolLibrary.CapabilitiesChanged += Model.ApplyVsCapabilities;
+        return _toolLibrary;
+    }
+
+    private void ToolLibrary_Click(object? sender, RoutedEventArgs e) => ToolLibrary_NativeClick(sender, e);
+    private async void ToolLibrary_NativeClick(object? sender, EventArgs e) => await ShowToolLibraryAsync();
+    public async Task ShowToolLibraryAsync()
+    {
+        if (_toolWindow is not null) { _toolWindow.Activate(); return; }
+        try
+        {
+            _toolWindow = new ToolLibraryWindow(GetToolLibrary());
+            await _toolWindow.ShowDialog(this);
+        }
+        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法打开工具库管理", ex.ToString()); }
+        finally { _toolWindow = null; }
     }
 
     private void RebuildPresetMenu()

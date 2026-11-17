@@ -12,6 +12,9 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.3.23" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.23" />
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
+    <PackageReference Include="SharpCompress" Version="0.50.9" />
+    <EmbeddedResource Include="ToolLibrary/*.json" />
+    <EmbeddedResource Include="ToolLibrary/*.py" />
     <AvaloniaResource Include="Assets/app-icon.png" />
     <AvaloniaResource Include="Assets/app-icon.ico" />
   </ItemGroup>

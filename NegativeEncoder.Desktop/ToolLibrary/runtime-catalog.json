@@ -1,0 +1,919 @@
+{
+  "schema": 1,
+  "pythonVersion": "3.13.18",
+  "pythonAssets": [
+    {
+      "platform": "osx-arm64",
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261110/cpython-3.13.18%2B20261110-aarch64-apple-darwin-install_only_stripped.tar.gz",
+      "sha256": "7a2384641584ab9984221fcb0fc9265df465922af71be71410529e2a9c3f0540",
+      "fileName": "cpython-3.13.18+20261110-aarch64-apple-darwin-install_only_stripped.tar.gz"
+    },
+    {
+      "platform": "osx-x64",
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261110/cpython-3.13.18%2B20261110-x86_64-apple-darwin-install_only_stripped.tar.gz",
+      "sha256": "d27d59a722db9f69926eb6d9564071247221f45a04da920ea7f3001c97e32f9b",
+      "fileName": "cpython-3.13.18+20261110-x86_64-apple-darwin-install_only_stripped.tar.gz"
+    },
+    {
+      "platform": "linux-x64",
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261110/cpython-3.13.18%2B20261110-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+      "sha256": "f2d2199eb25880e07863b391cf7124e7ffa1338b0d65600dfcec117c4223a7fb",
+      "fileName": "cpython-3.13.18+20261110-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+    },
+    {
+      "platform": "linux-arm64",
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261110/cpython-3.13.18%2B20261110-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
+      "sha256": "55c00325f7c1fddf325dfc621aabdfbbac4dc54adda224af88ec411dc12db239",
+      "fileName": "cpython-3.13.18+20261110-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
+    },
+    {
+      "platform": "win-x64",
+      "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261110/cpython-3.13.18%2B20261110-x86_64-pc-windows-msvc-install_only_stripped.tar.gz",
+      "sha256": "2e0fed09d48989f64c9305da9ff2d37a41c0d13ab2aa6283405b2b620dfbf805",
+      "fileName": "cpython-3.13.18+20261110-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+    }
+  ],
+  "vapourSynthVersion": "79",
+  "packages": [
+    {
+      "id": "VapourSynth",
+      "version": "79",
+      "group": "runtime",
+      "kind": "wheel",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://files.pythonhosted.org/packages/bc/e4/e551a29871be0e2f0378232e7f347b944b632fa23a42c056cfec53485f95/vapoursynth-79-cp312-abi3-win_amd64.whl",
+          "sha256": "643d9708df7e98807a66d4e8804e2e9a1380af22bea2873387d8af103e69aa5b",
+          "fileName": "vapoursynth-79-cp312-abi3-win_amd64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://files.pythonhosted.org/packages/91/09/40354f2a95db5a6462a6ca7d66481bc4970c6d3147c547b1d45b5eb35205/vapoursynth-79-cp312-abi3-macosx_13_0_x86_64.whl",
+          "sha256": "64eb7309439407fec0e0f6771c1b6f954d08355c46cf0c56fb55e1ba68bb7f79",
+          "fileName": "vapoursynth-79-cp312-abi3-macosx_13_0_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://files.pythonhosted.org/packages/68/a3/24c2f637f79f41551c72b6505ba008ba229a1fd7869f102cc77b86ce7bd6/vapoursynth-79-cp312-abi3-macosx_13_0_arm64.whl",
+          "sha256": "ea2750319e31d099b4652a4a63f47db2c297c307f7567e3e9352b75158c7b37c",
+          "fileName": "vapoursynth-79-cp312-abi3-macosx_13_0_arm64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://files.pythonhosted.org/packages/c2/82/a4f5e879ff0bb6722ecbecf01482b0783ed05d42aefa7717e6a6f4f77180/vapoursynth-79-cp312-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "sha256": "6f1e37f0ed8eb73e61c3c231fd7f7a0f7acfa893e98d026686e9c81e52c9ce06",
+          "fileName": "vapoursynth-79-cp312-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://files.pythonhosted.org/packages/39/b5/d329a044564c22beda6b31cd47f1814cbad29e71a77af1b304715614e628/vapoursynth-79-cp312-abi3-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
+          "sha256": "50d031d07b1839ba362cf314e212edb0760c7ca2a7625a051a0bcbf22aaf9d1c",
+          "fileName": "vapoursynth-79-cp312-abi3-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
+          "files": {}
+        }
+      ]
+    },
+    {
+      "id": "vapoursynth-lsmas",
+      "version": "1310.0.0.0",
+      "group": "basic",
+      "kind": "wheel",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://files.pythonhosted.org/packages/a2/4f/f5804dbeb6563486e1d72ce3e72cb9ae2c7201c6660112447f2e1c6f85ec/vapoursynth_lsmas-1310.0.0.0-py3-none-win_amd64.whl",
+          "sha256": "8197e2c901ff7b9ac651a66819986bfd993767a0b656a8d11c8f5b53829d2f6b",
+          "fileName": "vapoursynth_lsmas-1310.0.0.0-py3-none-win_amd64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://files.pythonhosted.org/packages/04/93/928efcced402422421190a0f826fbdf0ed6478c716abfe962c2d1f50e5ad/vapoursynth_lsmas-1310.0.0.0-py3-none-macosx_15_0_x86_64.whl",
+          "sha256": "a8488f7607cb01815427180ebe9bf2de73a5ede2893b005b5653403178eefd65",
+          "fileName": "vapoursynth_lsmas-1310.0.0.0-py3-none-macosx_15_0_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://files.pythonhosted.org/packages/0a/3e/9ffe270c6c48d4c108a613931519edfc8ffecf39f50db9c0d57357654e64/vapoursynth_lsmas-1310.0.0.0-py3-none-macosx_15_0_arm64.whl",
+          "sha256": "f711be5aff8dd8a217026293d7568ed1bcafc293d9078f95b9432d1e26fe7d9f",
+          "fileName": "vapoursynth_lsmas-1310.0.0.0-py3-none-macosx_15_0_arm64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://files.pythonhosted.org/packages/ec/de/40a4c15d0ddb4014edb3fd92f1358cf9e2c2b14eb272b04912aaa802e58f/vapoursynth_lsmas-1310.0.0.0-py3-none-manylinux_2_28_x86_64.whl",
+          "sha256": "d181656d09e47ec8b9155acdcb6b3f938ea95814e4d59057cbec6acda86d4b3a",
+          "fileName": "vapoursynth_lsmas-1310.0.0.0-py3-none-manylinux_2_28_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://files.pythonhosted.org/packages/49/ee/a5823f5430af3344873582ffd4752273d5f4a6084fa08936eb7c6c79ab4c/vapoursynth_lsmas-1310.0.0.0-py3-none-manylinux_2_28_aarch64.whl",
+          "sha256": "2c2cd1d22b8000554e889cda1abc881c9e4dd9cb10717413a837c870d2c965be",
+          "fileName": "vapoursynth_lsmas-1310.0.0.0-py3-none-manylinux_2_28_aarch64.whl",
+          "files": {}
+        }
+      ]
+    },
+    {
+      "id": "vapoursynth-vivtc",
+      "version": "2.0",
+      "group": "basic",
+      "kind": "wheel",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://files.pythonhosted.org/packages/dd/87/eb23822a82a81535583b3daa7349f284792697338b387403f431754675ae/vapoursynth_vivtc-2.0-py3-none-win_amd64.whl",
+          "sha256": "554355240ac9ceb15711b387010ec5d025877beca2d9a8e85a3f392e42a96919",
+          "fileName": "vapoursynth_vivtc-2.0-py3-none-win_amd64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://files.pythonhosted.org/packages/42/39/c7474f1178968ea4ce70b2acafbbc169b7a279032b2027a7f1ee0c4be145/vapoursynth_vivtc-2.0-py3-none-macosx_10_15_x86_64.whl",
+          "sha256": "9808ec9befb22f10f8fe79615794a27d3a45317bd46727064c45bde665d734a1",
+          "fileName": "vapoursynth_vivtc-2.0-py3-none-macosx_10_15_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://files.pythonhosted.org/packages/c4/00/2838f7559623cea4cc70d6a52f2c352a4e43f0ea84bc0b4efd1ca2352c96/vapoursynth_vivtc-2.0-py3-none-macosx_11_0_arm64.whl",
+          "sha256": "3636e2256f00b930d51e7edfcda926ba978e733d06b7b7da66ecf6a728a4d308",
+          "fileName": "vapoursynth_vivtc-2.0-py3-none-macosx_11_0_arm64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://files.pythonhosted.org/packages/f9/60/2820cb976b65a41ced9b47189242996b855442ddbbbc046a4f936a9e6ffe/vapoursynth_vivtc-2.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "sha256": "ec5472da5a83253520cfa8f50975ddd3c6e368f2ded43e6e056acb48a10c3ce5",
+          "fileName": "vapoursynth_vivtc-2.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://files.pythonhosted.org/packages/f7/cb/9eff1274836b1f808aa644624bc76107af984895133bd83077a815871554/vapoursynth_vivtc-2.0-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl",
+          "sha256": "6ec86839f279ba65f444e07a7cae4ec7dd3ac7fa0c12dd6111a221b9fcbd7838",
+          "fileName": "vapoursynth_vivtc-2.0-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl",
+          "files": {}
+        }
+      ]
+    },
+    {
+      "id": "vapoursynth-subtext",
+      "version": "7.0",
+      "group": "basic",
+      "kind": "wheel",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://files.pythonhosted.org/packages/7d/68/3884378ad99b45479cbf991aee3ab9e43d1eeee8386e50dce817e4509aa1/vapoursynth_subtext-7.0-py3-none-win_amd64.whl",
+          "sha256": "b8fe2c024d2f5d15eeb000ee7441105826ecd66d572615dbdfb8efb0e71e6b76",
+          "fileName": "vapoursynth_subtext-7.0-py3-none-win_amd64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://files.pythonhosted.org/packages/fe/ff/3ce81eea55d792852a1a415c01309efd15111fb3cf585a9b2d90e627f7e5/vapoursynth_subtext-7.0-py3-none-macosx_15_0_x86_64.whl",
+          "sha256": "9790c1f81e8d908628291408f8ce5fd84bb79db7e263791cda0a2143f7d37248",
+          "fileName": "vapoursynth_subtext-7.0-py3-none-macosx_15_0_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://files.pythonhosted.org/packages/73/97/b83c3d8f25c4c103bc50bb6bf9d0aacff64005f73f92df09f384af59777d/vapoursynth_subtext-7.0-py3-none-macosx_15_0_arm64.whl",
+          "sha256": "f904b2951e25defc5c9698a867c8d1390bcdd461fa535152c0a44f6aef45d994",
+          "fileName": "vapoursynth_subtext-7.0-py3-none-macosx_15_0_arm64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://files.pythonhosted.org/packages/9c/76/5280834705ebc7ca023cfc037ae2b931156fd2d62bb07c46e50b1d4bb0b1/vapoursynth_subtext-7.0-py3-none-manylinux_2_28_x86_64.whl",
+          "sha256": "0e07aa42a7e78701b7aa2aace245e7bc6608fdae5eb981e8c2cf2c3f1055860f",
+          "fileName": "vapoursynth_subtext-7.0-py3-none-manylinux_2_28_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://files.pythonhosted.org/packages/46/5e/affc8b69458b64505a2abf8a4bb7b6c3f30aa89b95efeacfe6e9b02b5144/vapoursynth_subtext-7.0-py3-none-manylinux_2_28_aarch64.whl",
+          "sha256": "4d968cb2fa4f4f6db2ee189eca8e73f0666d31f6404124b26fcd1985a99d03f1",
+          "fileName": "vapoursynth_subtext-7.0-py3-none-manylinux_2_28_aarch64.whl",
+          "files": {}
+        }
+      ]
+    },
+    {
+      "id": "vapoursynth-bwdif",
+      "version": "5.1",
+      "group": "basic",
+      "kind": "wheel",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://files.pythonhosted.org/packages/ef/7a/e69a8271c254b5ec5cfcfcba2674de75263ed1e3ddaa05476df547c9fda6/vapoursynth_bwdif-5.1-py3-none-win_amd64.whl",
+          "sha256": "4eb1fc68dd7d53f175b5522d5e435a0a48ab4bf178a20b50b9104e9db888eadd",
+          "fileName": "vapoursynth_bwdif-5.1-py3-none-win_amd64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://files.pythonhosted.org/packages/62/d6/d93d5beaeb62de1b5fd08a5d79f79d5319b322d2176d3f46645643411b44/vapoursynth_bwdif-5.1-py3-none-macosx_10_15_x86_64.whl",
+          "sha256": "653ae31f455fca02845b43468560d38c05a8de88875cb2dfe77e581f003a1a05",
+          "fileName": "vapoursynth_bwdif-5.1-py3-none-macosx_10_15_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://files.pythonhosted.org/packages/91/fd/9e1b414f2d76c7b4fccfa3aef543c1fe2305b709a33976f9b4041539a802/vapoursynth_bwdif-5.1-py3-none-macosx_11_0_arm64.whl",
+          "sha256": "bc2064e27c41421426e33d522b81685eb7c878a8a8c5cf38d0010d31173e8110",
+          "fileName": "vapoursynth_bwdif-5.1-py3-none-macosx_11_0_arm64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://files.pythonhosted.org/packages/4a/eb/df9f2b81f12634fac6ebe021f7f1e2a76dcb179aabe7d395b873c7222ff2/vapoursynth_bwdif-5.1-py3-none-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "sha256": "b0302fb4a47fdbb484ac970a6536ed217f7c9c0942d2f0ab39928d3bd50652ba",
+          "fileName": "vapoursynth_bwdif-5.1-py3-none-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://files.pythonhosted.org/packages/a6/8c/ee42d1139af2e86b865eef1ea90207d9f55c4d78dabc2db7d490189c5d82/vapoursynth_bwdif-5.1-py3-none-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl",
+          "sha256": "6f3e95047b5e02c60b9028758f291280dbd4800f4e0b909c31479ffa1ac922f5",
+          "fileName": "vapoursynth_bwdif-5.1-py3-none-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl",
+          "files": {}
+        }
+      ]
+    },
+    {
+      "id": "vapoursynth-mvtools",
+      "version": "29",
+      "group": "qtgmc",
+      "kind": "wheel",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://files.pythonhosted.org/packages/28/f5/1697a4c7238f442a24982a3e5b7b4cbc54d411b40bf3f83b955ab0ed3cc2/vapoursynth_mvtools-29-py3-none-win_amd64.whl",
+          "sha256": "d64d6525d88ce52572f93e04598083c7cff2a92bf6bc269168130fd7a5227746",
+          "fileName": "vapoursynth_mvtools-29-py3-none-win_amd64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://files.pythonhosted.org/packages/b0/dd/50d1d1e6d831fe92f48fcc2d10794c57252408ace91077ee84d8d7ae4de9/vapoursynth_mvtools-29-py3-none-macosx_15_0_x86_64.whl",
+          "sha256": "31556aaa6ba5e86e286ef7977e0359b547db9ea327143dc587dfc787fd1b9135",
+          "fileName": "vapoursynth_mvtools-29-py3-none-macosx_15_0_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://files.pythonhosted.org/packages/78/4a/96b5d75b693c0129535246b1626888695e3d335804d8a00e21e285e8ff18/vapoursynth_mvtools-29-py3-none-macosx_15_0_arm64.whl",
+          "sha256": "c081fb4b367ebd44f2b56cf38e43ff146dd5f31ec31dacbf6cd8bf6560aa2478",
+          "fileName": "vapoursynth_mvtools-29-py3-none-macosx_15_0_arm64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://files.pythonhosted.org/packages/a1/7b/fe16b0dd4d032387e39f951e642baf2da4d37086fba4acaf87283a0a257a/vapoursynth_mvtools-29-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "sha256": "ceee185fe4a6fd4058612823bfb93c4c64e981d661248108de99a6560553bc2a",
+          "fileName": "vapoursynth_mvtools-29-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://files.pythonhosted.org/packages/fd/53/3913b49baa697443dfaf622a27a6dde72c9cb1c06649c5f65dbcf70b08e7/vapoursynth_mvtools-29-py3-none-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
+          "sha256": "402b9c431def570bae755d6e6dbd07537b219175fe17040305d056af3cb23f76",
+          "fileName": "vapoursynth_mvtools-29-py3-none-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
+          "files": {}
+        }
+      ]
+    },
+    {
+      "id": "vapoursynth-znedi3",
+      "version": "3.3",
+      "group": "qtgmc",
+      "kind": "wheel",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://files.pythonhosted.org/packages/99/8e/fb2e045b4fbeda28df0ed6773563a04345a45ca878ad8ce1cb017005fde8/vapoursynth_znedi3-3.3-py3-none-win_amd64.whl",
+          "sha256": "28115bbef036b746f68e0b79359de8a69fe0cdcae3320bad55eabb73982bf504",
+          "fileName": "vapoursynth_znedi3-3.3-py3-none-win_amd64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://files.pythonhosted.org/packages/54/b2/ee40afdeb83747a840fff8b21b7cd3e3ef0efd221b68b43b1c2b250ee99f/vapoursynth_znedi3-3.3-py3-none-macosx_15_0_x86_64.whl",
+          "sha256": "f751c69561027238b0ddfc14ecd793979ecd29ae8740ce6d10a8bebd8fdf46ec",
+          "fileName": "vapoursynth_znedi3-3.3-py3-none-macosx_15_0_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://files.pythonhosted.org/packages/06/cb/090b6eb10abea0bd0236fe24a4956f217222901b1a55568b4d31eee46c8f/vapoursynth_znedi3-3.3-py3-none-macosx_15_0_arm64.whl",
+          "sha256": "886af071df4b07254df44be91d6b88c4e489a547a9c34b5f6f1de778881f071d",
+          "fileName": "vapoursynth_znedi3-3.3-py3-none-macosx_15_0_arm64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://files.pythonhosted.org/packages/81/18/05910dd731033fa0ac988caa8cccca430955aef5263fd2c5d9f548c3775a/vapoursynth_znedi3-3.3-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "sha256": "4bfb62f6746e94fd526d4b8c5d88eb1b732f9a5b21e8a08d9d8c7bb4cc536478",
+          "fileName": "vapoursynth_znedi3-3.3-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://files.pythonhosted.org/packages/da/c8/9ff54092ce476d618d1d42aabe657af3a2d3b256c5c2c9036ee2df792f15/vapoursynth_znedi3-3.3-py3-none-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
+          "sha256": "2c5e91a0ae760c150b56fb8e8c4ff521c20edca46cb53c4c7764bd8887660601",
+          "fileName": "vapoursynth_znedi3-3.3-py3-none-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
+          "files": {}
+        }
+      ]
+    },
+    {
+      "id": "vapoursynth-eedi3",
+      "version": "10.0",
+      "group": "qtgmc",
+      "kind": "wheel",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://files.pythonhosted.org/packages/6a/9d/e4c27079e97008953fc79fccaccb2ca348edf9b158bee43aed9c5493ab5d/vapoursynth_eedi3-10.0-py3-none-win_amd64.whl",
+          "sha256": "b509f489badb3b5f10d95c9a8754a35b502a9de82b47f3521bfb6a1a3b2f6eb7",
+          "fileName": "vapoursynth_eedi3-10.0-py3-none-win_amd64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://files.pythonhosted.org/packages/d8/1e/a2c39fd4f3618baf5c683b4a2b58eed6dbc06cd7541757e7fd59216fefbc/vapoursynth_eedi3-10.0-py3-none-macosx_10_15_x86_64.whl",
+          "sha256": "5a4086aa40184b4abe85080b0b1e74f30d626721c3d8fbed5679abc973a924ef",
+          "fileName": "vapoursynth_eedi3-10.0-py3-none-macosx_10_15_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://files.pythonhosted.org/packages/ec/7a/5f7ad99d9086d835d1f81aa7db9dd0eabb761484069d329f8c6060dcb6b4/vapoursynth_eedi3-10.0-py3-none-macosx_11_0_arm64.whl",
+          "sha256": "8c2f3ba76e312ccc434c443a7ea1147effc78cbd4762ec3edd86c58c7da50896",
+          "fileName": "vapoursynth_eedi3-10.0-py3-none-macosx_11_0_arm64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://files.pythonhosted.org/packages/e4/7a/4e24efe01a8c828e13258284ff2f8928c80882806ec5e72ac111a1665ac8/vapoursynth_eedi3-10.0-py3-none-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "sha256": "a1f2e0a5fb7ae58ed88857835952259dd72fbf975eb03f9ce2407381e7e0426a",
+          "fileName": "vapoursynth_eedi3-10.0-py3-none-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "files": {}
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://files.pythonhosted.org/packages/2a/22/35db73a6a57375b8127b4594b4321a02fa84aca484dab3902c284ff988ea/vapoursynth_eedi3-10.0-py3-none-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl",
+          "sha256": "f446137944538395a7b1bf292ec64aaaea658f44abbac64adf2516d4454347b7",
+          "fileName": "vapoursynth_eedi3-10.0-py3-none-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl",
+          "files": {}
+        }
+      ]
+    },
+    {
+      "id": "rgvs",
+      "version": "catalog-pinned",
+      "group": "qtgmc",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://github.com/vapoursynth/vs-removegrain/releases/download/R1/removegrain-r1.7z",
+          "sha256": "dc408c560de537d273e78607a776f357ba80d9a7a0074d3c10bc9f3e3376d35f",
+          "fileName": "removegrain-r1.7z",
+          "files": {
+            "vapoursynth/plugins/RemoveGrainVS.dll": "win64/RemoveGrainVS.dll"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/RemoveGrainVS.dll": "eed537d5f0de88fc4d5acac1d3dde16b3c81524565fd1fe5e4322bd91117c3fe"
+          },
+          "version": "R1"
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin/com.vapoursynth.removegrainvs/git-89ca38a/darwin-x86_64/2024-10-09T22.52.26%2B00.00Z/RemoveGrain-git-89ca38a-darwin-x86_64.zip",
+          "sha256": "8f80fb50ec1f97042e3e4cc1b4aaf2cb24e40226f130f8cd8ac1ee3856390484",
+          "fileName": "RemoveGrain-git-89ca38a-darwin-x86_64.zip",
+          "files": {
+            "vapoursynth/plugins/libremovegrain.dylib": "libremovegrain.dylib"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/libremovegrain.dylib": "1383538a702277d50edd669b2a692c5ceb16a0935ed0fb42972cdd9020de5510"
+          },
+          "version": "git:89ca38a"
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin/com.vapoursynth.removegrainvs/git-89ca38a/darwin-aarch64/2024-10-09T22.47.59%2B00.00Z/RemoveGrain-git-89ca38a-darwin-aarch64.zip",
+          "sha256": "e0c865ff4e061b8251b4d281fb03af469a989f223cd32a8423dc6b948edbce05",
+          "fileName": "RemoveGrain-git-89ca38a-darwin-aarch64.zip",
+          "files": {
+            "vapoursynth/plugins/libremovegrain.dylib": "libremovegrain.dylib"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/libremovegrain.dylib": "d925c3f25c0ec6d4f102b0248b8706cb309e99f580937de234e21c60c2512697"
+          },
+          "version": "git:89ca38a"
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin/com.vapoursynth.removegrainvs/git-89ca38a/linux-glibc-x86_64/2024-10-09T22.47.43%2B00.00Z/RemoveGrain-git-89ca38a-linux-glibc-x86_64.zip",
+          "sha256": "280774257c3d2385a832f2e6b3e594cdd6e4946456c059ef86fc263f7032e4be",
+          "fileName": "RemoveGrain-git-89ca38a-linux-glibc-x86_64.zip",
+          "files": {
+            "vapoursynth/plugins/libremovegrain.so": "libremovegrain.so"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/libremovegrain.so": "5f5ea8248e7752fc5964ac8cef87248d912d75fc046bdc15ce96e790281ef165"
+          },
+          "version": "git:89ca38a"
+        }
+      ]
+    },
+    {
+      "id": "misc",
+      "version": "catalog-pinned",
+      "group": "qtgmc",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://github.com/vapoursynth/vs-miscfilters-obsolete/releases/download/R2/miscfilters-r2.7z",
+          "sha256": "54cf54c4d66151c01c1c663ed0d47ca99c7f1b0a94927bd99b35362c02172bd2",
+          "fileName": "miscfilters-r2.7z",
+          "files": {
+            "vapoursynth/plugins/MiscFilters.dll": "win64/MiscFilters.dll"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/MiscFilters.dll": "33d911c2f5fd59d33cabb9056348f821421fd18afc0754e8a29ebfe3a35047ab"
+          },
+          "version": "R2"
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin/com.vapoursynth.misc/git-07e0589/darwin-x86_64/2024-10-09T22.52.15%2B00.00Z/Miscfilters-git-07e0589-darwin-x86_64.zip",
+          "sha256": "fee688bfebab060d01594aa99dd3289daa2dc8532d82efba48b6561737187cd5",
+          "fileName": "Miscfilters-git-07e0589-darwin-x86_64.zip",
+          "files": {
+            "vapoursynth/plugins/libmiscfilters.dylib": "libmiscfilters.dylib"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/libmiscfilters.dylib": "dd8051f83bf100dc6c04fd67df83357e1130047bf14389deb0f30e6183b21a7a"
+          },
+          "version": "git:07e0589"
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin/com.vapoursynth.misc/git-07e0589/darwin-aarch64/2024-10-09T22.47.53%2B00.00Z/Miscfilters-git-07e0589-darwin-aarch64.zip",
+          "sha256": "59a970aa6e10aeae326fe5350642360fc005f58c3119768c2bfa3221e71f7eaa",
+          "fileName": "Miscfilters-git-07e0589-darwin-aarch64.zip",
+          "files": {
+            "vapoursynth/plugins/libmiscfilters.dylib": "libmiscfilters.dylib"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/libmiscfilters.dylib": "184595652dac9cd05db4b9e024d0ab601d45847226d73ef294ffc1b135b207c7"
+          },
+          "version": "git:07e0589"
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin/com.vapoursynth.misc/git-07e0589/linux-glibc-x86_64/2024-10-09T22.47.34%2B00.00Z/Miscfilters-git-07e0589-linux-glibc-x86_64.zip",
+          "sha256": "2771e2f1ef0b4309324b378b0de3d8fc83b5c466f88ea41a46dd3eae8db3654e",
+          "fileName": "Miscfilters-git-07e0589-linux-glibc-x86_64.zip",
+          "files": {
+            "vapoursynth/plugins/libmiscfilters.so": "libmiscfilters.so"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/libmiscfilters.so": "35d199090730c3793da4291bac95edcd3958720d253f871115939d9a3b3c09fe"
+          },
+          "version": "git:07e0589"
+        }
+      ]
+    },
+    {
+      "id": "fmtc",
+      "version": "catalog-pinned",
+      "group": "qtgmc",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://github.com/EleonoreMizo/fmtconv/releases/download/r30/fmtconv-r30.zip",
+          "sha256": "f35dba222f2a4d998cd5f777e14382d21337f86fec8ba38832d577ad5795f2e6",
+          "fileName": "fmtconv-r30.zip",
+          "files": {
+            "vapoursynth/plugins/fmtconv.dll": "win64/fmtconv.dll"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/fmtconv.dll": "ddbe77e0b09d745608202c9fbca2c70d0c26e0428b27b15b92dfd2cad87f1898"
+          },
+          "version": "r30"
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin/fmtconv/git-18a9cecb/darwin-x86_64/2024-10-10T14.48.08%2B00.00Z/fmtconv-git-18a9cecb-darwin-x86_64.zip",
+          "sha256": "09443be5a10c3219e6affd30c691984d85c601413d44d1f26e7ad4a8bf123ba5",
+          "fileName": "fmtconv-git-18a9cecb-darwin-x86_64.zip",
+          "files": {
+            "vapoursynth/plugins/libfmtconv.dylib": "libfmtconv.dylib"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/libfmtconv.dylib": "2309153bb318c887eef4a77e400bb73b4840a7f4ab2fd5c3e4a9a11c9e8756ea"
+          },
+          "version": "git:18a9cecb"
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin/fmtconv/git-18a9cecb/darwin-aarch64/2024-10-10T14.43.54%2B00.00Z/fmtconv-git-18a9cecb-darwin-aarch64.zip",
+          "sha256": "162f8476baed05536a4e8dd5d196fc150846e866485aa135c4237e261031a53a",
+          "fileName": "fmtconv-git-18a9cecb-darwin-aarch64.zip",
+          "files": {
+            "vapoursynth/plugins/libfmtconv.dylib": "libfmtconv.dylib"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/libfmtconv.dylib": "fb1445888bc13e74103a6c40ef581cd00a10e0913ff20037c9000b4d5c387bc2"
+          },
+          "version": "git:18a9cecb"
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin/fmtconv/git-18a9cecb/linux-glibc-x86_64/2024-10-10T14.44.42%2B00.00Z/fmtconv-git-18a9cecb-linux-glibc-x86_64.zip",
+          "sha256": "f0175362854b2d921f9127043a3db6aad3c9d54e8fd92d649b5fa7f190753528",
+          "fileName": "fmtconv-git-18a9cecb-linux-glibc-x86_64.zip",
+          "files": {
+            "vapoursynth/plugins/libfmtconv.so": "libfmtconv.so"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/libfmtconv.so": "f2c7606362c9ff6d4dfab85ef3df67224d2f003c6888afa4532e806a4c62646c"
+          },
+          "version": "git:18a9cecb"
+        }
+      ]
+    },
+    {
+      "id": "havsfunc",
+      "version": "r33",
+      "group": "qtgmc",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/havsfunc/zipball/r33",
+          "sha256": "fb1640ba1bffeb62cadb5f0a1ea581364cb3c8f57fb6f9e2e557d85a613e2bb4",
+          "fileName": "havsfunc.zip",
+          "files": {
+            "havsfunc.py": "HomeOfVapourSynthEvolution-havsfunc-7a4f5c7/havsfunc.py"
+          },
+          "fileHashes": {
+            "havsfunc.py": "4da2839544b1ce9382db670b069dc358228251d147dad91f740a860840e04924"
+          }
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/havsfunc/zipball/r33",
+          "sha256": "fb1640ba1bffeb62cadb5f0a1ea581364cb3c8f57fb6f9e2e557d85a613e2bb4",
+          "fileName": "havsfunc.zip",
+          "files": {
+            "havsfunc.py": "HomeOfVapourSynthEvolution-havsfunc-7a4f5c7/havsfunc.py"
+          },
+          "fileHashes": {
+            "havsfunc.py": "4da2839544b1ce9382db670b069dc358228251d147dad91f740a860840e04924"
+          }
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/havsfunc/zipball/r33",
+          "sha256": "fb1640ba1bffeb62cadb5f0a1ea581364cb3c8f57fb6f9e2e557d85a613e2bb4",
+          "fileName": "havsfunc.zip",
+          "files": {
+            "havsfunc.py": "HomeOfVapourSynthEvolution-havsfunc-7a4f5c7/havsfunc.py"
+          },
+          "fileHashes": {
+            "havsfunc.py": "4da2839544b1ce9382db670b069dc358228251d147dad91f740a860840e04924"
+          }
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/havsfunc/zipball/r33",
+          "sha256": "fb1640ba1bffeb62cadb5f0a1ea581364cb3c8f57fb6f9e2e557d85a613e2bb4",
+          "fileName": "havsfunc.zip",
+          "files": {
+            "havsfunc.py": "HomeOfVapourSynthEvolution-havsfunc-7a4f5c7/havsfunc.py"
+          },
+          "fileHashes": {
+            "havsfunc.py": "4da2839544b1ce9382db670b069dc358228251d147dad91f740a860840e04924"
+          }
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/havsfunc/zipball/r33",
+          "sha256": "fb1640ba1bffeb62cadb5f0a1ea581364cb3c8f57fb6f9e2e557d85a613e2bb4",
+          "fileName": "havsfunc.zip",
+          "files": {
+            "havsfunc.py": "HomeOfVapourSynthEvolution-havsfunc-7a4f5c7/havsfunc.py"
+          },
+          "fileHashes": {
+            "havsfunc.py": "4da2839544b1ce9382db670b069dc358228251d147dad91f740a860840e04924"
+          }
+        }
+      ],
+      "replacements": {
+        "havsfunc.py": [
+          {
+            "old": "_lambda=",
+            "new": "lambda_=",
+            "count": 2
+          },
+          {
+            "old": "_global=",
+            "new": "global_=",
+            "count": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "mvsfunc",
+      "version": "git:865c748",
+      "group": "qtgmc",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/mvsfunc/zipball/865c7486ca860d323754ec4774bc4cca540a7076",
+          "sha256": "33cba456c2be85460c6efda293d90111b959f4c7d8644de90a68d44bfa2a61a4",
+          "fileName": "mvsfunc.zip",
+          "files": {
+            "mvsfunc/mvsfunc.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/mvsfunc.py",
+            "mvsfunc/__init__.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/__init__.py",
+            "mvsfunc/_metadata.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/_metadata.py",
+            "mvsfunc/py.typed": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/py.typed"
+          },
+          "fileHashes": {
+            "mvsfunc/mvsfunc.py": "1adeb385d19bac1f8c541b655d1f98a38e18c9a0065d4483c25184c22908a984",
+            "mvsfunc/__init__.py": "a08e2bc2d1b255ffa373ef52a63506da6a926e72a4d115aaabe5e95272016d89",
+            "mvsfunc/_metadata.py": "654d75ba830a969d5940e1d6a18a7801a0a8b9860fd9aa85688f954ee0d5bd53",
+            "mvsfunc/py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/mvsfunc/zipball/865c7486ca860d323754ec4774bc4cca540a7076",
+          "sha256": "33cba456c2be85460c6efda293d90111b959f4c7d8644de90a68d44bfa2a61a4",
+          "fileName": "mvsfunc.zip",
+          "files": {
+            "mvsfunc/mvsfunc.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/mvsfunc.py",
+            "mvsfunc/__init__.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/__init__.py",
+            "mvsfunc/_metadata.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/_metadata.py",
+            "mvsfunc/py.typed": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/py.typed"
+          },
+          "fileHashes": {
+            "mvsfunc/mvsfunc.py": "1adeb385d19bac1f8c541b655d1f98a38e18c9a0065d4483c25184c22908a984",
+            "mvsfunc/__init__.py": "a08e2bc2d1b255ffa373ef52a63506da6a926e72a4d115aaabe5e95272016d89",
+            "mvsfunc/_metadata.py": "654d75ba830a969d5940e1d6a18a7801a0a8b9860fd9aa85688f954ee0d5bd53",
+            "mvsfunc/py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/mvsfunc/zipball/865c7486ca860d323754ec4774bc4cca540a7076",
+          "sha256": "33cba456c2be85460c6efda293d90111b959f4c7d8644de90a68d44bfa2a61a4",
+          "fileName": "mvsfunc.zip",
+          "files": {
+            "mvsfunc/mvsfunc.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/mvsfunc.py",
+            "mvsfunc/__init__.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/__init__.py",
+            "mvsfunc/_metadata.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/_metadata.py",
+            "mvsfunc/py.typed": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/py.typed"
+          },
+          "fileHashes": {
+            "mvsfunc/mvsfunc.py": "1adeb385d19bac1f8c541b655d1f98a38e18c9a0065d4483c25184c22908a984",
+            "mvsfunc/__init__.py": "a08e2bc2d1b255ffa373ef52a63506da6a926e72a4d115aaabe5e95272016d89",
+            "mvsfunc/_metadata.py": "654d75ba830a969d5940e1d6a18a7801a0a8b9860fd9aa85688f954ee0d5bd53",
+            "mvsfunc/py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/mvsfunc/zipball/865c7486ca860d323754ec4774bc4cca540a7076",
+          "sha256": "33cba456c2be85460c6efda293d90111b959f4c7d8644de90a68d44bfa2a61a4",
+          "fileName": "mvsfunc.zip",
+          "files": {
+            "mvsfunc/mvsfunc.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/mvsfunc.py",
+            "mvsfunc/__init__.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/__init__.py",
+            "mvsfunc/_metadata.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/_metadata.py",
+            "mvsfunc/py.typed": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/py.typed"
+          },
+          "fileHashes": {
+            "mvsfunc/mvsfunc.py": "1adeb385d19bac1f8c541b655d1f98a38e18c9a0065d4483c25184c22908a984",
+            "mvsfunc/__init__.py": "a08e2bc2d1b255ffa373ef52a63506da6a926e72a4d115aaabe5e95272016d89",
+            "mvsfunc/_metadata.py": "654d75ba830a969d5940e1d6a18a7801a0a8b9860fd9aa85688f954ee0d5bd53",
+            "mvsfunc/py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://api.github.com/repos/HomeOfVapourSynthEvolution/mvsfunc/zipball/865c7486ca860d323754ec4774bc4cca540a7076",
+          "sha256": "33cba456c2be85460c6efda293d90111b959f4c7d8644de90a68d44bfa2a61a4",
+          "fileName": "mvsfunc.zip",
+          "files": {
+            "mvsfunc/mvsfunc.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/mvsfunc.py",
+            "mvsfunc/__init__.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/__init__.py",
+            "mvsfunc/_metadata.py": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/_metadata.py",
+            "mvsfunc/py.typed": "HomeOfVapourSynthEvolution-mvsfunc-865c748/mvsfunc/py.typed"
+          },
+          "fileHashes": {
+            "mvsfunc/mvsfunc.py": "1adeb385d19bac1f8c541b655d1f98a38e18c9a0065d4483c25184c22908a984",
+            "mvsfunc/__init__.py": "a08e2bc2d1b255ffa373ef52a63506da6a926e72a4d115aaabe5e95272016d89",
+            "mvsfunc/_metadata.py": "654d75ba830a969d5940e1d6a18a7801a0a8b9860fd9aa85688f954ee0d5bd53",
+            "mvsfunc/py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "replacements": {}
+    },
+    {
+      "id": "adjust",
+      "version": "git:a3af7cb",
+      "group": "qtgmc",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://api.github.com/repos/dubhatervapoursynth/vapoursynth-adjust/zipball/a3af7cb57cb37747b0667346375536e65b1fed17",
+          "sha256": "cb9e55b6e129f364ccc37619f16e1cb908c1a6dbef7ade8cfcf3d321e144dd0f",
+          "fileName": "adjust.zip",
+          "files": {
+            "adjust.py": "dubhatervapoursynth-vapoursynth-adjust-a3af7cb/adjust.py"
+          },
+          "fileHashes": {
+            "adjust.py": "22b25995ef37e6d003c2999e51e80d1570376413db9067f703fe4fcef4600bfa"
+          }
+        },
+        {
+          "platform": "osx-x64",
+          "url": "https://api.github.com/repos/dubhatervapoursynth/vapoursynth-adjust/zipball/a3af7cb57cb37747b0667346375536e65b1fed17",
+          "sha256": "cb9e55b6e129f364ccc37619f16e1cb908c1a6dbef7ade8cfcf3d321e144dd0f",
+          "fileName": "adjust.zip",
+          "files": {
+            "adjust.py": "dubhatervapoursynth-vapoursynth-adjust-a3af7cb/adjust.py"
+          },
+          "fileHashes": {
+            "adjust.py": "22b25995ef37e6d003c2999e51e80d1570376413db9067f703fe4fcef4600bfa"
+          }
+        },
+        {
+          "platform": "osx-arm64",
+          "url": "https://api.github.com/repos/dubhatervapoursynth/vapoursynth-adjust/zipball/a3af7cb57cb37747b0667346375536e65b1fed17",
+          "sha256": "cb9e55b6e129f364ccc37619f16e1cb908c1a6dbef7ade8cfcf3d321e144dd0f",
+          "fileName": "adjust.zip",
+          "files": {
+            "adjust.py": "dubhatervapoursynth-vapoursynth-adjust-a3af7cb/adjust.py"
+          },
+          "fileHashes": {
+            "adjust.py": "22b25995ef37e6d003c2999e51e80d1570376413db9067f703fe4fcef4600bfa"
+          }
+        },
+        {
+          "platform": "linux-x64",
+          "url": "https://api.github.com/repos/dubhatervapoursynth/vapoursynth-adjust/zipball/a3af7cb57cb37747b0667346375536e65b1fed17",
+          "sha256": "cb9e55b6e129f364ccc37619f16e1cb908c1a6dbef7ade8cfcf3d321e144dd0f",
+          "fileName": "adjust.zip",
+          "files": {
+            "adjust.py": "dubhatervapoursynth-vapoursynth-adjust-a3af7cb/adjust.py"
+          },
+          "fileHashes": {
+            "adjust.py": "22b25995ef37e6d003c2999e51e80d1570376413db9067f703fe4fcef4600bfa"
+          }
+        },
+        {
+          "platform": "linux-arm64",
+          "url": "https://api.github.com/repos/dubhatervapoursynth/vapoursynth-adjust/zipball/a3af7cb57cb37747b0667346375536e65b1fed17",
+          "sha256": "cb9e55b6e129f364ccc37619f16e1cb908c1a6dbef7ade8cfcf3d321e144dd0f",
+          "fileName": "adjust.zip",
+          "files": {
+            "adjust.py": "dubhatervapoursynth-vapoursynth-adjust-a3af7cb/adjust.py"
+          },
+          "fileHashes": {
+            "adjust.py": "22b25995ef37e6d003c2999e51e80d1570376413db9067f703fe4fcef4600bfa"
+          }
+        }
+      ],
+      "replacements": {}
+    },
+    {
+      "id": "xyvsf",
+      "version": "r3",
+      "group": "subtitles",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://github.com/HomeOfVapourSynthEvolution/xy-VSFilter/releases/download/r3/xy-VSFilter-r3.7z",
+          "sha256": "3d14f6f2f30b27b8865cdf1908b64f8bfb141ba629686ebdf753371867ef2019",
+          "fileName": "xyvsf.7z",
+          "files": {
+            "vapoursynth/plugins/xy-VSFilter.dll": "plugins64/xy-VSFilter.dll"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/xy-VSFilter.dll": "c011c93c285f976f9446e52e66e4cd035be6956721c568b4a386a528f22380ce"
+          }
+        }
+      ],
+      "replacements": {}
+    },
+    {
+      "id": "vsfm",
+      "version": "r5.2.6",
+      "group": "subtitles",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://github.com/sorayuki/VSFilterMod/releases/download/r5.2.6/VSFilterMod_bin.zip",
+          "sha256": "a256dcac5d776d8ab3a592f7ccae7d9151feafb203196fea7836f71b00b48ddd",
+          "fileName": "vsfm.zip",
+          "files": {
+            "vapoursynth/plugins/VSFilterMod.dll": "x64/VSFilterMod.dll"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/VSFilterMod.dll": "87a9c3c1ab7614eda22b8fb367840a87fd34c0c7fb92d7c4d3aa6bb0b2a6ee6b"
+          }
+        }
+      ],
+      "replacements": {}
+    },
+    {
+      "id": "yadifmod",
+      "version": "r10",
+      "group": "yadif",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Yadifmod/releases/download/r10/Yadifmod-r10.7z",
+          "sha256": "87d5572224cf0649f53e2be835ea0dfb40d2694012647b8bc38d46f40ce977dc",
+          "fileName": "yadifmod.7z",
+          "files": {
+            "vapoursynth/plugins/Yadifmod.dll": "Win64/Yadifmod.dll"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/Yadifmod.dll": "62575a35d1182ade1d878469dafc5de0c568a39f523114a003c28554bf5401a1"
+          }
+        }
+      ],
+      "replacements": {}
+    },
+    {
+      "id": "nnedi3cl",
+      "version": "r8",
+      "group": "yadif",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL/releases/download/r8/NNEDI3CL-r8.7z",
+          "sha256": "e2bb6e0b4c29efce7c31d278f9ef2113e2b192e37ead211f18788338b21da98b",
+          "fileName": "nnedi3cl.7z",
+          "files": {
+            "vapoursynth/plugins/NNEDI3CL.dll": "plugins64/NNEDI3CL.dll"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/NNEDI3CL.dll": "4dfb34d51d5b277973ccb2dfb922de702258cf6a1b9eb62de990dd1d72c04a2a"
+          }
+        }
+      ],
+      "replacements": {}
+    },
+    {
+      "id": "nnedi3_weights",
+      "version": "r1",
+      "group": "yadif",
+      "kind": "files",
+      "assets": [
+        {
+          "platform": "win-x64",
+          "url": "https://github.com/sekrit-twc/znedi3/releases/download/r1/znedi3_r1.7z",
+          "sha256": "7855efe5cd40f801888c2bf1fcdeacc1d7513b06a10e14a93547fed4b2ca19f0",
+          "fileName": "nnedi3_weights.7z",
+          "files": {
+            "vapoursynth/plugins/nnedi3_weights.bin": "nnedi3_weights.bin"
+          },
+          "fileHashes": {
+            "vapoursynth/plugins/nnedi3_weights.bin": "27f382430435bb7613deb1c52f3c79c300c9869812cfe29079432a9c82251d42"
+          }
+        }
+      ],
+      "replacements": {}
+    }
+  ],
+  "combination": "2026-11-18.1"
+}

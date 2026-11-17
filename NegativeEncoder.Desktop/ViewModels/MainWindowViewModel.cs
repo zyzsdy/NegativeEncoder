@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json;
 using NegativeEncoder.Desktop.Models;
+using NegativeEncoder.Desktop.ToolLibrary;
 
 namespace NegativeEncoder.Desktop.ViewModels;
 
@@ -63,8 +64,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private string _muxOutput = "";
     public string MuxOutput { get => _muxOutput; set => Set(ref _muxOutput, value); }
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(VsCapabilities? capabilities = null)
     {
+        if (capabilities is not null) _vsCapabilities = capabilities;
         _currentPreset = new Preset();
         RegisterPreset(_currentPreset);
         SavePreset();
