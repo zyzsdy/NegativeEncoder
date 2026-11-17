@@ -91,8 +91,20 @@ Windows 字幕兼容：xy-VSFilter、VSFilterMod。旧 Yadif：Yadifmod、NNEDI3
 fmtconv 使用 VSRepo 记录的独立构建；其 PyPI r31 仅有 Windows wheel。
 
 `library.json` 记录活动版本，`.managed/<组件>/<generation>` 保存各代组件，
-`.downloads/<SHA256>` 缓存经过校验的包。旧代和失败的准备目录保留用于诊断，
-当前没有自动清理/回滚界面；请勿删除清单正在引用的目录。
+`.downloads/<SHA256>` 缓存经过校验的包。安装验证通过并原子切换清单后，自动清理
+所有组件中未被清单引用的旧代（仅限管理器生成的 GUID 目录）；失败或取消只清理
+本次准备目录和未完成的下载文件，保留原活动版本及经过校验的下载缓存。
+清理保护清单中的目录、可执行文件及活动环境链接引用的文件；不会清理手工目录。
+安装、清理共用排他锁；工具检测和使用方通过 `AcquireUsageLease()` 持有共享锁，
+从解析工具路径直到进程退出，防止其他实例在使用期间切换或删除版本。
+外部手工启动的工具不参与此锁协议，应在其退出后执行安装或清理。
+清理失败会报告目录与错误；若新版本已经启用，不会回滚或删除它。
+可在没有外部工具进程使用旧目录时，清理历史遗留副本并重新检测活动环境：
+
+```sh
+dotnet run --project scripts/ToolLibrary.Verify -- /absolute/path/to/Libs cleanup
+```
+
 自定义插件使用 `vapoursynth/user-plugins`，脚本使用 `vapoursynth/user-scripts`；
 升级也保留旧代中不在受管理文件清单内的手工文件，与推荐包冲突时中止。
 普通工具可识别 Libs 根目录、组件名目录、组件 ID 目录及其 bin 子目录内的二进制；

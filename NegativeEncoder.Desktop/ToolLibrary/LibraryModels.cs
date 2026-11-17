@@ -79,8 +79,20 @@ public static partial class LibraryJson
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var temp = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
-        File.WriteAllText(temp, JsonSerializer.Serialize(value, Options));
-        File.Move(temp, path, true);
+        try
+        {
+            File.WriteAllText(temp, JsonSerializer.Serialize(value, Options));
+            File.Move(temp, path, true);
+        }
+        catch (Exception error)
+        {
+            try { File.Delete(temp); }
+            catch (Exception cleanupError)
+            {
+                throw new AggregateException($"写入失败，且无法清理临时文件：{temp}", error, cleanupError);
+            }
+            throw;
+        }
     }
     public static string VersionNumber(string text) => VersionPattern().Match(text).Value;
     [GeneratedRegex(@"\d+(?:\.\d+){0,3}")]

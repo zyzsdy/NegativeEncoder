@@ -34,6 +34,7 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
 
     public async Task<ToolProbe?> ProbeAsync(ToolDefinition tool, CancellationToken token)
     {
+        using var lease = AcquireUsageLease();
         var executable = FindExecutable(tool);
         if (executable is null) return null;
         var result = await runner.RunAsync(executable, [tool.Id == "ffmpeg" ? "-version" : "--version"], token,
@@ -79,6 +80,12 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
 
     public async Task<VsCapabilities> ProbeVsAsync(CancellationToken token, string? runtime = null)
     {
+        using var lease = AcquireUsageLease();
+        return await ProbeVsCoreAsync(token, runtime);
+    }
+
+    private async Task<VsCapabilities> ProbeVsCoreAsync(CancellationToken token, string? runtime = null)
+    {
         runtime ??= ActiveRuntime();
         if (runtime is null) return VsCapabilities.Empty;
         var probe = Path.Combine(runtime, "runtime_probe.py");
@@ -98,35 +105,44 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
     {
         using var lease = AcquireLock();
         var generation = CreateGeneration(tool.Id);
-        progress($"准备安装 {tool.Name} {release.Version}；原版本保持不变。");
-        foreach (var asset in release.Assets)
+        try
         {
-            var archive = await GetDownloadAsync(asset, progress, token);
-            await Task.Run(() => SafeArchive.Extract(archive, generation, token), token);
+            progress($"准备安装 {tool.Name} {release.Version}；原版本保持不变。");
+            foreach (var asset in release.Assets)
+            {
+                var archive = await GetDownloadAsync(asset, progress, token);
+                await Task.Run(() => SafeArchive.Extract(archive, generation, token), token);
+            }
+            var executable = FindSingle(generation, tool.Executable(Host));
+            MakeExecutable(executable);
+            var result = await runner.RunAsync(executable, [tool.Id == "ffmpeg" ? "-version" : "--version"], token);
+            result.EnsureSuccess(tool.Name + " 版本检测（驱动或动态库缺失请根据下方诊断处理）");
+            var actual = ParseVersion(tool.Id, result.Combined);
+            if (actual != release.Version.TrimStart('v', 'V')) throw new InvalidDataException($"{tool.Name} 版本不符：期望 {release.Version}，实际 {actual}\n{result.Combined}");
+            if (tool.Id == "ffmpeg")
+            {
+                var ffprobe = FindSingle(generation, Host.Os == "win" ? "ffprobe.exe" : "ffprobe");
+                MakeExecutable(ffprobe);
+                (await runner.RunAsync(ffprobe, ["-version"], token)).EnsureSuccess("ffprobe 检测");
+                (await runner.RunAsync(executable, ["-v", "error", "-f", "lavfi", "-i", "color=size=16x16:rate=1", "-frames:v", "1", "-f", "null", "-"], token)).EnsureSuccess("FFmpeg 运行检查");
+            }
+            else
+            {
+                var check = await runner.RunAsync(executable, [tool.Id == "vtenc" ? "--check-device" : "--check-hw"], token);
+                // Missing GPU is not an installation failure. Keep its actual diagnostic visible.
+                progress("硬件运行检查：\n" + check.Combined.Trim() + $"\n退出码：{check.ExitCode}");
+            }
+            token.ThrowIfCancellationRequested();
+            var installed = new InstalledTool(actual, Path.GetRelativePath(Paths.Root, generation), Path.GetRelativePath(Paths.Root, executable), release.Source, []);
+            Commit(tool.Id, installed);
         }
-        var executable = FindSingle(generation, tool.Executable(Host));
-        MakeExecutable(executable);
-        var result = await runner.RunAsync(executable, [tool.Id == "ffmpeg" ? "-version" : "--version"], token);
-        result.EnsureSuccess(tool.Name + " 版本检测（驱动或动态库缺失请根据下方诊断处理）");
-        var actual = ParseVersion(tool.Id, result.Combined);
-        if (actual != release.Version.TrimStart('v', 'V')) throw new InvalidDataException($"{tool.Name} 版本不符：期望 {release.Version}，实际 {actual}\n{result.Combined}");
-        if (tool.Id == "ffmpeg")
+        catch (Exception error)
         {
-            var ffprobe = FindSingle(generation, Host.Os == "win" ? "ffprobe.exe" : "ffprobe");
-            MakeExecutable(ffprobe);
-            (await runner.RunAsync(ffprobe, ["-version"], token)).EnsureSuccess("ffprobe 检测");
-            (await runner.RunAsync(executable, ["-v", "error", "-f", "lavfi", "-i", "color=size=16x16:rate=1", "-frames:v", "1", "-f", "null", "-"], token)).EnsureSuccess("FFmpeg 运行检查");
+            CleanupFailedGeneration(generation, error);
+            throw;
         }
-        else
-        {
-            var check = await runner.RunAsync(executable, [tool.Id == "vtenc" ? "--check-device" : "--check-hw"], token);
-            // Missing GPU is not an installation failure. Keep its actual diagnostic visible.
-            progress("硬件运行检查：\n" + check.Combined.Trim() + $"\n退出码：{check.ExitCode}");
-        }
-        token.ThrowIfCancellationRequested();
-        var installed = new InstalledTool(actual, Path.GetRelativePath(Paths.Root, generation), Path.GetRelativePath(Paths.Root, executable), release.Source, []);
-        Commit(tool.Id, installed);
-        progress($"{tool.Name} {actual} 已安装；版本检测通过。" + (tool.Id == "ffmpeg" ? "取帧检查通过。" : "硬件可用性请查看上述检查结果。"));
+        CleanupAfterActivation(progress);
+        progress($"{tool.Name} {release.Version} 已安装；版本检测通过。" + (tool.Id == "ffmpeg" ? "取帧检查通过。" : "硬件可用性请查看上述检查结果。"));
     }
 
     public async Task InstallRuntimeAsync(IEnumerable<string> requestedGroups, Action<string> progress, CancellationToken token)
@@ -140,47 +156,56 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
         foreach (var group in groups)
             if (Catalog.Unavailable(Host, group) is { } reason) throw new NotSupportedException(reason);
         var oldRuntime = previous is null ? null : LibraryPaths.Within(Paths.Root, previous.Directory);
-        var oldCapabilities = oldRuntime is null ? VsCapabilities.Empty : await ProbeVsAsync(token, oldRuntime);
+        var oldCapabilities = oldRuntime is null ? VsCapabilities.Empty : await ProbeVsCoreAsync(token, oldRuntime);
         var generation = CreateGeneration("vapoursynth");
-        progress($"准备独立 Python {Catalog.PythonVersion}、VapourSynth R{Catalog.VapourSynthVersion} 和推荐组合 {Catalog.Combination}。");
-        var python = Catalog.PythonAssets.Single(a => a.Platform == Host.Rid);
-        var archive = await GetDownloadAsync(python.Download, progress, token);
-        await Task.Run(() => SafeArchive.Extract(archive, generation, token), token);
-        var site = SitePackages(generation);
-        Directory.CreateDirectory(site);
-        foreach (var package in Catalog.Packages.Where(p => groups.Contains(p.Group)))
+        try
         {
-            progress($"安装 {package.Id} {package.Version}");
-            var asset = package.Assets.Single(a => a.Platform == Host.Rid);
-            var downloaded = await GetDownloadAsync(asset.Download, progress, token);
-            await Task.Run(() => InstallPackage(package, asset, downloaded, generation, site, token), token);
+            progress($"准备独立 Python {Catalog.PythonVersion}、VapourSynth R{Catalog.VapourSynthVersion} 和推荐组合 {Catalog.Combination}。");
+            var python = Catalog.PythonAssets.Single(a => a.Platform == Host.Rid);
+            var archive = await GetDownloadAsync(python.Download, progress, token);
+            await Task.Run(() => SafeArchive.Extract(archive, generation, token), token);
+            var site = SitePackages(generation);
+            Directory.CreateDirectory(site);
+            foreach (var package in Catalog.Packages.Where(p => groups.Contains(p.Group)))
+            {
+                progress($"安装 {package.Id} {package.Version}");
+                var asset = package.Assets.Single(a => a.Platform == Host.Rid);
+                var downloaded = await GetDownloadAsync(asset.Download, progress, token);
+                await Task.Run(() => InstallPackage(package, asset, downloaded, generation, site, token), token);
+            }
+            foreach (var script in new[] { "runtime_setup.py", "runtime_probe.py" })
+                await File.WriteAllTextAsync(Path.Combine(generation, script), RuntimeCatalog.Resource(script), token);
+            var ownership = Directory.EnumerateFiles(generation, "*", FilesOnly).Select(p => Path.GetRelativePath(generation, p)).ToArray();
+            LibraryJson.WriteAtomic(Path.Combine(generation, "managed-files.json"), ownership);
+            if (oldRuntime is not null) PreserveCustomFiles(oldRuntime, generation, token);
+            Directory.CreateDirectory(UserPlugins);
+            Directory.CreateDirectory(UserScripts);
+            Directory.CreateDirectory(Path.Combine(generation, "config"));
+            MakeExecutable(PythonPath(generation));
+            MakeExecutable(VspipePath(generation));
+            progress("验证独立 Python、VapourSynth 和原生 vspipe…");
+            var configured = await runner.RunAsync(PythonPath(generation), ["-I", Path.Combine(generation, "runtime_setup.py"), generation, Catalog.PythonVersion, Catalog.VapourSynthVersion], token, RuntimeEnvironment(generation));
+            configured.EnsureSuccess("VapourSynth 配置");
+            (await runner.RunAsync(VspipePath(generation), ["--version"], token, RuntimeEnvironment(generation))).EnsureSuccess("vspipe 版本检测");
+            var capabilities = await ProbeVsCoreAsync(token, generation);
+            var required = groups.SelectMany(FeaturesForGroup).Concat(oldCapabilities.Available.Keys).Distinct().ToArray();
+            var failed = required.Where(f => !capabilities.Has(f)).ToArray();
+            if (failed.Length > 0) throw new InvalidOperationException("推荐组合未通过运行验证，原环境保持不变：\n" +
+                string.Join("\n", failed.Select(f => f + "：" + capabilities.Errors.GetValueOrDefault(f, "未返回检测结果"))));
+            // Test the embedded interpreter used by native vspipe too, not just python imports.
+            var vpy = Path.Combine(generation, "verify.vpy");
+            await File.WriteAllTextAsync(vpy, "import vapoursynth as vs\nvs.core.std.BlankClip(width=16,height=16,length=1).set_output()\n", token);
+            (await runner.RunAsync(VspipePath(generation), ["--end", "0", vpy, "."], token, RuntimeEnvironment(generation))).EnsureSuccess("vspipe 实际取帧");
+            token.ThrowIfCancellationRequested();
+            Commit("vapoursynth", new(Catalog.VapourSynthVersion, Path.GetRelativePath(Paths.Root, generation),
+                Path.GetRelativePath(Paths.Root, VspipePath(generation)), "推荐组合 " + Catalog.Combination, groups.Where(g => g != "runtime").ToArray()));
         }
-        foreach (var script in new[] { "runtime_setup.py", "runtime_probe.py" })
-            await File.WriteAllTextAsync(Path.Combine(generation, script), RuntimeCatalog.Resource(script), token);
-        var ownership = Directory.EnumerateFiles(generation, "*", FilesOnly).Select(p => Path.GetRelativePath(generation, p)).ToArray();
-        LibraryJson.WriteAtomic(Path.Combine(generation, "managed-files.json"), ownership);
-        if (oldRuntime is not null) PreserveCustomFiles(oldRuntime, generation, token);
-        Directory.CreateDirectory(UserPlugins);
-        Directory.CreateDirectory(UserScripts);
-        Directory.CreateDirectory(Path.Combine(generation, "config"));
-        MakeExecutable(PythonPath(generation));
-        MakeExecutable(VspipePath(generation));
-        progress("验证独立 Python、VapourSynth 和原生 vspipe…");
-        var configured = await runner.RunAsync(PythonPath(generation), ["-I", Path.Combine(generation, "runtime_setup.py"), generation, Catalog.PythonVersion, Catalog.VapourSynthVersion], token, RuntimeEnvironment(generation));
-        configured.EnsureSuccess("VapourSynth 配置");
-        (await runner.RunAsync(VspipePath(generation), ["--version"], token, RuntimeEnvironment(generation))).EnsureSuccess("vspipe 版本检测");
-        var capabilities = await ProbeVsAsync(token, generation);
-        var required = groups.SelectMany(FeaturesForGroup).Concat(oldCapabilities.Available.Keys).Distinct().ToArray();
-        var failed = required.Where(f => !capabilities.Has(f)).ToArray();
-        if (failed.Length > 0) throw new InvalidOperationException("推荐组合未通过运行验证，原环境保持不变：\n" +
-            string.Join("\n", failed.Select(f => f + "：" + capabilities.Errors.GetValueOrDefault(f, "未返回检测结果"))));
-        // Test the embedded interpreter used by native vspipe too, not just python imports.
-        var vpy = Path.Combine(generation, "verify.vpy");
-        await File.WriteAllTextAsync(vpy, "import vapoursynth as vs\nvs.core.std.BlankClip(width=16,height=16,length=1).set_output()\n", token);
-        (await runner.RunAsync(VspipePath(generation), ["--end", "0", vpy, "."], token, RuntimeEnvironment(generation))).EnsureSuccess("vspipe 实际取帧");
-        token.ThrowIfCancellationRequested();
-        Commit("vapoursynth", new(Catalog.VapourSynthVersion, Path.GetRelativePath(Paths.Root, generation),
-            Path.GetRelativePath(Paths.Root, VspipePath(generation)), "推荐组合 " + Catalog.Combination, groups.Where(g => g != "runtime").ToArray()));
+        catch (Exception error)
+        {
+            CleanupFailedGeneration(generation, error);
+            throw;
+        }
+        CleanupAfterActivation(progress);
         progress("VapourSynth 环境已通过取帧检查并启用。用户插件未被升级或删除。");
     }
 
@@ -284,9 +309,54 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             return path;
         }
         var temp = path + "." + Guid.NewGuid().ToString("N") + ".partial";
-        await client.DownloadAsync(asset, temp, progress, token);
-        File.Move(temp, path);
+        try
+        {
+            await client.DownloadAsync(asset, temp, progress, token);
+            File.Move(temp, path);
+        }
+        catch (Exception error)
+        {
+            try { File.Delete(temp); }
+            catch (Exception cleanupError)
+            {
+                throw new AggregateException($"下载失败，且无法清理临时文件：{temp}", error, cleanupError);
+            }
+            throw;
+        }
         return path;
+    }
+
+    // Hold this lease from resolving a tool path until its process has exited.
+    // Install/cleanup take an exclusive lease, including across application instances.
+    public FileStream AcquireUsageLease()
+    {
+        Directory.CreateDirectory(Paths.Root);
+        return new FileStream(LibraryPaths.Within(Paths.Root, ".install.lock"), FileMode.OpenOrCreate,
+            FileAccess.ReadWrite, FileShare.ReadWrite);
+    }
+
+    public void CleanupUnusedGenerations(Action<string> progress)
+    {
+        using var lease = AcquireLock();
+        ManagedGenerations.Cleanup(Paths.Root, progress);
+    }
+
+    private void CleanupAfterActivation(Action<string> progress)
+    {
+        try { ManagedGenerations.Cleanup(Paths.Root, progress); }
+        catch (Exception error)
+        {
+            throw new IOException("新版本已启用，但旧目录清理失败；当前版本保持有效。" + error.Message, error);
+        }
+    }
+
+    private void CleanupFailedGeneration(string generation, Exception error)
+    {
+        try { ManagedGenerations.DeleteUnreferenced(Paths.Root, generation); }
+        catch (Exception cleanupError)
+        {
+            throw new AggregateException($"安装失败，且无法清理本次准备目录：{generation}", error, cleanupError);
+        }
     }
 
     private FileStream AcquireLock()

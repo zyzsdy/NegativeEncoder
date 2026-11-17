@@ -146,6 +146,7 @@ public sealed class ToolLibraryTests : IDisposable
             Assert.Contains($"期望 {release.Version}，实际 {actual}", error.Message);
             Assert.Contains(output, error.Message);
             Assert.Equal(before, File.ReadAllText(manifestPath));
+            Assert.Empty(Directory.EnumerateDirectories(Path.Combine(paths.Root, ".managed", "vtenc")));
         }
     }
 
@@ -234,6 +235,8 @@ public sealed class ToolLibraryTests : IDisposable
         else if (wrongHash) await Assert.ThrowsAsync<InvalidDataException>(Install);
         else await Assert.ThrowsAsync<InvalidOperationException>(Install);
         Assert.Equal(before, File.ReadAllText(Path.Combine(paths.Root, "library.json")));
+        Assert.Empty(Directory.EnumerateDirectories(Path.Combine(paths.Root, ".managed", "ffmpeg")));
+        Assert.Empty(Directory.EnumerateFiles(paths.Root, "*.partial", SearchOption.AllDirectories));
     }
 
     [Fact]
@@ -386,6 +389,298 @@ public sealed class ToolLibraryTests : IDisposable
             Assert.Empty(new NetworkSettings(settingsFile).ProxyAddress);
         }
         finally { window.Close(); owner.Close(); }
+    }
+
+    private string Generation(LibraryPaths paths, string tool, string contents = "old binary")
+    {
+        var directory = Path.Combine(paths.Root, ".managed", tool, Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, tool), contents);
+        return directory;
+    }
+
+    private static void Activate(LibraryPaths paths, string directory, string? executable = null)
+    {
+        LibraryJson.WriteAtomic(Path.Combine(paths.Root, "library.json"), new LibraryManifest(1, new()
+        {
+            ["ffmpeg"] = new("1.0", Path.GetRelativePath(paths.Root, directory),
+                Path.GetRelativePath(paths.Root, executable ?? Path.Combine(directory, "ffmpeg")), "test", [])
+        }));
+    }
+
+    [Fact]
+    public async Task SuccessfulInstallCleansOldAndAbandonedGenerationsButKeepsOtherActiveTools()
+    {
+        var paths = Paths();
+        var old = Generation(paths, "ffmpeg");
+        var abandoned = Generation(paths, "vtenc");
+        var activeVtenc = Generation(paths, "vtenc");
+        Activate(paths, old);
+        var manifest = LibraryPaths.ReadManifest(paths.Root);
+        manifest.Tools["vtenc"] = new("1.0", Path.GetRelativePath(paths.Root, activeVtenc),
+            Path.GetRelativePath(paths.Root, Path.Combine(activeVtenc, "vtenc")), "test", []);
+        LibraryJson.WriteAtomic(Path.Combine(paths.Root, "library.json"), manifest);
+        var manual = Path.Combine(paths.Root, ".managed", "ffmpeg", "manual");
+        Directory.CreateDirectory(manual);
+        File.WriteAllText(Path.Combine(manual, "custom"), "keep");
+        var bytes = ZipBytes();
+        using var client = new DistributionClient(new ResponseHandler(bytes));
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        var release = new ToolRelease("1.2.3", "test", [new("https://github.com/test/test/tool.zip", Convert.ToHexString(SHA256.HashData(bytes)), "tool.zip")]);
+        await service.InstallToolAsync(ToolDefinition.All[0], release, _ => { }, default);
+        Assert.False(Directory.Exists(old));
+        Assert.False(Directory.Exists(abandoned));
+        Assert.True(File.Exists(Path.Combine(activeVtenc, "vtenc")));
+        Assert.Equal("keep", File.ReadAllText(Path.Combine(manual, "custom")));
+        Assert.True(File.Exists(service.FindExecutable(ToolDefinition.All[0])));
+        Assert.Single(Directory.EnumerateFiles(Path.Combine(paths.Root, ".downloads"), "*.zip", SearchOption.AllDirectories));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RuntimeFailureOrCancellationOnlyRemovesCurrentPreparation(bool cancel)
+    {
+        var paths = Paths();
+        var active = Generation(paths, "ffmpeg");
+        Activate(paths, active);
+        var abandoned = Generation(paths, "vapoursynth");
+        var before = File.ReadAllText(Path.Combine(paths.Root, "library.json"));
+        using var client = new DistributionClient(new ResponseHandler([1, 2, 3]));
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        using var cancellation = new CancellationTokenSource();
+        if (cancel) cancellation.Cancel();
+        Task Install() => service.InstallRuntimeAsync([], _ => { }, cancellation.Token);
+        if (cancel) await Assert.ThrowsAnyAsync<OperationCanceledException>(Install);
+        else await Assert.ThrowsAsync<InvalidDataException>(Install);
+        Assert.Equal(before, File.ReadAllText(Path.Combine(paths.Root, "library.json")));
+        Assert.Equal(new[] { abandoned }, Directory.EnumerateDirectories(Path.Combine(paths.Root, ".managed", "vapoursynth")));
+        Assert.Empty(Directory.EnumerateFiles(paths.Root, "*.partial", SearchOption.AllDirectories));
+        Assert.Equal("old binary", File.ReadAllText(Path.Combine(active, "ffmpeg")));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailureAfterExtractionKeepsOldGenerationAndRemovesNewOne(bool cancel)
+    {
+        var paths = Paths();
+        var old = Generation(paths, "ffmpeg");
+        Activate(paths, old);
+        var before = File.ReadAllText(Path.Combine(paths.Root, "library.json"));
+        var bytes = ZipBytes();
+        using var client = new DistributionClient(new ResponseHandler(bytes));
+        using var cancellation = new CancellationTokenSource();
+        var runner = new CallbackRunner(() =>
+        {
+            Assert.Equal(2, Directory.EnumerateDirectories(Path.Combine(paths.Root, ".managed", "ffmpeg")).Count());
+            if (cancel) cancellation.Cancel();
+            return new(cancel ? 0 : 1, "ffmpeg version 1.2.3 test", "original failure");
+        });
+        var service = new ToolLibraryService(paths, Mac, client, runner);
+        var release = new ToolRelease("1.2.3", "test", [new("https://github.com/test/test/tool.zip", Convert.ToHexString(SHA256.HashData(bytes)), "tool.zip")]);
+        Task Install() => service.InstallToolAsync(ToolDefinition.All[0], release, _ => { }, cancellation.Token);
+        if (cancel) await Assert.ThrowsAnyAsync<OperationCanceledException>(Install);
+        else Assert.Contains("original failure", (await Assert.ThrowsAsync<InvalidOperationException>(Install)).Message);
+        Assert.Equal(before, File.ReadAllText(Path.Combine(paths.Root, "library.json")));
+        Assert.Equal(new[] { old }, Directory.EnumerateDirectories(Path.Combine(paths.Root, ".managed", "ffmpeg")));
+        Assert.Equal("old binary", File.ReadAllText(Path.Combine(old, "ffmpeg")));
+    }
+
+    [Fact]
+    public void CleanupProtectsBothManifestPathsAndIsIdempotent()
+    {
+        var paths = Paths();
+        var directory = Generation(paths, "ffmpeg");
+        var executableDirectory = Generation(paths, "ffmpeg");
+        var unused = Generation(paths, "ffmpeg");
+        Activate(paths, directory, Path.Combine(executableDirectory, "ffmpeg"));
+        var before = File.ReadAllText(Path.Combine(paths.Root, "library.json"));
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        service.CleanupUnusedGenerations(_ => { });
+        service.CleanupUnusedGenerations(_ => { });
+        Assert.True(Directory.Exists(directory));
+        Assert.True(Directory.Exists(executableDirectory));
+        Assert.False(Directory.Exists(unused));
+        Assert.Equal(before, File.ReadAllText(Path.Combine(paths.Root, "library.json")));
+    }
+
+    [Fact]
+    public void CleanupPreservesLinkedDependenciesAndNeverFollowsDiscardedLinks()
+    {
+        if (OperatingSystem.IsWindows()) return; // Creating symlinks requires developer mode/admin on Windows.
+        var paths = Paths();
+        var active = Generation(paths, "ffmpeg");
+        var dependency = Generation(paths, "vtenc");
+        var unused = Generation(paths, "vtenc");
+        Activate(paths, active);
+        File.CreateSymbolicLink(Path.Combine(active, "dependency"), Path.Combine(dependency, "vtenc"));
+        var outside = Path.Combine(_root, "outside");
+        Directory.CreateDirectory(outside);
+        File.WriteAllText(Path.Combine(outside, "custom"), "keep");
+        Directory.CreateSymbolicLink(Path.Combine(unused, "outside"), outside);
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        service.CleanupUnusedGenerations(_ => { });
+        Assert.True(Directory.Exists(dependency));
+        Assert.False(Directory.Exists(unused));
+        Assert.Equal("keep", File.ReadAllText(Path.Combine(outside, "custom")));
+    }
+
+    [Fact]
+    public async Task CleanupFailureAfterCommitKeepsNewVersionAndReportsActivation()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        var paths = Paths();
+        var old = Generation(paths, "ffmpeg");
+        Activate(paths, old);
+        Directory.CreateSymbolicLink(Path.Combine(paths.Root, ".managed", "vtenc"), old);
+        var bytes = ZipBytes();
+        using var client = new DistributionClient(new ResponseHandler(bytes));
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        var release = new ToolRelease("1.2.3", "test", [new("https://github.com/test/test/tool.zip", Convert.ToHexString(SHA256.HashData(bytes)), "tool.zip")]);
+        var error = await Assert.ThrowsAsync<IOException>(() => service.InstallToolAsync(ToolDefinition.All[0], release, _ => { }, default));
+        Assert.Contains("新版本已启用", error.Message);
+        Assert.Equal("1.2.3", LibraryPaths.ReadManifest(paths.Root).Tools["ffmpeg"].Version);
+        Assert.True(File.Exists(service.FindExecutable(ToolDefinition.All[0])));
+        Assert.True(Directory.Exists(old));
+    }
+
+    [Fact]
+    public void InvalidManifestStopsCleanupBeforeDeletingAnything()
+    {
+        var paths = Paths();
+        var old = Generation(paths, "ffmpeg");
+        File.WriteAllText(Path.Combine(paths.Root, "library.json"), "broken json");
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        Assert.Throws<JsonException>(() => service.CleanupUnusedGenerations(_ => { }));
+        Assert.True(Directory.Exists(old));
+        Activate(paths, old, Path.Combine(old, "missing"));
+        Assert.Throws<FileNotFoundException>(() => service.CleanupUnusedGenerations(_ => { }));
+        Assert.True(Directory.Exists(old));
+    }
+
+    [Fact]
+    public async Task UsageLeaseBlocksInstallationAndCleanupAcrossServiceInstances()
+    {
+        var paths = Paths();
+        var old = Generation(paths, "ffmpeg");
+        Activate(paths, old);
+        var unused = Generation(paths, "ffmpeg");
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var first = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        var second = new ToolLibraryService(Paths(), Mac, client, new FakeRunner(false));
+        using (first.AcquireUsageLease())
+        {
+            using var shared = second.AcquireUsageLease();
+            Assert.Throws<IOException>(() => second.CleanupUnusedGenerations(_ => { }));
+            await Assert.ThrowsAsync<IOException>(() => second.InstallToolAsync(ToolDefinition.All[0], new("1.2.3", "test", []), _ => { }, default));
+            Assert.True(Directory.Exists(unused));
+        }
+        second.CleanupUnusedGenerations(_ => { });
+        Assert.False(Directory.Exists(unused));
+        Assert.True(Directory.Exists(old));
+    }
+
+    [Theory]
+    [InlineData("success")]
+    [InlineData("failure")]
+    [InlineData("cancel")]
+    public async Task RuntimeActivationCleansOldOnlyAfterFinalValidation(string outcome)
+    {
+        var paths = Paths();
+        var old = Generation(paths, "vapoursynth");
+        File.WriteAllText(Path.Combine(old, "runtime_probe.py"), "probe");
+        File.WriteAllText(Path.Combine(old, "custom.py"), "user script");
+        LibraryJson.WriteAtomic(Path.Combine(old, "managed-files.json"), new[] { "runtime_probe.py", "vapoursynth" });
+        LibraryJson.WriteAtomic(Path.Combine(paths.Root, "library.json"), new LibraryManifest(1, new()
+        {
+            ["vapoursynth"] = new("78", Path.GetRelativePath(paths.Root, old), Path.GetRelativePath(paths.Root, Path.Combine(old, "vapoursynth")), "test", [])
+        }));
+        var before = File.ReadAllText(Path.Combine(paths.Root, "library.json"));
+        using var client = new DistributionClient(new ResponseHandler([]));
+        using var cancellation = new CancellationTokenSource();
+        var calls = 0;
+        var runner = new CallbackRunner(() =>
+        {
+            calls++;
+            Assert.True(Directory.Exists(old));
+            if (calls == 5)
+            {
+                if (outcome == "failure") return new(1, "", "frame validation failed");
+                if (outcome == "cancel") cancellation.Cancel();
+            }
+            return new(0, "NE_PROBE:{\"available\":{\"runtime\":\"test\"},\"errors\":{}}", "");
+        });
+        var service = new ToolLibraryService(paths, Mac, client, runner);
+        // Use synthetic, hash-verified archives; no real downloads or interpreters.
+        void Cache(CatalogAsset[] assets, byte[] bytes, string fileName)
+        {
+            var index = Array.FindIndex(assets, a => a.Platform == Mac.Rid);
+            var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+            assets[index] = assets[index] with { Sha256 = hash, FileName = fileName };
+            var folder = Path.Combine(paths.Root, ".downloads", hash);
+            Directory.CreateDirectory(folder);
+            File.WriteAllBytes(Path.Combine(folder, fileName), bytes);
+        }
+        Cache(service.Catalog.PythonAssets, ZipBytes("python/bin/python3.13"), "python.zip");
+        Cache(service.Catalog.Packages.Single(p => p.Group == "runtime").Assets, ZipBytes("vapoursynth/vspipe"), "vs.whl");
+        Task Install() => service.InstallRuntimeAsync([], _ => { }, cancellation.Token);
+        if (outcome == "failure") await Assert.ThrowsAsync<InvalidOperationException>(Install);
+        else if (outcome == "cancel") await Assert.ThrowsAnyAsync<OperationCanceledException>(Install);
+        else await Install();
+        Assert.Equal(5, calls);
+        var remaining = Assert.Single(Directory.EnumerateDirectories(Path.Combine(paths.Root, ".managed", "vapoursynth")));
+        if (outcome == "success")
+        {
+            Assert.False(Directory.Exists(old));
+            Assert.Equal(service.ActiveRuntime(), remaining);
+            Assert.Equal("user script", File.ReadAllText(Path.Combine(remaining, "custom.py")));
+            Assert.True(File.Exists(service.VspipePath(remaining)));
+        }
+        else
+        {
+            Assert.Equal(old, remaining);
+            Assert.Equal(before, File.ReadAllText(Path.Combine(paths.Root, "library.json")));
+            Assert.Equal("user script", File.ReadAllText(Path.Combine(old, "custom.py")));
+        }
+    }
+
+    [Fact]
+    public async Task CleanupFailurePreservesOriginalInstallationError()
+    {
+        var paths = Paths();
+        var bytes = ZipBytes();
+        using var client = new DistributionClient(new ResponseHandler(bytes));
+        var service = new ToolLibraryService(paths, Mac, client, new CallbackRunner(() =>
+        {
+            File.WriteAllText(Path.Combine(paths.Root, "library.json"), "broken manifest");
+            return new(1, "", "original process failure");
+        }));
+        var release = new ToolRelease("1.2.3", "test", [new("https://github.com/test/test/tool.zip", Convert.ToHexString(SHA256.HashData(bytes)), "tool.zip")]);
+        var error = await Assert.ThrowsAsync<AggregateException>(() => service.InstallToolAsync(ToolDefinition.All[0], release, _ => { }, default));
+        Assert.Equal(2, error.InnerExceptions.Count);
+        Assert.Contains("original process failure", error.InnerExceptions[0].Message);
+        Assert.IsType<JsonException>(error.InnerExceptions[1]);
+        Assert.Contains("无法清理本次准备目录", error.Message);
+    }
+
+    [Fact]
+    public void FailedAtomicWriteRemovesTemporaryManifest()
+    {
+        var destination = Path.Combine(_root, "library.json");
+        Directory.CreateDirectory(destination); // Force the atomic rename to fail.
+        Assert.ThrowsAny<IOException>(() => LibraryJson.WriteAtomic(destination, LibraryManifest.Empty));
+        Assert.True(Directory.Exists(destination));
+        Assert.Empty(Directory.EnumerateFiles(_root, "*.tmp"));
+    }
+
+    private sealed class CallbackRunner(Func<ProcessResult> callback) : ProcessRunner
+    {
+        public override Task<ProcessResult> RunAsync(string executable, IEnumerable<string> arguments, CancellationToken cancellationToken,
+            IDictionary<string, string>? environment = null, int timeoutSeconds = 45) => Task.FromResult(callback());
     }
 
     private static byte[] ZipBytes(params string[] names)

@@ -1,6 +1,6 @@
 using NegativeEncoder.Desktop.ToolLibrary;
 
-if (args.Length < 2) throw new ArgumentException("Usage: ToolLibrary.Verify ABSOLUTE_ROOT probe|runtime|ffmpeg|releases|generated [basic qtgmc ...]");
+if (args.Length < 2) throw new ArgumentException("Usage: ToolLibrary.Verify ABSOLUTE_ROOT probe|runtime|ffmpeg|releases|generated|cleanup [basic qtgmc ...]");
 var root = Path.GetFullPath(args[0]);
 var paths = new LibraryPaths(Path.Combine(root, "verify-settings.json"), root);
 using var client = new DistributionClient();
@@ -9,6 +9,7 @@ using var cancellation = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; cancellation.Cancel(); };
 var token = cancellation.Token;
 Console.WriteLine($"Platform: {service.Host}, root: {root}");
+if (args[1] == "cleanup") service.CleanupUnusedGenerations(Console.WriteLine);
 if (args[1] == "runtime") await service.InstallRuntimeAsync(args.Skip(2), Console.WriteLine, token);
 if (args[1] == "ffmpeg")
 {
@@ -27,6 +28,7 @@ foreach (var feature in capabilities.Available) Console.WriteLine($"AVAILABLE {f
 foreach (var feature in capabilities.Errors) Console.WriteLine($"UNAVAILABLE {feature.Key}: {feature.Value}");
 if (args[1] == "generated")
 {
+    using var usage = service.AcquireUsageLease();
     var runtime = service.ActiveRuntime() ?? throw new InvalidOperationException("Install runtime first.");
     var scratch = Path.Combine(root, "verify-generated");
     Directory.CreateDirectory(scratch);
