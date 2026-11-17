@@ -50,7 +50,8 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             "ffmpeg" => @"ffmpeg version (?:n)?(\d+(?:\.\d+){1,3})(?:\s|[-+])",
             "python" => @"Python (\d+\.\d+\.\d+)",
             "vapoursynth" => @"(?:Core R|VapourSynth(?:\s+Video Processing Library)?\s*(?:R)?)(\d+)",
-            "vtenc" => @"(?:VTEnc|vtenc)(?:\s+version)?\s+v?(\d+(?:\.\d+){1,3})",
+            // Release tags include prerelease/build suffixes; compare the complete version.
+            "vtenc" => @"VTEnc(?:\s+version)?\s+v?(\d+(?:\.\d+){1,3}(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)(?=\s|$)",
             _ => @"(?:NVEncC|QSVEncC|VCEEncC).*?(\d+\.\d+(?:\.\d+)?)"
         };
         return Regex.Match(output, pattern, RegexOptions.IgnoreCase).Groups[1].Value;

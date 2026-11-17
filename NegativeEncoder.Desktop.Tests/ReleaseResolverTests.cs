@@ -67,16 +67,16 @@ public sealed class ReleaseResolverTests
     public async Task PrereleaseOnlyRepositoryCanResolveWithoutAStableRelease()
     {
         const string json = """
-            [{"draft":false,"prerelease":true,"tag_name":"v0.1.0",
-              "html_url":"https://github.com/zyzsdy/VTEnc/releases/tag/v0.1.0",
-              "assets":[{"name":"vtenc-0.1.0-macos-arm64.zip",
-                         "browser_download_url":"https://github.com/zyzsdy/VTEnc/releases/download/v0.1.0/vtenc-0.1.0-macos-arm64.zip",
+            [{"draft":false,"prerelease":true,"tag_name":"v0.1.0-alpha.1",
+              "html_url":"https://github.com/zyzsdy/VTEnc/releases/tag/v0.1.0-alpha.1",
+              "assets":[{"name":"vtenc-0.1.0-alpha.1-macos-arm64.zip",
+                         "browser_download_url":"https://github.com/zyzsdy/VTEnc/releases/download/v0.1.0-alpha.1/vtenc-0.1.0-alpha.1-macos-arm64.zip",
                          "digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}]
             """;
         using var client = new DistributionClient(new JsonHandler(_ => json));
         var resolver = new ReleaseResolver(client, new("osx", "arm64", new(15, 0)));
         var release = await resolver.ResolveAsync(ToolDefinition.All.Single(t => t.Id == "vtenc"), default);
-        Assert.Equal("0.1.0", release.Version);
+        Assert.Equal("0.1.0-alpha.1", release.Version);
         Assert.True(release.IsPrerelease);
     }
 

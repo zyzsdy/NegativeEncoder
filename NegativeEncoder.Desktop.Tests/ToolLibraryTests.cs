@@ -23,6 +23,62 @@ public sealed class ToolLibraryTests : IDisposable
     private LibraryPaths Paths() => new(Path.Combine(_root, "settings.json"), Path.Combine(_root, "Libs"));
     private static HostPlatform Mac => new("osx", "arm64", new Version(15, 0));
 
+    [Theory]
+    [InlineData("VTEnc 0.1.0-alpha.1 (macOS arm64; VideoToolbox hardware encoder)", "0.1.0-alpha.1")]
+    [InlineData("VTEnc 0.1.0", "0.1.0")]
+    [InlineData("vtenc version v0.1.0-rc.2", "0.1.0-rc.2")]
+    [InlineData("VTEnc 0.1.0-alpha.1+build.42", "0.1.0-alpha.1+build.42")]
+    [InlineData("VTEnc 0.1.0+build.42", "0.1.0+build.42")]
+    [InlineData("VTEnc version unavailable", "")]
+    public void VtencVersionPreservesPrereleaseAndBuildMetadata(string output, string expected)
+    {
+        Assert.Equal(expected, ToolLibraryService.ParseVersion("vtenc", output));
+    }
+
+    [Theory]
+    [InlineData("0.1.0-alpha.1", true)]
+    [InlineData("0.1.0", false)]
+    [InlineData("0.1.0-alpha.2", false)]
+    [InlineData("0.1.1-alpha.1", false)]
+    public async Task VtencInstallRequiresExactPrereleaseVersion(string actual, bool matches)
+    {
+        var paths = Paths();
+        Directory.CreateDirectory(paths.Root);
+        var manifestPath = Path.Combine(paths.Root, "library.json");
+        LibraryJson.WriteAtomic(manifestPath, new LibraryManifest(1, new()
+        {
+            ["vtenc"] = new("0.0.1", "old", "old/vtenc", "test", [])
+        }));
+        var before = File.ReadAllText(manifestPath);
+        var bytes = ZipBytes("bin/vtenc");
+        using var client = new DistributionClient(new ResponseHandler(bytes));
+        var output = $"VTEnc {actual} (macOS arm64; VideoToolbox hardware encoder)";
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false, output));
+        var tool = ToolDefinition.All.Single(t => t.Id == "vtenc");
+        var release = new ToolRelease("0.1.0-alpha.1", "test",
+            [new("https://github.com/test/test/tool.zip", Convert.ToHexString(SHA256.HashData(bytes)), "tool.zip")], true);
+
+        if (matches)
+        {
+            await service.InstallToolAsync(tool, release, _ => { }, default);
+            var installed = LibraryPaths.ReadManifest(paths.Root).Tools["vtenc"];
+            Assert.Equal(release.Version, installed.Version);
+            Assert.StartsWith(".managed", installed.Directory);
+            var probe = await service.ProbeAsync(tool, default);
+            Assert.NotNull(probe);
+            Assert.True(probe.Runs);
+            Assert.Equal(release.Version, probe.Version);
+        }
+        else
+        {
+            var error = await Assert.ThrowsAsync<InvalidDataException>(() =>
+                service.InstallToolAsync(tool, release, _ => { }, default));
+            Assert.Contains($"期望 {release.Version}，实际 {actual}", error.Message);
+            Assert.Contains(output, error.Message);
+            Assert.Equal(before, File.ReadAllText(manifestPath));
+        }
+    }
+
     [Fact]
     public void SwitchingPersistsWithoutMovingAndInvalidSwitchKeepsPreviousRoot()
     {
@@ -262,11 +318,11 @@ public sealed class ToolLibraryTests : IDisposable
         finally { window.Close(); owner.Close(); }
     }
 
-    private static byte[] ZipBytes()
+    private static byte[] ZipBytes(params string[] names)
     {
         using var buffer = new MemoryStream();
         using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, true))
-            foreach (var name in new[] { "ffmpeg", "ffprobe" })
+            foreach (var name in names.Length == 0 ? ["ffmpeg", "ffprobe"] : names)
             {
                 using var writer = new StreamWriter(zip.CreateEntry(name).Open());
                 writer.Write("fake binary");
@@ -289,10 +345,10 @@ public sealed class ToolLibraryTests : IDisposable
             throw new InvalidOperationException("Pending request should only finish by cancellation.");
         }
     }
-    private sealed class FakeRunner(bool fail) : ProcessRunner
+    private sealed class FakeRunner(bool fail, string output = "ffmpeg version 1.2.3 test") : ProcessRunner
     {
         public override Task<ProcessResult> RunAsync(string executable, IEnumerable<string> arguments, CancellationToken cancellationToken,
             IDictionary<string, string>? environment = null, int timeoutSeconds = 45) =>
-            Task.FromResult(new ProcessResult(fail ? 1 : 0, "ffmpeg version 1.2.3 test", fail ? "missing dynamic library" : ""));
+            Task.FromResult(new ProcessResult(fail ? 1 : 0, output, fail ? "missing dynamic library" : ""));
     }
 }
