@@ -121,6 +121,8 @@ public sealed class ToolLibraryViewModel : ObservableObject
         foreach (var tool in ToolDefinition.All)
         {
             var row = Tools.Single(r => r.Id == tool.Id);
+            var isRuntime = tool.Id is "python" or "vapoursynth";
+            if (isRuntime) row.Target = tool.Id == "python" ? Service.Catalog.PythonVersion : Service.Catalog.VapourSynthVersion;
             try
             {
                 var probe = await Service.ProbeAsync(tool, token);
@@ -131,16 +133,19 @@ public sealed class ToolLibraryViewModel : ObservableObject
                     (row.Release?.IsPrerelease == true ? "预发布版本；" : "") + _report.Hint(tool);
                 if (probe is { Runs: false }) { _hasErrors = true; Append(tool.Name + "：" + probe.Diagnostic); }
                 if (row.Release is not null) row.CanInstall = probe is null || !probe.Runs || probe.Version != row.Release.Version;
+                if (isRuntime)
+                {
+                    var unavailable = Service.Catalog.Unavailable(Service.Host, "runtime");
+                    var isLatest = probe is { Runs: true } && probe.Version == row.Target;
+                    if (isLatest) row.Action = "已是最新版";
+                    if (probe is not { Runs: false })
+                        row.State = unavailable ?? (tool.Id == "python" ? "VapourSynth 的独立依赖，联动安装／升级" : "使用固定推荐环境；插件在 VS 插件页管理");
+                    row.CanInstall = unavailable is null && !isLatest;
+                }
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _hasErrors = true; row.Current = "检测失败"; row.State = ex.Message; row.CanInstall = false; Append(ex.ToString()); }
-            if (tool.Id is "python" or "vapoursynth")
-            {
-                row.Target = tool.Id == "python" ? Service.Catalog.PythonVersion : Service.Catalog.VapourSynthVersion;
-                row.State = Service.Catalog.Unavailable(Service.Host, "runtime") ?? (tool.Id == "python" ? "VapourSynth 的独立依赖，联动安装／升级" : "使用固定推荐环境；插件在 VS 插件页管理");
-                row.CanInstall = Service.Catalog.Unavailable(Service.Host, "runtime") is null;
-            }
-            else if (ReleaseResolver.Unsupported(tool, Service.Host) is { } reason) { row.State = reason; row.CanInstall = false; }
+            if (!isRuntime && ReleaseResolver.Unsupported(tool, Service.Host) is { } reason) { row.State = reason; row.CanInstall = false; }
         }
         try { Capabilities = await Service.ProbeVsAsync(token); }
         catch (OperationCanceledException) { Capabilities = VsCapabilities.Empty; CapabilitiesChanged?.Invoke(Capabilities); throw; }

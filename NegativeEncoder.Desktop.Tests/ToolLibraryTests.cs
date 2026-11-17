@@ -24,6 +24,76 @@ public sealed class ToolLibraryTests : IDisposable
     private static HostPlatform Mac => new("osx", "arm64", new Version(15, 0));
 
     [Theory]
+    [InlineData(true, true, false, true, "已是最新版", false)]
+    [InlineData(true, false, false, true, "升级", true)]
+    [InlineData(false, false, false, true, "安装", true)]
+    [InlineData(true, true, true, true, "升级", true)]
+    [InlineData(true, false, false, false, "升级", false)]
+    [InlineData(true, true, false, false, "已是最新版", false)]
+    public async Task RuntimeActionsReflectVersionProbeAndPlatform(bool installed, bool latest, bool probeFails,
+        bool supported, string action, bool canInstall)
+    {
+        var paths = Paths();
+        var catalog = RuntimeCatalog.Load();
+        if (installed)
+        {
+            Directory.CreateDirectory(paths.Root);
+            File.WriteAllText(Path.Combine(paths.Root, "python3"), "fake binary");
+            File.WriteAllText(Path.Combine(paths.Root, "vspipe"), "fake binary");
+        }
+        var output = latest ? $"Python {catalog.PythonVersion}\nVapourSynth {catalog.VapourSynthVersion}" : "Python 3.12.0\nVapourSynth 78";
+        var runner = new FakeRunner(probeFails, output);
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var host = supported ? Mac : Mac with { Version = new(14, 0) };
+        var model = new ToolLibraryViewModel(new(paths, host, client, runner), runner);
+
+        await model.RefreshAsync(false);
+
+        foreach (var row in model.Tools.Where(t => t.Id is "python" or "vapoursynth"))
+        {
+            Assert.Equal(action, row.Action);
+            Assert.Equal(canInstall, row.CanInstall);
+            Assert.Equal(canInstall, row.CanAct);
+            if (latest) Assert.Equal(row.Target, row.Current);
+            if (probeFails) Assert.Contains("版本检测失败", row.State);
+            else if (!supported) Assert.Equal(catalog.Unavailable(host, "runtime"), row.State);
+        }
+
+        // Switching libraries must clear a previously detected latest-version state.
+        model.LibraryPath = Path.Combine(_root, "empty-library");
+        await model.ApplyPathAsync();
+        foreach (var row in model.Tools.Where(t => t.Id is "python" or "vapoursynth"))
+        {
+            Assert.Equal("未安装", row.Current);
+            Assert.Equal("安装", row.Action);
+            Assert.Equal(supported, row.CanAct);
+        }
+    }
+
+    [Fact]
+    public async Task RuntimeProbeExceptionsKeepDiagnosticAndDisableInstallation()
+    {
+        var paths = Paths();
+        LibraryJson.WriteAtomic(Path.Combine(paths.Root, "library.json"), new LibraryManifest(1, new()
+        {
+            ["vapoursynth"] = new("79", "missing-runtime", "missing-runtime/vspipe", "test", [])
+        }));
+        var runner = new FakeRunner(false);
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var model = new ToolLibraryViewModel(new(paths, Mac, client, runner), runner);
+
+        await model.RefreshAsync(false);
+
+        foreach (var row in model.Tools.Where(t => t.Id is "python" or "vapoursynth"))
+        {
+            Assert.Equal("检测失败", row.Current);
+            Assert.Contains("组件文件缺失", row.State);
+            Assert.False(row.CanAct);
+        }
+        Assert.Contains("组件文件缺失", model.Log);
+    }
+
+    [Theory]
     [InlineData("VTEnc 0.1.0-alpha.1 (macOS arm64; VideoToolbox hardware encoder)", "0.1.0-alpha.1")]
     [InlineData("VTEnc 0.1.0", "0.1.0")]
     [InlineData("vtenc version v0.1.0-rc.2", "0.1.0-rc.2")]
