@@ -7,6 +7,7 @@ namespace NegativeEncoder.Desktop.ToolLibrary;
 public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, DistributionClient client, ProcessRunner runner)
 {
     public LibraryPaths Paths { get; } = paths;
+    public Networking.NetworkSettings Network => client.Network;
     public HostPlatform Host { get; } = host;
     public RuntimeCatalog Catalog { get; } = RuntimeCatalog.Load();
     public ReleaseResolver Releases { get; } = new(client, host);
@@ -184,8 +185,11 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
 
     public static string[] FeaturesForGroup(string group) => group switch
     {
-        "basic" => ["source", "ivtc", "subtext", "bwdif"], "qtgmc" => ["qtgmc"],
-        "subtitles" => ["xyvsf", "vsfm"], "yadif" => ["yadif"], _ => ["runtime"]
+        "basic" => ["source", "ivtc", "subtext", "bwdif"],
+        "qtgmc" => ["qtgmc"],
+        "subtitles" => ["xyvsf", "vsfm"],
+        "yadif" => ["yadif"],
+        _ => ["runtime"]
     };
 
     private static void InstallPackage(RuntimePackage package, CatalogAsset asset, string archive, string generation, string site, CancellationToken token)

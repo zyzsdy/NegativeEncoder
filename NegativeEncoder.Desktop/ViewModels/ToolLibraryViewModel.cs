@@ -37,6 +37,10 @@ public sealed class ToolLibraryViewModel : ObservableObject
     public VsCapabilities Capabilities { get; private set; } = VsCapabilities.Empty;
     private string _path;
     public string LibraryPath { get => _path; set => Set(ref _path, value); }
+    private string _proxyAddress;
+    public string ProxyAddress { get => _proxyAddress; set => Set(ref _proxyAddress, value); }
+    private string _proxyError = "";
+    public string ProxyError { get => _proxyError; private set => Set(ref _proxyError, value); }
     private bool _busy;
     public bool Busy
     {
@@ -64,6 +68,7 @@ public sealed class ToolLibraryViewModel : ObservableObject
         Service = service;
         _runner = runner;
         _path = service.Paths.Root;
+        _proxyAddress = service.Network.ProxyAddress;
         foreach (var definition in ToolDefinition.All) Tools.Add(new(definition.Id, definition.Name, ""));
         foreach (var group in RuntimeCatalog.Groups) Groups.Add(new(group.Id, group.Name, group.Description));
     }
@@ -77,6 +82,27 @@ public sealed class ToolLibraryViewModel : ObservableObject
         if (online) await RefreshReleasesAsync(token);
         Status = _hasErrors ? "检测完成，部分组件检查失败；请查看对应状态和操作日志。" : "检测完成。";
     });
+
+    public bool ApplyProxy()
+    {
+        if (Busy) return false;
+        ProxyError = "";
+        try
+        {
+            Service.Network.ApplyProxy(ProxyAddress);
+            ProxyAddress = Service.Network.ProxyAddress;
+            Status = ProxyAddress.Length == 0 ? "已清除自定义代理，后续请求使用系统默认网络设置。" : "网络代理已保存，对后续检查更新和下载请求生效。";
+            Append(Status);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            ProxyError = "代理未保存：" + ex.Message;
+            Status = ProxyError;
+            Append(ex.ToString());
+            return false;
+        }
+    }
 
     public async Task ApplyPathAsync() => await RunAsync(async token =>
     {

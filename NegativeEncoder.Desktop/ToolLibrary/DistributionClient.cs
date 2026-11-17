@@ -3,17 +3,29 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using NegativeEncoder.Desktop.Networking;
 
 namespace NegativeEncoder.Desktop.ToolLibrary;
 
 public sealed class DistributionClient : IDisposable
 {
-    private readonly HttpClient _http;
+    private readonly HttpMessageHandler? _handler;
+    public NetworkSettings Network { get; }
     private static readonly string[] Hosts = ["api.github.com", "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com", "codeload.github.com", "raw.githubusercontent.com", "pypi.org", "files.pythonhosted.org", "ffmpeg.org", "ffmpeg.martin-riedl.de"];
-    public DistributionClient(HttpMessageHandler? handler = null)
+    public DistributionClient(HttpMessageHandler? handler = null, NetworkSettings? network = null)
     {
-        _http = new HttpClient(handler ?? new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromMinutes(20) };
-        _http.DefaultRequestHeaders.UserAgent.ParseAdd("NegativeEncoder/6.0 tool-library");
+        _handler = handler;
+        Network = network ?? new NetworkSettings();
+    }
+
+    private HttpClient CreateClient()
+    {
+        // Snapshot settings for the complete operation, including redirects and streamed downloads.
+        // These infrequent operations own their handler, so changing proxy never cancels an active request.
+        var http = new HttpClient(_handler ?? Network.CreateHandler(), disposeHandler: _handler is null)
+        { Timeout = TimeSpan.FromMinutes(20) };
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("NegativeEncoder/6.0 tool-library");
+        return http;
     }
 
     public static void ValidateUrl(string url)
@@ -23,12 +35,12 @@ public sealed class DistributionClient : IDisposable
             throw new InvalidDataException($"不允许的下载来源：{uri.Host}");
     }
 
-    private async Task<HttpResponseMessage> GetAsync(string url, CancellationToken token)
+    private static async Task<HttpResponseMessage> GetAsync(HttpClient http, string url, CancellationToken token)
     {
         for (var redirect = 0; redirect < 8; redirect++)
         {
             ValidateUrl(url);
-            var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
+            var response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
             if ((int)response.StatusCode is >= 300 and < 400 && response.Headers.Location is { } location)
             {
                 url = new Uri(new Uri(url), location).AbsoluteUri;
@@ -48,9 +60,10 @@ public sealed class DistributionClient : IDisposable
 
     public async Task<string> TextAsync(string url, CancellationToken token)
     {
+        using var http = CreateClient();
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
         timeout.CancelAfter(TimeSpan.FromSeconds(35));
-        using var response = await GetAsync(url, timeout.Token);
+        using var response = await GetAsync(http, url, timeout.Token);
         return await response.Content.ReadAsStringAsync(timeout.Token);
     }
 
@@ -58,11 +71,12 @@ public sealed class DistributionClient : IDisposable
 
     public async Task DownloadAsync(DownloadAsset asset, string target, Action<string> progress, CancellationToken token)
     {
+        using var http = CreateClient();
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
         timeout.CancelAfter(TimeSpan.FromMinutes(20));
         token = timeout.Token;
         if (!Regex.IsMatch(asset.Sha256, "^[a-fA-F0-9]{64}$")) throw new InvalidDataException($"缺少有效 SHA256：{asset.FileName}");
-        using var response = await GetAsync(asset.Url, token);
+        using var response = await GetAsync(http, asset.Url, token);
         await using var input = await response.Content.ReadAsStreamAsync(token);
         await using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 65536, true);
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
@@ -86,5 +100,5 @@ public sealed class DistributionClient : IDisposable
         if (!actual.Equals(asset.Sha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"SHA256 校验失败：{asset.FileName}\n期望 {asset.Sha256}\n实际 {actual}");
     }
-    public void Dispose() => _http.Dispose();
+    public void Dispose() => _handler?.Dispose();
 }

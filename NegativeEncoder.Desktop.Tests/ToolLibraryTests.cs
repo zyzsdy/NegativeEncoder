@@ -6,6 +6,8 @@ using System.Text.Json;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using Avalonia.Interactivity;
+using NegativeEncoder.Desktop.Networking;
 using NegativeEncoder.Desktop.ToolLibrary;
 using NegativeEncoder.Desktop.ViewModels;
 using NegativeEncoder.Desktop.Views;
@@ -204,6 +206,62 @@ public sealed class ToolLibraryTests : IDisposable
         finally { window.Close(); owner.Close(); }
     }
 
+    [AvaloniaFact]
+    public async Task ProxyFormValidatesPersistsAndLocksDuringRequests()
+    {
+        var settingsFile = Path.Combine(_root, "network.json");
+        var network = new NetworkSettings(settingsFile);
+        network.ApplyProxy("http://localhost:7890");
+        using var client = new DistributionClient(new PendingHandler(), network);
+        var runner = new FakeRunner(false);
+        var model = new ToolLibraryViewModel(new(Paths(), Mac, client, runner), runner);
+        var owner = new MainWindow(false);
+        owner.Show();
+        var window = new ToolLibraryWindow(model, false) { Width = 820, Height = 640 };
+        window.Show(owner);
+        try
+        {
+            Dispatcher.UIThread.RunJobs();
+            var field = window.FindControl<TextBox>("ProxyAddressField")!;
+            var apply = window.FindControl<Button>("ApplyProxyButton")!;
+            Assert.Equal("http://localhost:7890", field.Text);
+            field.Text = "invalid";
+            apply.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("invalid", model.ProxyAddress);
+            Assert.Equal("http://localhost:7890", network.ProxyAddress);
+            Assert.True(field.IsFocused);
+            Assert.Equal(model.ProxyError, Avalonia.Automation.AutomationProperties.GetHelpText(field));
+            Assert.True(window.FindControl<TextBlock>("ProxyErrorText")!.IsVisible);
+            Assert.Contains("代理未保存", model.Status);
+            Assert.True(window.FindControl<ListBox>("ToolRows")!.Bounds.Height > 100);
+
+            field.Text = "socks5://localhost:1080";
+            apply.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Dispatcher.UIThread.RunJobs();
+            Assert.Empty(model.ProxyError);
+            Assert.Equal(field.Text, new NetworkSettings(settingsFile).ProxyAddress);
+            model.LibraryPath = Path.Combine(_root, "another-library");
+            await model.ApplyPathAsync();
+            Assert.Equal(field.Text, new NetworkSettings(settingsFile).ProxyAddress);
+
+            var refresh = model.RefreshAsync(true);
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(model.Busy);
+            Assert.False(field.IsEffectivelyEnabled);
+            Assert.False(apply.IsEffectivelyEnabled);
+            Assert.False(model.ApplyProxy());
+            model.Cancel();
+            await refresh;
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(field.IsEffectivelyEnabled);
+            field.Text = "";
+            apply.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.Empty(new NetworkSettings(settingsFile).ProxyAddress);
+        }
+        finally { window.Close(); owner.Close(); }
+    }
+
     private static byte[] ZipBytes()
     {
         using var buffer = new MemoryStream();
@@ -221,6 +279,14 @@ public sealed class ToolLibraryTests : IDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(bytes) });
+        }
+    }
+    private sealed class PendingHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+            throw new InvalidOperationException("Pending request should only finish by cancellation.");
         }
     }
     private sealed class FakeRunner(bool fail) : ProcessRunner

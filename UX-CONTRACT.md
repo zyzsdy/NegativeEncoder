@@ -75,6 +75,12 @@ Linux interactive coverage must be reported separately from headless checks.
 Help → 工具库管理 opens one owned window. Path application validates before saving;
 only switches, never moves/deletes files. Failed application keeps the active root and
 shows diagnostics. Python/VS are separately visible but installed/upgraded together.
+The proxy form uses the same explicit Apply flow. HTTP/SOCKS5 addresses are saved in
+application-wide network settings; blank restores system defaults. Invalid input keeps
+the active setting, preserves the draft and focuses the field with an inline error.
+Applying a proxy affects subsequent metadata/checksum/download requests, including
+redirects, and future app updates must reuse it. Proxy failure never retries directly.
+The field and Apply action are disabled while an operation is active.
 All installs use a new generation and commit only after verification; cancellation,
 checksum errors and failed probes preserve the active manifest. User-added plugins are
 never automatically upgraded/deleted; file conflicts abort with details. Active operations

@@ -11,6 +11,15 @@
         <Button Grid.Column="2" Content="应用位置" Click="Apply_Click" Margin="8,0,0,0"/>
       </Grid>
       <TextBlock Text="更改位置仅切换当前工具库，不会移动或删除原目录中的文件。切换后将重新检测组件；新目录为空时需要重新安装。" Classes="muted"/>
+      <Grid ColumnDefinitions="Auto,*,Auto" IsEnabled="{Binding Idle}">
+        <Label Content="使用网络代理" Target="{Binding #ProxyAddressField}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <TextBox Grid.Column="1" Name="ProxyAddressField" Text="{Binding ProxyAddress, Mode=TwoWay}"
+                 Watermark="http://127.0.0.1:7890 或 socks5://127.0.0.1:1080" AutomationProperties.Name="使用网络代理"
+                 AutomationProperties.HelpText="{Binding ProxyError}"/>
+        <Button Grid.Column="2" Name="ApplyProxyButton" Content="应用代理" Click="ApplyProxy_Click" Margin="8,0,0,0"/>
+      </Grid>
+      <TextBlock Text="留空使用系统默认网络设置；应用后用于工具库检查与下载，未来程序更新也共用此设置。" Classes="muted"/>
+      <TextBlock Name="ProxyErrorText" Text="{Binding ProxyError}" IsVisible="{Binding ProxyError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
       <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,8">
         <TextBlock Text="{Binding Hardware}" VerticalAlignment="Center"/>
         <Button Grid.Column="1" Content="重新检测 / 检查更新" Click="Refresh_Click" IsEnabled="{Binding Idle}" Margin="12,0,0,0"/>
