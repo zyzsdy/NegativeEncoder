@@ -19,7 +19,7 @@ exists in this preview. No legacy configuration is read or written.
 | Toast | MainWindowViewModel.Status / StatusText | this contract | persistent status, no transient toast | queue validation tests |
 | CRUD | MainWindowViewModel + PreviewDialog | this contract | in-memory preset operations | snapshot/name tests |
 | Menu | MainWindow menu handlers + preset menu synchronization | this contract | macOS NativeMenu; Windows/Linux Fluent Menu | native macOS menu check + desktop layout smoke test |
-| Dialog | PreviewDialog | this contract | notice / name edit / delete confirmation | Escape + initial focus on macOS |
+| Dialog | PreviewDialog | this contract | notice / about with app icon / name edit / delete confirmation | Escape + initial focus on macOS |
 
 ## Workflows
 

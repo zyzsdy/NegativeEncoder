@@ -2,6 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace NegativeEncoder.Desktop.Views;
@@ -34,6 +37,35 @@ public sealed class PreviewDialog : Window
     public static async Task NoticeAsync(Window owner, string title, string message)
     {
         var dialog = new PreviewDialog(title, message);
+        await ShowNoticeAsync(owner, dialog);
+    }
+
+    public static async Task AboutAsync(Window owner, string message)
+    {
+        using var stream = AssetLoader.Open(new Uri("avares://NegativeEncoder.Desktop/Assets/app-icon.png"));
+        using var bitmap = new Bitmap(stream);
+        var dialog = new PreviewDialog("关于消极压制", "") { Width = 640 };
+        var icon = new Image
+        {
+            Source = bitmap,
+            Width = 160,
+            Height = 160,
+            Stretch = Stretch.Uniform,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(0, 0, 20, 0)
+        };
+        Avalonia.Automation.AutomationProperties.SetName(icon, "消极压制应用图标");
+        var content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
+        content.Children.Add(icon);
+        var description = new TextBlock { Text = message };
+        Grid.SetColumn(description, 1);
+        content.Children.Add(description);
+        dialog._body.Children.Add(content);
+        await ShowNoticeAsync(owner, dialog);
+    }
+
+    private static async Task ShowNoticeAsync(Window owner, PreviewDialog dialog)
+    {
         var close = dialog.AddButton("关闭", () => dialog.Close());
         dialog.Opened += (_, _) => close.Focus();
         await dialog.ShowDialog(owner);

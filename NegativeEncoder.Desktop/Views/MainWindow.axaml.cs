@@ -160,7 +160,7 @@ public partial class MainWindow : Window
     }
 
     private void About_Click(object? sender, RoutedEventArgs e) => About_NativeClick(sender, e);
-    private async void About_NativeClick(object? sender, EventArgs e) => await PreviewDialog.NoticeAsync(this, "关于消极压制",
+    private async void About_NativeClick(object? sender, EventArgs e) => await PreviewDialog.AboutAsync(this,
         $"NegativeEncoder {AppVersion.Current}\n\nAuthor: Ted Zyzsdy\nSpecial Thanks to MeowSound Idols and other supporters.\n\nhttps://github.com/zyzsdy/NegativeEncoder\n\n本软件按照 MIT 协议授权。");
 
     private async void TaskDetails_Click(object? sender, RoutedEventArgs e) => await ShowTaskAsync();

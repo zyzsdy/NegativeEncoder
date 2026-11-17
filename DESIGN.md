@@ -83,6 +83,8 @@ Unavailable operations stay disabled; task drafts retain their unexecuted status
 The desktop app icon preserves the original pink fish and yellow-green markings,
 flattened onto a warm off-white macOS tile. Assets/app-icon.png is the 1024px source;
 app-icon.ico serves window/Windows resources and app-icon.icns serves the macOS bundle.
+The About dialog displays the PNG at 160 × 160 units to the left of the application
+information, following the original Windows layout with a 20-unit gap.
 
 ## Do's and Don'ts
 
