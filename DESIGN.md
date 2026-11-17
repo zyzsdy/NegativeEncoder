@@ -27,8 +27,8 @@ WPF workflow: input files on the left, six parameter tabs in the center, queue o
 right. This is a product surface for configuring many related encoding parameters,
 not a marketing page. The familiar three-pane workbench is the signature.
 
-The next branch introduces a separate Avalonia desktop app. Task states and logs reflect real execution; only successful complete pipelines publish output files. Hardware reports come only from the tool-library detector. The old WPF app
-remains the reference for terminology and field coverage.
+The application uses Avalonia for Windows, macOS and Linux. Task states and logs reflect real execution; only successful complete pipelines publish output files. Hardware reports come only from the tool-library detector. The original WPF app is available in Git history
+as the reference for terminology and field coverage.
 
 ## Colors
 

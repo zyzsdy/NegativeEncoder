@@ -59,17 +59,11 @@ def main():
                                files={f'vapoursynth/plugins/{k}':v[0] for k,v in a['files'].items()},
                                fileHashes={f'vapoursynth/plugins/{k}':v[1] for k,v in a['files'].items()}, version=release['version']))
         packages.append(dict(id=name,version='catalog-pinned',group='qtgmc',kind='files',assets=assets))
-    legacy = json.loads((ROOT/'install/dependencies.lock.json').read_text())
+    # These source archives have already been validated and pinned in the runtime
+    # catalog. Preserve their platform mappings, file hashes and script patches.
+    pinned = {package['id']: package for package in catalog['packages']}
     for name in ['havsfunc','mvsfunc','adjust','xyvsf','vsfm','yadifmod','nnedi3cl','nnedi3_weights']:
-        a = next(a for a in legacy['assets'] if a['name']==name)
-        is_script = name in ['havsfunc','mvsfunc','adjust']
-        files = {k if is_script else 'vapoursynth/plugins/'+k:v['path'] for k,v in a['files'].items()}
-        hashes = {k if is_script else 'vapoursynth/plugins/'+k:v['sha256'] for k,v in a['files'].items()}
-        assets = [dict(platform=rid,url=a['url'],sha256=a['sha256'],fileName=name+a['extension'],files=files,fileHashes=hashes)
-                  for rid in RIDS if is_script or rid=='win-x64']
-        packages.append(dict(id=name,version=a['version'],group='qtgmc' if is_script else 'subtitles' if name in ['xyvsf','vsfm'] else 'yadif',
-                             kind='files',assets=assets,
-                             replacements={k:v.get('replacements',[]) for k,v in a['files'].items() if v.get('replacements')}))
+        packages.append(pinned[name])
     catalog['packages'] = packages
     catalog['combination'] = '2026-11-18.1'
     CATALOG.write_text(json.dumps(catalog,indent=2,ensure_ascii=False)+'\n')

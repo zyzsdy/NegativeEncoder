@@ -1,4 +1,24 @@
-# Avalonia UI migration — phase 1
+# Avalonia migration history
+
+## Current repository — 2026-11-18
+
+The cross-platform application is now the only implementation in this branch.
+The original WPF application (`NegativeEncoder/`), its tests
+(`NegativeEncoder.Tests/`), `NegativeEncoder.sln`, and the legacy NSIS installer
+(`install/`) have been removed, along with their Windows-only build/release workflows.
+Use `NegativeEncoder.Desktop.slnx`; CI builds and tests it on Windows, macOS and Linux.
+The macOS packaging script remains available; a replacement release-installer workflow
+has not been added. The old implementation remains available in Git history.
+
+The VS catalog refresh script now preserves pinned source archives directly from
+`NegativeEncoder.Desktop/ToolLibrary/runtime-catalog.json` without an installer manifest.
+`Encoding/LegacyVideoArguments.cs` remains part of the current application: it provides
+NVENC/QSV/VCE arguments on Windows/Linux, independently of the removed WPF project.
+
+The sections below record earlier migration stages; statements about retained legacy
+projects or deferred functionality describe those stages, not the current repository.
+
+## Avalonia UI migration — phase 1
 
 ## Scope and architecture
 
@@ -95,7 +115,7 @@ that remote workflow has not been run in this session.
   resize automation did not resize the window. Windows/Linux interaction remains
   unverified. No legacy/full-suite tests were run for this refinement.
 
-## Next phase
+## Next phase planned after phase 1 (historical)
 
 Extract a platform-neutral Core and connect the desktop presentation model through
 an explicit service boundary. Model backend capabilities separately before adding

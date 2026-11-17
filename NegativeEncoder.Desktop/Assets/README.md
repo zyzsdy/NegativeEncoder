@@ -1,7 +1,8 @@
 # Desktop app icon
 
 `app-icon.png` is the 1024 × 1024 RGBA source for the new desktop app. The legacy
-Windows icon remains in `NegativeEncoder/Resources/icon.png` as the brand reference.
+Windows icon used as the brand reference is available in Git history at
+`NegativeEncoder/Resources/icon.png`.
 The new icon was generated using the built-in ImageGen tool, then resized and
 packaged with macOS `sips` / `iconutil`. The ICO contains PNG images at 16, 32, 128
 and 256 pixels. The ICNS contains the standard 16–512 point sizes at 1× and 2×.

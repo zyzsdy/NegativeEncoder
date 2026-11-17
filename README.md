@@ -2,8 +2,8 @@
 
 ## next：6.0.0-alpha.1
 
-`next` 分支新增 **.NET 10 + Avalonia UI** 的 `NegativeEncoder.Desktop`，目标为
-Windows / macOS / Linux。原有 WPF 项目与底层实现保留，已接入工具库管理与主要编码任务执行。
+当前版本使用 **.NET 10 + Avalonia UI** 的 `NegativeEncoder.Desktop`，支持
+Windows / macOS / Linux，已接入工具库管理与主要编码任务执行。旧 WPF 代码、测试和安装器已移除。
 
 ```sh
 # 所有桌面平台：需要稳定版 .NET 10 SDK
@@ -60,8 +60,8 @@ macOS VS 推荐组合要求 15+，Linux 要求 glibc 2.28+。手工插件放在
 下载使用 SHA256 校验，新环境通过运行检查后才启用，旧版本保留。
 发行包来源、支持矩阵和维护验证方式见 [工具库说明](TOOL-LIBRARY.md)。
 
-原 Windows 版继续使用 `NegativeEncoder.sln`；仓库现在有两个解决方案，
-构建和测试时请显式选择。迁移结构与验证记录见 [MIGRATION.md](MIGRATION.md)。
+仓库仅保留跨平台解决方案 `NegativeEncoder.Desktop.slnx`。旧 Windows 实现可通过 Git 历史查看。
+迁移结构与验证记录见 [MIGRATION.md](MIGRATION.md)。
 
 
 ### **“消极压制(NegativeEncoder)”是什么？**
@@ -74,20 +74,6 @@ macOS VS 推荐组合要求 15+，Linux 要求 glibc 2.28+。手工插件放在
 ## Download
 
 请去[Releases](https://github.com/zyzsdy/NegativeEncoder/releases)找安装包。原有百度网盘的下载不再提供了。
-
-## 旧 Windows 版 VapourSynth 相关
-
-**我如何安装新的插件**
-
-推荐使用vsrepo进行安装。进入Libs目录并打开cmd，键入`python.exe vsrepo.py update`更新vsrepo版本库，然后可以使用`python.exe vsrepo.py install [包名]`安装新的插件。
-
-**如何手工安装**
-
-请将VS插件直接放置在自动加载目录中，即`Libs\vapoursynth64\plugins\`下。
-
-vpy脚本中引用到的Python库或者脚本放在安装目录`\Libs\site-packages\`下。
-
-请注意通过vsrepo安装的Python库或脚本，可能存在`C:\Users\[用户名]\AppData\Roaming\Python\Python38\site-packages`下。而该路径在重装系统后会不可用，如果希望重装系统后保留或随NegativeEncoder主程序迁移，请在运行vsrepo后，将这些文件移动至安装目录`\Libs\site-packages\`下。
 
 ## LICENSE
 

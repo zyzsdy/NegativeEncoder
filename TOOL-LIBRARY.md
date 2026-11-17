@@ -58,8 +58,8 @@ Windows 字幕兼容：xy-VSFilter、VSFilterMod。旧 Yadif：Yadifmod、NNEDI3
 
 ## 范围
 
-本次只连接 Avalonia 工具库管理和脚本生成器。编码任务执行、卸载、任意插件市场、
-历史版本 UI、系统驱动安装不在本次范围。旧 WPF 项目保持独立。
+Avalonia 工具库管理已连接脚本生成器与编码任务执行。卸载、任意插件市场、
+历史版本 UI、系统驱动安装不在当前范围。旧 WPF 项目已移除。
 
 ## 来源
 
