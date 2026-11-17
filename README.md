@@ -41,7 +41,7 @@ Linux 需要 Avalonia 的桌面原生依赖和中文字体，参见
 “帮助 → 工具库管理”可切换 Libs 位置、检测显卡、安装／升级独立工具及 VS 推荐插件。
 Windows/Linux 默认使用可执行文件目录的 `../Libs`；macOS 默认使用
 `~/Library/Application Support/NegativeEncoder/Libs`。只切换目录，不搬迁原文件。
-FFmpeg 和硬件编码器追踪最新稳定版；Python／VapourSynth／插件使用固定推荐组合。
+FFmpeg 追踪最新稳定版；NVEnc／QSVEnc／VCEEnc／VTEnc 追踪最新发行版（含 pre-release）；Python／VapourSynth／插件使用固定推荐组合。
 没有当前平台发行包时禁用安装；未检测到相应显卡仍允许安装。
 macOS VS 推荐组合要求 15+，Linux 要求 glibc 2.28+。手工插件放在
 `Libs/vapoursynth/user-plugins`，Python 脚本放在 `Libs/vapoursynth/user-scripts`。

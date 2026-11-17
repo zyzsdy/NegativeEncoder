@@ -17,14 +17,22 @@ public sealed class ReleaseResolver(DistributionClient client, HostPlatform host
     {
         if (Unsupported(tool, host) is { } reason) throw new NotSupportedException(reason);
         if (tool.Id == "ffmpeg") return await FfmpegAsync(token);
-        using var document = await client.JsonAsync($"https://api.github.com/repos/{tool.Repository}/releases/latest", token);
-        var release = document.RootElement;
-        EnsureStable(release);
+        using var document = await client.JsonAsync($"https://api.github.com/repos/{tool.Repository}/releases", token);
+        var release = SelectPublishedRelease(document.RootElement);
         var version = release.GetProperty("tag_name").GetString()!;
         var pattern = tool.Id == "vtenc" ? @"^vtenc-.+-macos-arm64\.zip$" : host.Os == "win"
             ? $@"^{tool.Name}C_[0-9.]+_x64\.7z$" : $@"^{tool.Id}c_[0-9.]+_amd64\.deb$";
         var asset = SelectAsset(release, pattern);
-        return new(version.TrimStart('v'), release.GetProperty("html_url").GetString()!, [await AssetAsync(asset, release, token)]);
+        return new(version.TrimStart('v'), release.GetProperty("html_url").GetString()!, [await AssetAsync(asset, release, token)],
+            release.GetProperty("prerelease").GetBoolean());
+    }
+
+    private static JsonElement SelectPublishedRelease(JsonElement releases)
+    {
+        // Preserve GitHub's release order, allowing prereleases but never drafts.
+        foreach (var release in releases.EnumerateArray())
+            if (!release.GetProperty("draft").GetBoolean()) return release;
+        throw new NotSupportedException("上游尚未发布可下载版本（包括预发布版本）。");
     }
 
     public static void EnsureStable(JsonElement release)

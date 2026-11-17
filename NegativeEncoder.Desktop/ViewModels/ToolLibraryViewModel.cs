@@ -127,7 +127,8 @@ public sealed class ToolLibraryViewModel : ObservableObject
                 row.Current = probe?.Version ?? "未安装";
                 row.Action = probe is null ? "安装" : "升级";
                 row.Source = probe?.Executable ?? "";
-                row.State = probe is { Runs: false } ? "组件存在，但版本检测失败；查看日志" : _report.Hint(tool);
+                row.State = probe is { Runs: false } ? "组件存在，但版本检测失败；查看日志" :
+                    (row.Release?.IsPrerelease == true ? "预发布版本；" : "") + _report.Hint(tool);
                 if (probe is { Runs: false }) { _hasErrors = true; Append(tool.Name + "：" + probe.Diagnostic); }
                 if (row.Release is not null) row.CanInstall = probe is null || !probe.Runs || probe.Version != row.Release.Version;
             }
@@ -172,20 +173,20 @@ public sealed class ToolLibraryViewModel : ObservableObject
             row.Release = null;
             row.CanInstall = false;
             if (ReleaseResolver.Unsupported(definition, Service.Host) is { } unsupported) { row.State = unsupported; row.Target = "无匹配发行包"; continue; }
-            Status = "检查 " + definition.Name + " 最新稳定版…";
+            Status = "检查 " + definition.Name + (definition.Id == "ffmpeg" ? " 最新稳定版…" : " 最新版本（含预发布）…");
             try
             {
                 var release = await Service.Releases.ResolveAsync(definition, token);
                 row.Release = release;
                 row.Target = release.Version;
                 row.CanInstall = true;
-                row.State = _report.Hint(definition);
+                row.State = (release.IsPrerelease ? "预发布版本；" : "") + _report.Hint(definition);
                 row.Source = (row.Source.Length == 0 ? "" : row.Source + "\n") + release.Source;
                 if (row.Current == row.Target) { row.Action = "已是最新版"; row.CanInstall = false; }
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
             catch (System.Net.Http.HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-            { row.Target = "无稳定发行包"; row.State = "上游尚未发布稳定版，或仓库资源不可访问。"; Append(ex.Message); }
+            { row.Target = "无可用发行包"; row.State = "上游尚未发布所需版本，或仓库资源不可访问。"; Append(ex.Message); }
             catch (Exception ex) { _hasErrors = true; row.Target = "检查失败"; row.State = ex.Message; Append(ex.ToString()); }
         }
     }
@@ -196,7 +197,7 @@ public sealed class ToolLibraryViewModel : ObservableObject
         if (row.Id is "python" or "vapoursynth" || Groups.Contains(row))
             await Service.InstallRuntimeAsync(Groups.Contains(row) ? [row.Id] : [], Report, token);
         else
-            await Service.InstallToolAsync(ToolDefinition.All.Single(t => t.Id == row.Id), row.Release ?? throw new InvalidOperationException("请先检查最新稳定版。"), Report, token);
+            await Service.InstallToolAsync(ToolDefinition.All.Single(t => t.Id == row.Id), row.Release ?? throw new InvalidOperationException("请先检查最新版本。"), Report, token);
         await RefreshLocalAsync(token);
         Status = "安装完成，当前环境已重新检测。";
     });

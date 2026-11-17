@@ -87,3 +87,5 @@ never automatically upgraded/deleted; file conflicts abort with details. Active 
 lock mutation controls; lists remain scrollable. Closing while busy requests cancellation
 and keeps the window open until the user closes it again. Missing hardware is advisory;
 missing platform/ABI packages disable installation. Errors stay in rows and copyable logs.
+NVEnc/QSVEnc/VCEEnc/VTEnc use the newest non-draft GitHub release, including prereleases;
+prerelease targets are identified in the existing status column. FFmpeg remains stable-only.

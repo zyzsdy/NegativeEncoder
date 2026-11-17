@@ -50,7 +50,7 @@ public sealed record ToolDefinition(string Id, string Name, string? Repository, 
 }
 
 public sealed record DownloadAsset(string Url, string Sha256, string FileName);
-public sealed record ToolRelease(string Version, string Source, DownloadAsset[] Assets);
+public sealed record ToolRelease(string Version, string Source, DownloadAsset[] Assets, bool IsPrerelease = false);
 public sealed record InstalledTool(string Version, string Directory, string Executable, string Source, string[] Groups);
 public sealed record LibraryManifest(int Schema, Dictionary<string, InstalledTool> Tools)
 {
