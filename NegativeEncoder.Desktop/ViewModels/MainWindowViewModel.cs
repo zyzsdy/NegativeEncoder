@@ -5,7 +5,7 @@ using NegativeEncoder.Desktop.Models;
 
 namespace NegativeEncoder.Desktop.ViewModels;
 
-public sealed class MainWindowViewModel : ObservableObject
+public sealed partial class MainWindowViewModel : ObservableObject
 {
     private readonly Dictionary<Preset, string> _savedPresets = new();
     public ObservableCollection<VideoFile> Files { get; } = [];
@@ -45,6 +45,7 @@ public sealed class MainWindowViewModel : ObservableObject
             if (!Set(ref _selectedFile, value)) return;
             Raise(nameof(InputPath));
             OutputPath = value is null ? "" : MakeOutputPath(value.Path);
+            GenerateVsScript();
         }
     }
 
@@ -61,19 +62,6 @@ public sealed class MainWindowViewModel : ObservableObject
     public string MuxAudio { get => _muxAudio; set => Set(ref _muxAudio, value); }
     private string _muxOutput = "";
     public string MuxOutput { get => _muxOutput; set => Set(ref _muxOutput, value); }
-    private string _subtitle = "";
-    public string Subtitle { get => _subtitle; set => Set(ref _subtitle, value); }
-    public AvaloniaEdit.Document.TextDocument ScriptDocument { get; } = new("import vapoursynth as vs\ncore = vs.core\n");
-    public string Script { get => ScriptDocument.Text; set => ScriptDocument.Text = value; }
-    public bool UseVsfmod { get; set; }
-    public bool UseRepeat { get; set; }
-    public bool UseQtgmc { get; set; }
-    public bool UseIvtc { get; set; }
-    public bool UseYadifDouble { get; set; }
-    public bool UseYadifNormal { get; set; }
-    public bool VsResize { get; set; }
-    public string VsWidth { get; set; } = "1920";
-    public string VsHeight { get; set; } = "1080";
 
     public MainWindowViewModel()
     {
@@ -83,6 +71,7 @@ public sealed class MainWindowViewModel : ObservableObject
         Status = "就绪";
         Files.CollectionChanged += (_, _) => { Raise(nameof(FilesEmpty)); Raise(nameof(FileCount)); };
         Tasks.CollectionChanged += (_, _) => { Raise(nameof(TasksEmpty)); Raise(nameof(TaskCount)); };
+        GenerateVsScript();
     }
 
     private void RegisterPreset(Preset preset)

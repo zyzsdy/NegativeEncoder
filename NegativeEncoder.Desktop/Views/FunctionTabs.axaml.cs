@@ -18,6 +18,11 @@ public partial class FunctionTabs : UserControl
             model.AddTask(operation);
     }
 
+    private void GenerateVsScript_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel model) model.GenerateVsScript();
+    }
+
     private async void Browse_Click(object? sender, RoutedEventArgs e)
     {
         if (TopLevel.GetTopLevel(this) is MainWindow window && sender is Button { Tag: string target })

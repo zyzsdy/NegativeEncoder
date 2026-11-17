@@ -319,55 +319,34 @@
     </TabItem>
     <TabItem Header="VS">
       <Grid RowDefinitions="*,Auto">
-        <ScrollViewer>
-          <StackPanel Spacing="6" Margin="0,12,10,12">
-            <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="字幕" Target="{Binding #SubtitleField}" VerticalAlignment="Center"/>
-              <Panel Grid.Column="1">
-                <Grid ColumnDefinitions="*,Auto">
-                  <TextBox Name="SubtitleField" Text="{Binding Subtitle}" AutomationProperties.Name="字幕"/>
-                  <Button Grid.Column="1" Content="浏览…" Tag="subtitle" Click="Browse_Click" Margin="8,0,0,0"/>
-                </Grid>
-              </Panel>
-            </Grid>
-            <TextBlock Classes="section" Text="VS 代码生成器"/>
-            <WrapPanel>
-              <Border Margin="0,0,14,4">
-                <CheckBox Content="VSFilterMod" IsChecked="{Binding UseVsfmod}"/>
-              </Border>
-              <Border Margin="0,0,14,4">
-                <CheckBox Content="Repeat" IsChecked="{Binding UseRepeat}"/>
-              </Border>
-              <Border Margin="0,0,14,4">
-                <CheckBox Content="QTGMC" IsChecked="{Binding UseQtgmc}"/>
-              </Border>
-              <Border Margin="0,0,14,4">
-                <CheckBox Content="IVTC" IsChecked="{Binding UseIvtc}"/>
-              </Border>
-              <Border Margin="0,0,14,4">
-                <CheckBox Content="Yadif Double" IsChecked="{Binding UseYadifDouble}"/>
-              </Border>
-              <Border Margin="0,0,14,4">
-                <CheckBox Content="Yadif Normal" IsChecked="{Binding UseYadifNormal}"/>
-              </Border>
-            </WrapPanel>
-            <CheckBox Content="调整大小" IsChecked="{Binding VsResize}"/>
-            <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="宽度（px）" Target="{Binding #VsWidthField}" VerticalAlignment="Center"/>
-              <Panel Grid.Column="1">
-                <TextBox Name="VsWidthField" Text="{Binding VsWidth}" AutomationProperties.Name="宽度（px）" IsEnabled="{Binding VsResize}"/>
-              </Panel>
-            </Grid>
-            <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="高度（px）" Target="{Binding #VsHeightField}" VerticalAlignment="Center"/>
-              <Panel Grid.Column="1">
-                <TextBox Name="VsHeightField" Text="{Binding VsHeight}" AutomationProperties.Name="高度（px）" IsEnabled="{Binding VsResize}"/>
-              </Panel>
-            </Grid>
-            <TextBlock Classes="section" Text="VapourSynth / Python"/>
-            <edit:TextEditor Name="ScriptEditor" Document="{Binding ScriptDocument}" ShowLineNumbers="True" FontFamily="{StaticResource CodeFont}" FontSize="13" Height="280" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="VapourSynth 脚本编辑器" />
-          </StackPanel>
-        </ScrollViewer>
+        <Grid RowDefinitions="Auto,Auto,*" Margin="0,12,0,0">
+          <Grid ColumnDefinitions="48,*,Auto" Margin="0,0,0,6">
+            <Label Content="字幕" Target="{Binding #SubtitleField}" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" Name="SubtitleField" Text="{Binding Subtitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="字幕"/>
+            <Button Grid.Column="2" Content="浏览…" Tag="subtitle" Click="Browse_Click" Margin="8,0,0,0"/>
+          </Grid>
+          <Grid Grid.Row="1" Name="VsGeneratorToolbar" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,6">
+            <Menu Name="VsGeneratorMenu" VerticalAlignment="Center">
+              <MenuItem Header="VS代码生成器">
+                <MenuItem Name="GenerateVsScriptItem" Header="生成" Click="GenerateVsScript_Click"/>
+                <Separator/>
+                <MenuItem Name="UseVsfmodItem" Header="使用VSFilterMod" ToggleType="CheckBox" IsChecked="{Binding UseVsfmod, Mode=TwoWay}"/>
+                <MenuItem Name="UseRepeatItem" Header="Repeat" ToggleType="CheckBox" IsChecked="{Binding UseRepeat, Mode=TwoWay}"/>
+                <MenuItem Name="UseQtgmcItem" Header="QTGMC" ToggleType="CheckBox" IsChecked="{Binding UseQtgmc, Mode=TwoWay}"/>
+                <MenuItem Name="UseIvtcItem" Header="IVTC" ToggleType="CheckBox" IsChecked="{Binding UseIvtc, Mode=TwoWay}"/>
+                <MenuItem Name="UseYadifDoubleItem" Header="Yadif Double" ToggleType="CheckBox" IsChecked="{Binding UseYadifDouble, Mode=TwoWay}"/>
+                <MenuItem Name="UseYadifNormalItem" Header="Yadif Normal" ToggleType="CheckBox" IsChecked="{Binding UseYadifNormal, Mode=TwoWay}"/>
+              </MenuItem>
+            </Menu>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+              <CheckBox Name="VsResizeCheckBox" Content="调整大小" IsChecked="{Binding VsResize, Mode=TwoWay}" VerticalAlignment="Center"/>
+              <TextBox Name="VsWidthField" Width="60" Text="{Binding VsWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="宽度（px）" ToolTip.Tip="宽度（px）" IsEnabled="{Binding VsResize}"/>
+              <TextBlock Text="×" VerticalAlignment="Center"/>
+              <TextBox Name="VsHeightField" Width="60" Text="{Binding VsHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="高度（px）" ToolTip.Tip="高度（px）" IsEnabled="{Binding VsResize}"/>
+            </StackPanel>
+          </Grid>
+          <edit:TextEditor Grid.Row="2" Name="ScriptEditor" Document="{Binding ScriptDocument}" ShowLineNumbers="True" FontFamily="{StaticResource CodeFont}" FontSize="13" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="VapourSynth 脚本编辑器" />
+        </Grid>
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
           <Button Classes="primary" Content="添加 VS 任务草稿" Tag="VapourSynth" Click="AddTask_Click" HorizontalAlignment="Right"/>
         </StackPanel>

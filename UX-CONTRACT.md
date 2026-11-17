@@ -39,7 +39,14 @@ exists in this preview. No legacy configuration is read or written.
 - Queue: Add creates a snapshot with zero progress and an explicit unexecuted status.
   Missing inputs/outputs show a stable status message. Changes to the current preset
   do not mutate earlier task snapshots. Remove offers Undo in the queue pane.
-- Script: AvaloniaEdit with Python highlighting, line numbers and indentation; no execution or generation.
+- Script: AvaloniaEdit with Python highlighting, line numbers and indentation; no execution.
+  The VS generator menu and resize checkbox/width/height share one compact toolbar row,
+  following the Windows layout. Resize enables both dimension fields immediately.
+  Every VS option, dimension, subtitle and selected input change regenerates the document;
+  the Generate menu action also explicitly rebuilds it. Regeneration replaces manual edits.
+  Switching tabs preserves the document. The editor owns its scrolling and fills the
+  remaining tab space. Generated scripts use plugins installed in the execution environment,
+  without assuming the legacy Windows Libs directory exists.
 - Copy: no persistent preview banner, duplicate preset header or tutorial empty states.
   README documents the session-only boundary. Task statuses continue to identify
   unexecuted drafts; validation and operation results remain visible in the status bar.
