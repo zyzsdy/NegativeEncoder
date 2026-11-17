@@ -222,7 +222,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             CurrentPreset.Encoder = selected.Value;
             SavePreset();
         }
-        Status = $"检测到 {hardware.Description}；默认编码器：{selected.Value}。";
+        Status = $"默认编码器：{selected.Value}。";
     }
 
     private static readonly Dictionary<DeInterlaceMethodPreset, string> DeinterlaceNames = new PresetOption().DeInterlaceMethodPresetOptions.ToDictionary(o => o.Value, o => o.Name);

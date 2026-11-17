@@ -122,7 +122,11 @@
       </Border>
     </Grid>
     <Border Grid.Row="2" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Padding="16,9">
-      <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Status}" Name="StatusText" AutomationProperties.LiveSetting="Polite" /><TextBlock Grid.Column="1" Text="{Binding Platform}" Classes="muted" Margin="16,0,0,0" /></Grid>
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="{Binding Status}" Name="StatusText" TextWrapping="NoWrap" MaxLines="1" TextTrimming="CharacterEllipsis"
+                   ToolTip.Tip="{Binding Status}" AutomationProperties.Name="{Binding Status}" AutomationProperties.LiveSetting="Polite" />
+        <TextBlock Grid.Column="1" Text="{Binding Platform}" Classes="muted" Margin="16,0,0,0" TextWrapping="NoWrap" MaxLines="1" />
+      </Grid>
     </Border>
   </Grid>
 </Window>

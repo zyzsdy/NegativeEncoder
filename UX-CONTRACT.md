@@ -57,6 +57,10 @@ exists in this preview. No legacy configuration is read or written.
 - Copy: no persistent preview banner, duplicate preset header or tutorial empty states.
   README documents the session-only boundary. Validation and actual execution states
   remain visible in the status bar and task list; action buttons contain no “草稿” suffix.
+  The bottom status bar remains one line, including messages containing line breaks;
+  overflowing messages use an ellipsis with full text in the tooltip and accessible name.
+  Successful hardware detection reports only the default encoder. Detection failures and
+  unsupported hardware still report their existing errors or guidance.
 - App updates and toolkit command line remain visibly unavailable.
   Tool-library discovery/install/update and hardware detection are implemented. Windows registry integration is intentionally absent.
 

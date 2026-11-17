@@ -75,7 +75,10 @@ Panel radius 6. Controls retain the Avalonia Fluent shape language.
 Avalonia Fluent owns buttons, radio groups, authored ComboBox popups, checkboxes,
 tabs, scrollbars and focus indicators. OwnedDialog owns centering and Escape for application modals; PreviewDialog owns notices/confirmation and ToolLibraryWindow owns component management.
 Text fields have labels and accessible names. StatusText is the shared feedback
-surface. Keep copy focused on controls, validation and operation results; omit
+surface. The bottom status bar always stays on one line: truncate long messages with
+an ellipsis and expose the complete message in a tooltip and accessible name. Hardware
+startup success reports only the default encoder, not the detected adapter list.
+Keep copy focused on controls, validation and operation results; omit
 preview disclaimers, tutorial empty states and repeated implementation notes.
 Unavailable operations stay disabled. Queue entries show waiting, running step, cancelled, failed or completed states; details provide selectable live diagnostics.
 
