@@ -141,3 +141,46 @@ and [AvaloniaEdit](https://github.com/AvaloniaUI/AvaloniaEdit).
 - Generator output for source, IVTC, Bwdif, QTGMC and Subtext passed native vspipe execution
   against a synthetic clip. Windows/Linux x64 framework-dependent publish passed; no native
   Windows/Linux execution is claimed. Strict premium audit: zero findings.
+
+
+## 2026-11-18：主功能接入工具库
+
+`NegativeEncoder.Desktop/Encoding` contains the shell-free command plans, original
+Windows argument port, VTEnc-specific capability/argument mapping and asynchronous
+process/pipeline execution. No legacy WPF assembly or qaac dependency is introduced.
+Main actions now execute through the current tool library with usage leases, real logs,
+cancellation and serial scheduling. See README for platform and VTEnc audio constraints.
+
+Targeted regression checks:
+
+```sh
+dotnet test NegativeEncoder.Desktop.Tests/NegativeEncoder.Desktop.Tests.csproj --filter 'FullyQualifiedName~EncodingTests|FullyQualifiedName~DesktopTests|FullyQualifiedName~WorkbenchTests'
+dotnet run --project scripts/Encoding.Verify -- ABSOLUTE_LIBS ABSOLUTE_NEW_OUTPUT_DIRECTORY
+```
+
+The verifier generates a one-second video/audio fixture with non-ASCII paths and checks
+real encode, subtitle, pipe, audio, mux and HEVC-tag results by decoding them. VS is checked
+when its managed runtime is installed. `--all-encoders` covers detected Windows GPUs;
+`--install-encoder` explicitly installs missing detected encoders in the supplied Libs.
+GPU-less containers exercise audio/extraction/mux and explicitly report video as untested.
+
+Native Linux UI verification (no GPU detection or encoding): publish
+`scripts/Desktop.Verify` for the container architecture, then run `Desktop.Verify`
+under Xvfb. This uses the real X11 backend and checks all six tabs at 1000/1320/1600
+widths, form/preset/script bindings, dropdown opening and missing-input validation.
+The test program never invokes the hardware detector.
+
+Verification in this change: macOS Apple Silicon completed the real-media flows and a
+native import → encode → completed UI interaction. Linux used a disposable Ubuntu
+26.04 ARM64 Docker container with Xvfb; no GPU detection/encoding was invoked.
+Windows uses the user-provided `tedwin` machine and an isolated test checkout at
+`H:\Workspace\NegativeEncoder`, with .NET 10.0.404 and the requested loopback SOCKS5
+proxy for tool downloads. The main checkout's SDK policy remains unchanged.
+
+Windows real-media results: NVEnc 9.41 on RTX 4090 and QSVEnc 8.38 on UHD 770 both
+passed direct video, no-audio/AAC, ASS subtitles, all three FFmpeg-pipe variants and
+SDR/HDR10/HLG HEVC metadata tagging. Shared FFmpeg AAC/extraction and MP4/MKV/TS
+muxing passed. Windows VS execution was not tested because the isolated Libs has no
+managed VS runtime; macOS exercised VS. No AMD GPU was available for live VCE tests.
+Integration also caught and fixed 256 MiB solid-7z extraction and case-insensitive
+manual-tool alias detection on Windows.

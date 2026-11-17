@@ -27,8 +27,7 @@ WPF workflow: input files on the left, six parameter tabs in the center, queue o
 right. This is a product surface for configuring many related encoding parameters,
 not a marketing page. The familiar three-pane workbench is the signature.
 
-The next branch introduces a separate Avalonia desktop app. Task drafts must never
-imply an encoder ran or an output file was created. Hardware reports come only from the tool-library detector. The old WPF app
+The next branch introduces a separate Avalonia desktop app. Task states and logs reflect real execution; only successful complete pipelines publish output files. Hardware reports come only from the tool-library detector. The old WPF app
 remains the reference for terminology and field coverage.
 
 ## Colors
@@ -78,7 +77,7 @@ tabs, scrollbars and focus indicators. OwnedDialog owns centering and Escape for
 Text fields have labels and accessible names. StatusText is the shared feedback
 surface. Keep copy focused on controls, validation and operation results; omit
 preview disclaimers, tutorial empty states and repeated implementation notes.
-Unavailable operations stay disabled; task drafts retain their unexecuted status.
+Unavailable operations stay disabled. Queue entries show waiting, running step, cancelled, failed or completed states; details provide selectable live diagnostics.
 
 The desktop app icon preserves the original pink fish and yellow-green markings,
 flattened onto a warm off-white macOS tile. Assets/app-icon.png is the 1024px source;
@@ -90,7 +89,7 @@ information, following the original Windows layout with a 20-unit gap.
 
 - Preserve all six tabs and the original parameter terminology.
 - Keep parameter edits and selection when switching tabs and presets.
-- Distinguish task drafts from running tasks. No synthetic progress or success.
+- Distinguish waiting tasks from running tasks. No synthetic progress or success.
 - Keep platform details in About/status and migration docs, not every form field.
 - Avoid a dashboard rebrand, fake video thumbnails, or decorative KPI cards.
 
@@ -103,3 +102,20 @@ cancel and close stay below. During operations disable mutations, keep list scro
 available. Unsupported distributions explain the reason beside a disabled action.
 Source paths truncate with full tooltips. Keep plugin descriptions Chinese and native
 component names unchanged. No new global shortcuts or custom animation.
+
+## Encoder capabilities and queue
+
+Preset and EncoderCapabilities own the per-encoder option contract. Avalonia radio
+buttons and ComboBox remain the canonical owners; switching encoders selects a valid
+mode/codec and hides unsupported modes. VTEnc has native ABR/Quality/CBR and macOS
+26+ VBR, H.264/HEVC and matching Metal filters. Runtime session errors remain visible.
+Hardware detection chooses only the initial unedited preset and defaults for new presets.
+
+MainWindowViewModel owns serial scheduling and StatusText feedback. Adding tasks starts
+execution. A failure leaves later tasks waiting for the File menu's resume action.
+Cancellation stops both sides of a pipeline. A running task cannot be removed until it
+stops; removal of pending/completed entries has the existing undo action. PreviewDialog
+uses a read-only, selectable, live TextBox for task diagnostics. Logs on disk retain full
+output; the UI retains the latest 64,000 characters. Output paths are unique among active
+jobs and never overwrite existing files. Execution uses a private staging directory,
+keeps failed work for diagnosis, and publishes only after all exit codes succeed.

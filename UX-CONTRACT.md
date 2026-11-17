@@ -2,11 +2,10 @@
 
 ## Sources and scope
 
-The current request scopes this work to UI on .NET 10 / Avalonia, targeting Windows,
-macOS and Linux. The original MainWindow.xaml and FunctionTabs/FunctionTabs.xaml
+The desktop workbench uses .NET 10 / Avalonia on Windows, macOS and Linux,
+with execution through the managed tool library. The original MainWindow.xaml and FunctionTabs/FunctionTabs.xaml
 are evidence for workflow and field coverage. The prior macOS ARM64 discussion
-establishes future Desktop → Core → backend separation; it does not require backend
-implementation in this phase. No billing, remote permissions or personal-data service
+establishes Desktop → backend separation. No billing, remote permissions or personal-data service
 exists in this preview. No legacy configuration is read or written.
 
 ## Canonical UI Map
@@ -14,12 +13,12 @@ exists in this preview. No legacy configuration is read or written.
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
 | Select/Listbox | Avalonia Fluent ComboBox / ListBox | DESIGN.md | authored dropdown; virtualized local list | headless binding tests and macOS popup check |
-| Form | FunctionTabs.axaml + ResponsiveFormPanel + Preset | legacy parameter fields | editable session drafts | headless tab/binding tests |
+| Form | FunctionTabs.axaml + ResponsiveFormPanel + Preset | legacy parameter fields | editable session presets | headless tab/binding tests |
 | Scrollbar | Avalonia Fluent + Theme.axaml | DESIGN.md | form / list / code editor | minimum-size and long-form checks |
 | Toast | MainWindowViewModel.Status / StatusText | this contract | persistent status, no transient toast | queue validation tests |
 | CRUD | MainWindowViewModel + PreviewDialog | this contract | in-memory preset operations | snapshot/name tests |
 | Menu | MainWindow menu handlers + preset menu synchronization | this contract | macOS NativeMenu; Windows/Linux Fluent Menu | native macOS menu check + desktop layout smoke test |
-| Dialog | PreviewDialog | this contract | notice / about with app icon / name edit / delete confirmation | Escape + initial focus on macOS |
+| Dialog | PreviewDialog | this contract | notice / live task log / about with app icon / name edit / delete confirmation | Escape + initial focus on macOS |
 
 ## Workflows
 
@@ -29,17 +28,24 @@ exists in this preview. No legacy configuration is read or written.
 - Selection: selected input is reflected in the input field; the output defaults to
   `<name>_encoded.<format>`. Batch mode uses all files and derives individual names.
 - Forms: controls bind to the current preset; dependencies follow original encoder
-  restrictions. UI options are not evidence of detected hardware capabilities.
+  restrictions, with VTEnc options mapped from its own implementation. Startup selects
+  macOS VTEnc or a detected Windows/Linux GPU; failed detection is reported. Options
+  describe encoder features; successful execution still requires driver/session support.
 - Presets: create, rename, copy, save and delete operate only in memory. Switching
   presets retains edits. Switching and management share the Presets menu; checked
   entries track creation, rename, deletion and selection in both menu surfaces.
   Save clears the dirty marker for this session. Deletion
   requires confirmation, initially focused on Cancel. Duplicate/blank names show
   an error in the name dialog. Import/export and persistent storage are deferred.
-- Queue: Add creates a snapshot with zero progress and an explicit unexecuted status.
-  Missing inputs/outputs show a stable status message. Changes to the current preset
-  do not mutate earlier task snapshots. Remove offers Undo in the queue pane.
-- Script: AvaloniaEdit with Python highlighting, line numbers and indentation; no execution.
+- Queue: Add validates inputs/tools/destinations, captures a preset/script snapshot and
+  starts serial execution. Changes to forms do not mutate existing tasks. Both sides of
+  pipelines must succeed before the staged output is published; existing files are never
+  overwritten. Errors stop scheduling and preserve diagnostics; the File menu resumes
+  pending tasks. Cancellation stops the complete process tree. Running entries cannot be
+  removed; pending/completed entries retain Undo. Details show selectable live logs.
+  Batch VS tasks rebind only the generator's explicit VIDEO_PATH declaration; scripts
+  without that declaration require individual tasks.
+- Script: AvaloniaEdit with Python highlighting, line numbers and indentation; execution through the managed vspipe runtime.
   The VS generator menu and resize checkbox/width/height share one compact toolbar row,
   following the Windows layout. Resize enables both dimension fields immediately.
   Every valid VS option, dimension, subtitle and selected input change regenerates the document;
@@ -49,9 +55,9 @@ exists in this preview. No legacy configuration is read or written.
   Missing capabilities or invalid dimensions preserve the document and show an error.
   Capability refresh preserves hand edits. Subtitle backends are explicit; no silent fallback.
 - Copy: no persistent preview banner, duplicate preset header or tutorial empty states.
-  README documents the session-only boundary. Task statuses continue to identify
-  unexecuted drafts; validation and operation results remain visible in the status bar.
-- App updates, toolkit command line and encoding execution are visibly unavailable.
+  README documents the session-only boundary. Validation and actual execution states
+  remain visible in the status bar and task list; action buttons contain no “草稿” suffix.
+- App updates and toolkit command line remain visibly unavailable.
   Tool-library discovery/install/update and hardware detection are implemented. Windows registry integration is intentionally absent.
 
 ## Platform and accessibility

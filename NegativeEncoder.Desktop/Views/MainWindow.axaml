@@ -9,7 +9,7 @@
         <NativeMenu>
           <NativeMenuItem Header="导入视频…" Gesture="Meta+O" Click="ImportFiles_NativeClick" />
           <NativeMenuItem Header="清空待处理列表" Click="ClearFiles_NativeClick" />
-          <NativeMenuItem Header="强制开始任务调度" IsEnabled="False" />
+          <NativeMenuItem Header="开始任务调度" Click="StartQueue_NativeClick" />
         </NativeMenu>
       </NativeMenuItem>
       <NativeMenuItem Header="预设">
@@ -39,7 +39,7 @@
       <MenuItem Header="文件(_F)">
         <MenuItem Header="导入视频…" Click="ImportFiles_Click" />
         <MenuItem Header="清空待处理列表" Click="ClearFiles_Click" />
-        <MenuItem Header="强制开始任务调度" IsEnabled="False" />
+        <MenuItem Header="开始任务调度" Click="StartQueue_Click" />
         <Separator /><MenuItem Header="退出" Click="Exit_Click" />
       </MenuItem>
       <MenuItem Name="PresetMenu" Header="预设(_P)">
@@ -114,7 +114,7 @@
               </DataTemplate></ListBox.ItemTemplate>
             </ListBox>
           </Grid>
-          <StackPanel Grid.Row="3" Spacing="6"><Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+          <StackPanel Grid.Row="3" Spacing="6"><Button Content="取消任务" Click="CancelTask_Click" /><Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
             <Button Content="查看详情" Click="TaskDetails_Click" />
             <Button Grid.Column="1" Content="移除" Click="RemoveTask_Click" />
           </Grid><Button Name="UndoTaskButton" Content="撤销移除" Click="UndoTask_Click" IsVisible="False" /></StackPanel>

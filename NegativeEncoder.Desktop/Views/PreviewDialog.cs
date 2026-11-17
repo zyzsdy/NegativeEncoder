@@ -38,6 +38,16 @@ public sealed class PreviewDialog : OwnedDialog
         await ShowNoticeAsync(owner, dialog);
     }
 
+    public static async Task TaskAsync(Window owner, Models.TaskDraft task)
+    {
+        var dialog = new PreviewDialog($"任务详情 — {task.Name}", "") { Width = 850, CanResize = true };
+        var details = new TextBox { IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 300, DataContext = task };
+        details.Bind(TextBox.TextProperty, new Avalonia.Data.Binding(nameof(task.Details)));
+        Avalonia.Automation.AutomationProperties.SetName(details, "任务状态和执行日志");
+        dialog._body.Children.Add(details);
+        await ShowNoticeAsync(owner, dialog);
+    }
+
     public static async Task AboutAsync(Window owner, string message)
     {
         using var stream = AssetLoader.Open(new Uri("avares://NegativeEncoder.Desktop/Assets/app-icon.png"));

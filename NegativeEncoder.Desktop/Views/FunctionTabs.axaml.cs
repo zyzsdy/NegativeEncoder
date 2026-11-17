@@ -12,10 +12,10 @@ public partial class FunctionTabs : UserControl
         ScriptEditor.SyntaxHighlighting = AvaloniaEdit.Highlighting.HighlightingManager.Instance.GetDefinition("Python");
     }
 
-    private void AddTask_Click(object? sender, RoutedEventArgs e)
+    private async void AddTask_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MainWindowViewModel model && sender is Button { Tag: string operation })
-            model.AddTask(operation);
+        if (sender is Button { Tag: string operation } && TopLevel.GetTopLevel(this) is MainWindow window)
+            await window.RunQueueAsync(operation);
     }
 
     private void GenerateVsScript_Click(object? sender, RoutedEventArgs e)

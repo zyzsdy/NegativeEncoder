@@ -10,7 +10,8 @@ public class PresetOption
     {
         new EnumOption<Encoder> { Value = Encoder.NVENC, Name = "NVENC" },
         new EnumOption<Encoder> { Value = Encoder.QSV, Name = "QuickSync" },
-        new EnumOption<Encoder> { Value = Encoder.VCE, Name = "AMD VCE" }
+        new EnumOption<Encoder> { Value = Encoder.VCE, Name = "AMD VCE" },
+        new EnumOption<Encoder> { Value = Encoder.VTEnc, Name = "VideoToolbox (VTEnc)" }
     };
 
     public ObservableCollection<EnumOption<Codec>> CodecOptions { get; set; } = new()

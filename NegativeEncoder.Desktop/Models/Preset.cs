@@ -2,7 +2,7 @@ using NegativeEncoder.Desktop.ViewModels;
 
 namespace NegativeEncoder.Desktop.Models;
 
-// UI-only draft. No dependency on the legacy provider, disk storage or encoder services.
+// A task captures its own copy so subsequent edits cannot change queued work.
 public sealed class Preset : ObservableObject
 {
     private string _presetName = "Default";
@@ -16,21 +16,34 @@ public sealed class Preset : ObservableObject
     public Encoder Encoder
     {
         get => _encoder;
-        set { if (Set(ref _encoder, value)) { Raise(nameof(IsQsv)); Raise(nameof(IsNvenc)); Raise(nameof(SupportsDepth)); } }
+        set
+        {
+            if (!Set(ref _encoder, value)) return;
+            if (!AvailableModes.Contains(EncodeMode)) EncodeMode = IsVtEnc ? EncodeMode.ABR : EncodeMode.VBR;
+            if (!AvailableCodecs.Contains(Codec)) Codec = Codec.AVC;
+            if (!AvailableDepths.Contains(ColorDepth)) ColorDepth = AvailableDepths[0];
+            if (!AvailableDeinterlacers.Contains(DeInterlaceMethodPreset)) DeInterlaceMethodPreset = AvailableDeinterlacers[0];
+            RefreshCapabilities();
+        }
     }
 
     private Codec _codec = Codec.AVC;
     public Codec Codec
     {
         get => _codec;
-        set => Set(ref _codec, value);
+        set { if (Set(ref _codec, value)) { if (IsVtEnc && value == Codec.AVC) ColorDepth = ColorDepth.C8Bit; RefreshCapabilities(); } }
     }
 
     private EncodeMode _encodeMode = EncodeMode.VBR;
     public EncodeMode EncodeMode
     {
         get => _encodeMode;
-        set => Set(ref _encodeMode, value);
+        set
+        {
+            if (!Set(ref _encodeMode, value)) return;
+            if (!SupportsMaxBitrate) IsSetMaxBitrate = false;
+            Raise(nameof(SupportsMaxBitrate));
+        }
     }
 
     private string _cqpParam = "24:26:27";
@@ -315,6 +328,37 @@ public sealed class Preset : ObservableObject
 
     public override string ToString() => PresetName;
 
+    private string _abrParam = "6500";
+    public string AbrParam { get => _abrParam; set => Set(ref _abrParam, value); }
+    private string _vtQuality = "0.65";
+    public string VtQuality { get => _vtQuality; set => Set(ref _vtQuality, value); }
+    private string _frameRate = "30000/1001";
+    public string FrameRate { get => _frameRate; set => Set(ref _frameRate, value); }
+    private string _pipeMatrix = "bt709";
+    public string PipeMatrix { get => _pipeMatrix; set => Set(ref _pipeMatrix, value); }
+    private string _pipeTransfer = "bt709";
+    public string PipeTransfer { get => _pipeTransfer; set => Set(ref _pipeTransfer, value); }
+    private string _pipePrimaries = "bt709";
+    public string PipePrimaries { get => _pipePrimaries; set => Set(ref _pipePrimaries, value); }
+    private string _pipeRange = "limited";
+    public string PipeRange { get => _pipeRange; set => Set(ref _pipeRange, value); }
+    public bool IsVtEnc => Encoder == Encoder.VTEnc;
+    public bool SupportsVbr => AvailableModes.Contains(EncodeMode.VBR);
+    public bool SupportsCqp => AvailableModes.Contains(EncodeMode.CQP);
+    public bool SupportsStrictGop => IsNvenc || IsQsv;
+    public bool SupportsColorspace => IsNvenc || IsVtEnc;
+    public bool SupportsMaxBitrate => !IsVtEnc || EncodeMode is EncodeMode.ABR or EncodeMode.VBR;
+    public bool SupportsD3D => IsQsv && OperatingSystem.IsWindows();
+    public EncodeMode[] AvailableModes => EncodingTasks.EncoderCapabilities.Modes(Encoder, ToolLibrary.HostPlatform.Current);
+    public Codec[] AvailableCodecs => IsVtEnc ? [Codec.AVC, Codec.HEVC] : Enum.GetValues<Codec>();
+    public ColorDepth[] AvailableDepths => IsVtEnc && Codec == Codec.AVC || Encoder == Encoder.VCE ? [ColorDepth.C8Bit] : [ColorDepth.C8Bit, ColorDepth.C10Bit];
+    public DeInterlaceMethodPreset[] AvailableDeinterlacers => EncodingTasks.EncoderCapabilities.Deinterlacers(Encoder);
+    private void RefreshCapabilities()
+    {
+        foreach (var name in new[] { nameof(IsQsv), nameof(IsNvenc), nameof(IsVtEnc), nameof(SupportsDepth), nameof(SupportsVbr),
+                     nameof(SupportsCqp), nameof(SupportsStrictGop), nameof(SupportsColorspace), nameof(SupportsMaxBitrate),
+                     nameof(SupportsD3D), nameof(AvailableModes), nameof(AvailableCodecs), nameof(AvailableDepths), nameof(AvailableDeinterlacers) }) Raise(name);
+    }
     public bool IsQsv => Encoder == Encoder.QSV;
     public bool IsNvenc => Encoder == Encoder.NVENC;
     public bool SupportsDepth => Encoder != Encoder.VCE;
@@ -329,6 +373,13 @@ public sealed class Preset : ObservableObject
         copy.Codec = Codec;
         copy.EncodeMode = EncodeMode;
         copy.CqpParam = CqpParam;
+        copy.AbrParam = AbrParam;
+        copy.VtQuality = VtQuality;
+        copy.FrameRate = FrameRate;
+        copy.PipeMatrix = PipeMatrix;
+        copy.PipeTransfer = PipeTransfer;
+        copy.PipePrimaries = PipePrimaries;
+        copy.PipeRange = PipeRange;
         copy.CbrParam = CbrParam;
         copy.VbrParam = VbrParam;
         copy.LaParam = LaParam;

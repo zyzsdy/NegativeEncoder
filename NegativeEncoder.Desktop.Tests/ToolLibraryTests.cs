@@ -23,6 +23,20 @@ public sealed class ToolLibraryTests : IDisposable
     private LibraryPaths Paths() => new(Path.Combine(_root, "settings.json"), Path.Combine(_root, "Libs"));
     private static HostPlatform Mac => new("osx", "arm64", new Version(15, 0));
 
+    [Fact]
+    public void ManualToolAliasesIgnoreCaseButDistinctLocationsStillFail()
+    {
+        var paths = Paths();
+        var folder = Path.Combine(paths.Root, "ffmpeg");
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "ffmpeg.exe"), "manual");
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var service = new ToolLibraryService(paths, new("win", "x64", new Version(10, 0)), client, new FakeRunner(false, ""));
+        Assert.True(File.Exists(service.FindExecutable(ToolDefinition.All[0])));
+        File.WriteAllText(Path.Combine(paths.Root, "ffmpeg.exe"), "another copy");
+        Assert.Throws<InvalidDataException>(() => service.FindExecutable(ToolDefinition.All[0]));
+    }
+
     [Theory]
     [InlineData(true, true, false, true, "已是最新版", false)]
     [InlineData(true, false, false, true, "升级", true)]
@@ -672,7 +686,8 @@ public sealed class ToolLibraryTests : IDisposable
     {
         var destination = Path.Combine(_root, "library.json");
         Directory.CreateDirectory(destination); // Force the atomic rename to fail.
-        Assert.ThrowsAny<IOException>(() => LibraryJson.WriteAtomic(destination, LibraryManifest.Empty));
+        var error = Record.Exception(() => LibraryJson.WriteAtomic(destination, LibraryManifest.Empty));
+        Assert.True(error is IOException or UnauthorizedAccessException, $"Unexpected error: {error}");
         Assert.True(Directory.Exists(destination));
         Assert.Empty(Directory.EnumerateFiles(_root, "*.tmp"));
     }

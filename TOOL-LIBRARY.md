@@ -129,3 +129,8 @@ dotnet test NegativeEncoder.Desktop.Tests --filter 'FullyQualifiedName~ToolLibra
 本次 macOS ARM64 已验证独立环境首次安装、重复升级、手工脚本保留、原生 vspipe、
 全部基础功能及 QTGMC 取帧，以及 FFmpeg 9.0.2 和 ffprobe。Windows/Linux 的真实
 运行尚未在本机验证，不将构建/清单检查等同于运行验证。
+
+Windows 编码器安装使用顺序读取方式解压 solid 7z，避免对每个文件重复解码整个压缩块。
+NVEnc 9.41 发行包实际使用 256 MiB LZMA2 字典；`SafeArchive` 首次使用时将 LZMA/LZMA2
+上限统一设为 256 MiB，保留有限上限及路径/链接检查，不在每次解压时修改全局配置。
+此设置对应 [SharpCompress 的进程级字典限制](https://github.com/adamhathcock/sharpcompress/blob/0.50.9/src/SharpCompress/Common/DictionarySizeLimits.cs)。

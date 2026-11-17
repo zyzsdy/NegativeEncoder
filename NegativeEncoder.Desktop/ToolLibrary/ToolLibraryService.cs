@@ -27,7 +27,8 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
         // Recognize manually extracted and legacy Libs, but never search PATH.
         if (!Directory.Exists(root)) return null;
         var candidates = new[] { root, Path.Combine(root, tool.Name), Path.Combine(root, tool.Id), Path.Combine(root, tool.Id, "bin") };
-        var matches = candidates.Select(dir => Path.Combine(dir, tool.Executable(Host))).Where(File.Exists).Distinct().ToArray();
+        var matches = candidates.Select(dir => Path.Combine(dir, tool.Executable(Host))).Where(File.Exists)
+            .Distinct(Host.Os == "linux" ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase).ToArray();
         if (matches.Length > 1) throw new InvalidDataException($"找到多个 {tool.Name}，请消除歧义：\n{string.Join("\n", matches)}");
         return matches.SingleOrDefault();
     }

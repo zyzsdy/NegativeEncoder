@@ -9,5 +9,5 @@ public sealed class EnumEqualityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value?.ToString() == parameter?.ToString();
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        value is true && Enum.TryParse<EncodeMode>(parameter?.ToString(), out var mode) ? mode : AvaloniaProperty.UnsetValue;
+        value is true && Enum.TryParse<EncodeMode>(parameter?.ToString(), out var mode) ? mode : Avalonia.Data.BindingOperations.DoNothing;
 }

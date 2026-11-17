@@ -8,6 +8,14 @@ namespace NegativeEncoder.Desktop.ToolLibrary;
 
 public static class SafeArchive
 {
+    static SafeArchive()
+    {
+        // Current rigaya Windows releases use 256 MiB LZMA2 dictionaries.
+        // SharpCompress limits are process-wide: set a finite bound once, before extraction.
+        SharpCompress.Common.DictionarySizeLimits.Lzma = 256L << 20;
+        SharpCompress.Common.DictionarySizeLimits.Lzma2 = 256L << 20;
+    }
+
     public static void Extract(string archive, string destination, CancellationToken token)
     {
         Directory.CreateDirectory(destination);
@@ -37,14 +45,17 @@ public static class SafeArchive
             return;
         }
         using var compressed = ArchiveFactory.OpenArchive(archive);
-        foreach (var entry in compressed.Entries)
+        // Read solid 7z archives sequentially rather than re-decoding a block per file.
+        using var reader = compressed.ExtractAllEntries();
+        while (reader.MoveToNextEntry())
         {
             token.ThrowIfCancellationRequested();
+            var entry = reader.Entry;
             var target = EntryPath(destination, entry.Key ?? throw new InvalidDataException("压缩包条目缺少名称。"));
             if (!string.IsNullOrEmpty(entry.LinkTarget)) throw new InvalidDataException($"不支持的压缩包链接：{entry.Key}");
             if (entry.IsDirectory) { Directory.CreateDirectory(target); continue; }
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            using var input = entry.OpenEntryStream();
+            using var input = reader.OpenEntryStream();
             using var output = new FileStream(target, FileMode.CreateNew);
             input.CopyTo(output);
         }

@@ -30,7 +30,7 @@ public sealed class DesktopTests
         Assert.True(model.AddTask("视频编码"));
         model.CurrentPreset.VbrParam = "1000";
         Assert.Equal("8000", model.Tasks[0].Preset.VbrParam);
-        Assert.Equal("待接入 · 未执行", model.Tasks[0].Status);
+        Assert.Equal("等待执行", model.Tasks[0].Status);
         Assert.EndsWith("中文 视频_encoded.mp4", model.Tasks[0].OutputPath);
     }
 
@@ -120,7 +120,7 @@ public sealed class DesktopTests
             encoder.SelectedIndex = 1;
             Dispatcher.UIThread.RunJobs();
             Assert.Equal(Encoder.QSV, window.Model.CurrentPreset.Encoder);
-            Assert.True(view.FindControl<ComboBox>("D3DModeSelect")!.IsEnabled);
+            Assert.Equal(OperatingSystem.IsWindows(), view.FindControl<ComboBox>("D3DModeSelect")!.IsEnabled);
             encoder.SelectedIndex = 0;
             Dispatcher.UIThread.RunJobs();
             Assert.False(view.FindControl<ComboBox>("D3DModeSelect")!.IsEnabled);

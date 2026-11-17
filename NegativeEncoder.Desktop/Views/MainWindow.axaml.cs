@@ -39,7 +39,12 @@ public partial class MainWindow : Window
         FileDropArea.AddHandler(DragDrop.DropEvent, Files_Drop);
         if (initializeLibrary) Opened += async (_, _) =>
         {
-            try { Model.ApplyVsCapabilities(await GetToolLibrary().Service.ProbeVsAsync(_lifetime.Token)); }
+            try
+            {
+                var library = GetToolLibrary().Service;
+                Model.ApplyHardware(library.Host, await new HardwareDetector(new ProcessRunner()).DetectAsync(_lifetime.Token));
+                Model.ApplyVsCapabilities(await library.ProbeVsAsync(_lifetime.Token));
+            }
             catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
             catch (Exception ex) { Model.SetVsDetectionError("工具库检测失败：" + ex.Message); }
         };
@@ -53,6 +58,7 @@ public partial class MainWindow : Window
         _distributionClient = new DistributionClient();
         var runner = new ProcessRunner();
         _toolLibrary = new ToolLibraryViewModel(new ToolLibraryService(paths, HostPlatform.Current, _distributionClient, runner), runner);
+        Model.ConfigureEncoding(_toolLibrary.Service);
         _toolLibrary.CapabilitiesChanged += Model.ApplyVsCapabilities;
         return _toolLibrary;
     }
@@ -203,21 +209,43 @@ public partial class MainWindow : Window
     private async void About_NativeClick(object? sender, EventArgs e) => await PreviewDialog.AboutAsync(this,
         $"NegativeEncoder {AppVersion.Current}\n\nAuthor: Ted Zyzsdy\nSpecial Thanks to MeowSound Idols and other supporters.\n\nhttps://github.com/zyzsdy/NegativeEncoder\n\n本软件按照 MIT 协议授权。");
 
+    public async Task RunQueueAsync(string? operation = null)
+    {
+        try
+        {
+            _ = GetToolLibrary();
+            if (operation is null || Model.AddTask(operation)) await Model.RunQueueAsync(_lifetime.Token);
+        }
+        catch (Exception ex)
+        {
+            Model.Status = "无法执行任务：" + ex.Message;
+            await PreviewDialog.NoticeAsync(this, "无法执行任务", ex.ToString());
+        }
+    }
+    private async void StartQueue_Click(object? sender, RoutedEventArgs e) => await RunQueueAsync();
+    private async void StartQueue_NativeClick(object? sender, EventArgs e) => await RunQueueAsync();
+    private void CancelTask_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TaskList.SelectedItem is TaskDraft task) Model.CancelTask(task);
+        else Model.Status = "请先选择一个任务。";
+    }
+
     private async void TaskDetails_Click(object? sender, RoutedEventArgs e) => await ShowTaskAsync();
     private async void Task_DoubleTapped(object? sender, TappedEventArgs e) => await ShowTaskAsync();
     private async Task ShowTaskAsync()
     {
         if (TaskList.SelectedItem is TaskDraft task)
-            await PreviewDialog.NoticeAsync(this, $"任务详情 — {task.Name}", task.Details);
-        else Model.Status = "请先选择一个任务草稿。";
+            await PreviewDialog.TaskAsync(this, task);
+        else Model.Status = "请先选择一个任务。";
     }
 
     private void RemoveTask_Click(object? sender, RoutedEventArgs e)
     {
-        if (TaskList.SelectedItem is not TaskDraft task) { Model.Status = "请先选择一个任务草稿。"; return; }
+        if (TaskList.SelectedItem is not TaskDraft task) { Model.Status = "请先选择一个任务。"; return; }
+        if (task.Started && !task.Finished) { Model.Status = "请先取消正在运行的任务。"; return; }
         Model.Tasks.Remove(task);
         _removedTasks.Push(task);
-        Model.Status = "已移除任务草稿；使用队列下方的“撤销移除”可恢复。";
+        Model.Status = "已移除任务；使用队列下方的“撤销移除”可恢复。";
         UndoTaskButton.IsVisible = true;
     }
 
@@ -225,6 +253,6 @@ public partial class MainWindow : Window
     {
         if (_removedTasks.TryPop(out var task)) { Model.Tasks.Add(task); TaskList.SelectedItem = task; }
         UndoTaskButton.IsVisible = _removedTasks.Count > 0;
-        Model.Status = "已恢复任务草稿。";
+        Model.Status = "已恢复任务。";
     }
 }

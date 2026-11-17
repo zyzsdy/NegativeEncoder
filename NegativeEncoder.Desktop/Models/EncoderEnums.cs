@@ -16,7 +16,8 @@ public enum Encoder
 {
     NVENC,
     QSV,
-    VCE
+    VCE,
+    VTEnc
 }
 
 public enum Codec
@@ -33,7 +34,9 @@ public enum EncodeMode
     VBR,
     LA,
     LAICQ,
-    QVBR
+    QVBR,
+    ABR,
+    Quality
 }
 
 public enum QualityPreset
