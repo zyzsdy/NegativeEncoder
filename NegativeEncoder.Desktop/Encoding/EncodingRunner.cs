@@ -16,7 +16,7 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
     {
         ValidatePaths(task);
         var builder = new EncodingPlanBuilder(library);
-        _ = builder.PipeColorProbe(task);
+        _ = builder.SourceColorProbe(task);
         _ = builder.Build(task, EncodingPlanBuilder.WorkDirectoryFor(task), null);
     }
 
@@ -49,11 +49,11 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
         }
         try
         {
-            VtPipeColor? color = null;
-            if (builder.PipeColorProbe(task) is { } ffprobe)
+            VtSourceColor? color = null;
+            if (builder.SourceColorProbe(task) is { } ffprobe)
             {
                 task.Status = "运行中 · 探测源视频色彩";
-                color = await VtPipeColor.ProbeAsync(ffprobe, task.InputPath, Report, token);
+                color = await VtSourceColor.ProbeAsync(ffprobe, task.InputPath, Report, token);
             }
             var plan = builder.Build(task, work, color);
             if (plan.ScriptPath is not null) await File.WriteAllTextAsync(plan.ScriptPath, plan.Script, token);

@@ -47,7 +47,7 @@ VS 编辑器使用 AvaloniaEdit，保留 Python 语法高亮、行号和缩进�
 - macOS 音频由 VTEnc 的 AudioToolbox AAC 编码；Windows/Linux 音频由当前工具库的 FFmpeg 编码，不依赖 qaac。
   当前 VTEnc 没有纯音频入口：独立音频任务需要含视频的输入，会先生成小尺寸临时视频，再用 FFmpeg 无损提取 AAC。
 - 普通编码、HDR 编码/HEVC 元数据标记、字幕压制、VS/FFmpeg 管道、音频编码/提取与封装已接入。
-  MKV 封装也使用 FFmpeg。VTEnc 的 FFmpeg / VapourSynth 管道在执行时用工具库中的 ffprobe 读取源视频的色彩标记。缺失项按 BT.709、有限范围和左置色度采样补齐，采用的默认值记录在任务日志中。自定义参数模式由用户指定管道色彩。
+  MKV 封装也使用 FFmpeg。VTEnc 的普通字幕压制和 FFmpeg / VapourSynth 管道在执行时用工具库中的 ffprobe 读取源视频的色彩标记。缺失项按 BT.709、有限范围和左置色度采样补齐，采用的默认值记录在任务日志中。自定义参数模式由用户指定源色彩。
   HDR 编码与 HDR 字幕使用 HDR 页的设置，转换时可选 SDR、HDR10 或 HLG 作为源格式。
 
 所有可执行文件从当前 Libs 解析，不搜索系统 PATH。执行期间保护正在使用的工具库版本。

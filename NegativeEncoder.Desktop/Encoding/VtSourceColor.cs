@@ -3,7 +3,7 @@ using NegativeEncoder.Desktop.ToolLibrary;
 
 namespace NegativeEncoder.Desktop.EncodingTasks;
 
-public sealed record VtPipeColor(string Matrix, string Transfer, string Primaries, string Range, string ChromaLocation)
+public sealed record VtSourceColor(string Matrix, string Transfer, string Primaries, string Range, string ChromaLocation)
 {
     public string Colorspace => $"matrix={Matrix}:auto,transfer={Transfer}:auto,colorprim={Primaries}:auto,range={Range}:auto";
 
@@ -14,7 +14,7 @@ public sealed record VtPipeColor(string Matrix, string Transfer, string Primarie
 
     public string VtChromaLocation => ChromaLocation == "topleft" ? "top-left" : ChromaLocation;
 
-    public static async Task<VtPipeColor> ProbeAsync(string ffprobe, string input, Action<string> log, CancellationToken token)
+    public static async Task<VtSourceColor> ProbeAsync(string ffprobe, string input, Action<string> log, CancellationToken token)
     {
         var args = new[] { "-v", "error", "-select_streams", "v:0", "-show_entries",
             "stream=color_space,color_transfer,color_primaries,color_range,chroma_location", "-of", "json", "-i", input };
@@ -25,7 +25,7 @@ public sealed record VtPipeColor(string Matrix, string Transfer, string Primarie
         return FromProbe(result.Output, log);
     }
 
-    public static VtPipeColor FromProbe(string json, Action<string> log)
+    public static VtSourceColor FromProbe(string json, Action<string> log)
     {
         using var data = JsonDocument.Parse(json);
         var streams = data.RootElement.GetProperty("streams");
@@ -40,7 +40,7 @@ public sealed record VtPipeColor(string Matrix, string Transfer, string Primarie
                 return defaultValue;
             }
             if (!supported.Contains(value))
-                throw new InvalidDataException($"VTEnc 管道不支持源视频的 {field}={value}。");
+                throw new InvalidDataException($"VTEnc 不支持源视频的 {field}={value}。");
             return value;
         }
 

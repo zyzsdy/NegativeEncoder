@@ -15,13 +15,14 @@ public sealed class EncodingPlanBuilder(ToolLibraryService library)
     private static bool IsPipe(string operation) => operation is "VapourSynth" or "ffmpeg pipe · 无音频"
         or "ffmpeg pipe · 复制音频" or "ffmpeg pipe · 处理音频与视频";
 
-    public string? PipeColorProbe(TaskDraft task) =>
-        IsPipe(task.Operation) && task.Preset.IsVtEnc && !task.Preset.IsUseCustomParameters ? library.FindFfprobe() : null;
+    public string? SourceColorProbe(TaskDraft task) =>
+        task.Preset.IsVtEnc && !task.Preset.IsUseCustomParameters && (task.Operation == "字幕压制" || IsPipe(task.Operation))
+            ? library.FindFfprobe() : null;
 
     public static string WorkDirectoryFor(TaskDraft task) =>
         Path.Combine(Path.GetDirectoryName(Path.GetFullPath(task.OutputPath))!, ".negativeencoder-" + Guid.NewGuid().ToString("N"));
 
-    public EncodingPlan Build(TaskDraft task, string work, VtPipeColor? pipeColor)
+    public EncodingPlan Build(TaskDraft task, string work, VtSourceColor? sourceColor)
     {
         var p = task.Preset;
         var output = Path.Combine(work, "output" + Path.GetExtension(task.OutputPath));
@@ -84,8 +85,8 @@ public sealed class EncodingPlanBuilder(ToolLibraryService library)
         var separateAudio = audioMode != AudioEncode.None && (pipe || !p.IsUseCustomParameters && audioMode == AudioEncode.Encode && library.Host.Os != "osx");
         var videoOutput = separateAudio ? Path.Combine(work, "video.mkv") : output;
         var args = VideoArguments.Build(p, library.Host, task.Operation.Contains("HDR", StringComparison.Ordinal), pipe);
-        if (pipeColor is not null)
-            args.AddRange(["--vpp-colorspace", pipeColor.Colorspace, "--input-chroma-loc", pipeColor.VtChromaLocation]);
+        if (sourceColor is not null)
+            args.AddRange(["--vpp-colorspace", sourceColor.Colorspace, "--input-chroma-loc", sourceColor.VtChromaLocation]);
         args.AddRange(["-i", pipe ? "-" : task.InputPath, "-o", videoOutput, "-f", separateAudio ? "matroska" : Format(p.OutputFormat)]);
         args.Add(pipe ? p.IsVtEnc ? "--avsw" : "--y4m" : p.Decoder == Decoder.AVHW ? "--avhw" : "--avsw");
         if (p.IsVtEnc && (pipe || separateAudio || !p.IsUseCustomParameters && audioMode == AudioEncode.None)) args.Add("--no-audio");
@@ -111,8 +112,8 @@ public sealed class EncodingPlanBuilder(ToolLibraryService library)
         else if (pipe)
         {
             var ffmpegArgs = new List<string> { "-i", task.InputPath, "-map", "0:v:0", "-an", "-sn" };
-            if (pipeColor is not null) ffmpegArgs.AddRange(["-vf", pipeColor.FfmpegScale]);
-            if (pipeColor is not null && p.ColorDepth == ColorDepth.C10Bit)
+            if (sourceColor is not null) ffmpegArgs.AddRange(["-vf", sourceColor.FfmpegScale]);
+            if (sourceColor is not null && p.ColorDepth == ColorDepth.C10Bit)
                 ffmpegArgs.AddRange(["-pix_fmt", "yuv420p10le", "-strict", "-1"]);
             else ffmpegArgs.AddRange(["-pix_fmt", "yuv420p"]);
             ffmpegArgs.AddRange(["-f", "yuv4mpegpipe", "-"]);

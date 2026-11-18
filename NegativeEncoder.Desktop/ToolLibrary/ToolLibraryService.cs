@@ -41,7 +41,7 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             return FindSingle(LibraryPaths.Within(root, installed.Directory), name);
 
         var ffmpeg = FindExecutable(ToolDefinition.All.Single(tool => tool.Id == "ffmpeg"))
-            ?? throw new FileNotFoundException("VTEnc 管道需要工具库中的 FFmpeg 和 ffprobe。");
+            ?? throw new FileNotFoundException("VTEnc 源色彩探测需要工具库中的 FFmpeg 和 ffprobe。");
         var probe = Path.Combine(Path.GetDirectoryName(ffmpeg)!, name);
         return File.Exists(probe) ? probe : throw new FileNotFoundException("工具库的 FFmpeg 缺少 ffprobe。", probe);
     }

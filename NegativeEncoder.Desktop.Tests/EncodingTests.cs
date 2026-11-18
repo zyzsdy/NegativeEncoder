@@ -117,10 +117,32 @@ public sealed class EncodingTests
     }
 
     [Fact]
+    public void VtSubtitlesProbeSourceColorOnlyForOrdinaryAutomaticArguments()
+    {
+        var root = Directory.CreateTempSubdirectory("ne-subtitle-color-").FullName;
+        try
+        {
+            foreach (var name in new[] { "ffmpeg", "ffprobe" }) File.WriteAllText(Path.Combine(root, name), "");
+            using var client = new DistributionClient();
+            var library = new ToolLibraryService(new LibraryPaths(Path.Combine(root, "settings.json"), root),
+                Host("osx"), client, new ProcessRunner());
+            var builder = new EncodingPlanBuilder(library);
+            var preset = new Preset { Encoder = Encoder.VTEnc };
+            TaskDraft Subtitle(string operation) => new(operation, "input.mp4", "output.mp4", preset, "", "sub.ass", "");
+
+            Assert.Equal(Path.Combine(root, "ffprobe"), builder.SourceColorProbe(Subtitle("字幕压制")));
+            Assert.Null(builder.SourceColorProbe(Subtitle("字幕压制（HDR）")));
+            preset.IsUseCustomParameters = true;
+            Assert.Null(builder.SourceColorProbe(Subtitle("字幕压制")));
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public void VtPipeKeepsDetectedFieldsAndDefaultsOnlyMissingOnes()
     {
         var log = new List<string>();
-        var color = VtPipeColor.FromProbe("""
+        var color = VtSourceColor.FromProbe("""
             {"streams":[{"color_space":"bt2020nc","color_transfer":"arib-std-b67",
                          "color_primaries":"unknown","color_range":"pc","chroma_location":"topleft"}]}
             """, log.Add);
@@ -130,8 +152,8 @@ public sealed class EncodingTests
         Assert.Contains("color_primaries", Assert.Single(log));
 
         log.Clear();
-        color = VtPipeColor.FromProbe("""{"streams":[{}]}""", log.Add);
-        Assert.Equal(new VtPipeColor("bt709", "bt709", "bt709", "limited", "left"), color);
+        color = VtSourceColor.FromProbe("""{"streams":[{}]}""", log.Add);
+        Assert.Equal(new VtSourceColor("bt709", "bt709", "bt709", "limited", "left"), color);
         Assert.Equal(5, log.Count);
     }
 
@@ -140,7 +162,7 @@ public sealed class EncodingTests
     [InlineData("""{"streams":[{"color_space":"bt2020c"}]}""", "color_space=bt2020c")]
     public void VtPipeReportsMissingStreamsAndUnsupportedColor(string probe, string diagnostic)
     {
-        var error = Assert.Throws<InvalidDataException>(() => VtPipeColor.FromProbe(probe, _ => { }));
+        var error = Assert.Throws<InvalidDataException>(() => VtSourceColor.FromProbe(probe, _ => { }));
         Assert.Contains(diagnostic, error.Message);
     }
 
