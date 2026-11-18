@@ -33,6 +33,19 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
         return matches.SingleOrDefault();
     }
 
+    public string FindFfprobe()
+    {
+        var name = Host.Os == "win" ? "ffprobe.exe" : "ffprobe";
+        var root = Paths.Root;
+        if (LibraryPaths.ReadManifest(root).Tools.TryGetValue("ffmpeg", out var installed))
+            return FindSingle(LibraryPaths.Within(root, installed.Directory), name);
+
+        var ffmpeg = FindExecutable(ToolDefinition.All.Single(tool => tool.Id == "ffmpeg"))
+            ?? throw new FileNotFoundException("VTEnc 管道需要工具库中的 FFmpeg 和 ffprobe。");
+        var probe = Path.Combine(Path.GetDirectoryName(ffmpeg)!, name);
+        return File.Exists(probe) ? probe : throw new FileNotFoundException("工具库的 FFmpeg 缺少 ffprobe。", probe);
+    }
+
     public async Task<ToolProbe?> ProbeAsync(ToolDefinition tool, CancellationToken token)
     {
         using var lease = AcquireUsageLease();

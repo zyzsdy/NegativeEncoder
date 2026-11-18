@@ -14,21 +14,29 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
 {
     public void Validate(TaskDraft task)
     {
+        ValidatePaths(task);
+        var builder = new EncodingPlanBuilder(library);
+        _ = builder.PipeColorProbe(task);
+        _ = builder.Build(task, EncodingPlanBuilder.WorkDirectoryFor(task), null);
+    }
+
+    private static void ValidatePaths(TaskDraft task)
+    {
         if (!File.Exists(task.InputPath)) throw new FileNotFoundException("输入文件不存在。", task.InputPath);
         if (File.Exists(task.OutputPath) || Directory.Exists(task.OutputPath)) throw new IOException($"输出已存在，请选择新路径：{task.OutputPath}");
         if (!Directory.Exists(Path.GetDirectoryName(Path.GetFullPath(task.OutputPath)))) throw new DirectoryNotFoundException("输出目录不存在。");
         if (task.Operation == "封装" && !File.Exists(task.AudioInputPath)) throw new FileNotFoundException("封装音频不存在。", task.AudioInputPath);
         if (task.Operation.StartsWith("字幕压制", StringComparison.Ordinal) && !File.Exists(task.SubtitlePath)) throw new FileNotFoundException("字幕文件不存在。", task.SubtitlePath);
-        _ = new EncodingPlanBuilder(library).Build(task);
     }
 
     public async Task RunAsync(TaskDraft task, CancellationToken token)
     {
         using var lease = library.AcquireUsageLease();
-        Validate(task);
-        var plan = new EncodingPlanBuilder(library).Build(task);
-        Directory.CreateDirectory(plan.WorkDirectory);
-        task.LogPath = Path.Combine(plan.WorkDirectory, "execution.log");
+        ValidatePaths(task);
+        var builder = new EncodingPlanBuilder(library);
+        var work = EncodingPlanBuilder.WorkDirectoryFor(task);
+        Directory.CreateDirectory(work);
+        task.LogPath = Path.Combine(work, "execution.log");
         using var log = new StreamWriter(task.LogPath, false, System.Text.Encoding.UTF8) { AutoFlush = true };
         var logLock = new object();
         void Report(string text)
@@ -41,6 +49,13 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
         }
         try
         {
+            VtPipeColor? color = null;
+            if (builder.PipeColorProbe(task) is { } ffprobe)
+            {
+                task.Status = "运行中 · 探测源视频色彩";
+                color = await VtPipeColor.ProbeAsync(ffprobe, task.InputPath, Report, token);
+            }
+            var plan = builder.Build(task, work, color);
             if (plan.ScriptPath is not null) await File.WriteAllTextAsync(plan.ScriptPath, plan.Script, token);
             foreach (var step in plan.Steps)
             {
@@ -56,15 +71,15 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
         }
         catch (Exception error)
         {
-            Report($"\n{error}\n工作目录已保留：{plan.WorkDirectory}\n");
+            Report($"\n{error}\n工作目录已保留：{work}\n");
             throw;
         }
         // Preserve the real log next to the output. Never silently discard cleanup errors.
         log.Close();
-        var finalLog = task.OutputPath + Path.GetFileName(plan.WorkDirectory) + ".log";
+        var finalLog = task.OutputPath + Path.GetFileName(work) + ".log";
         File.Move(task.LogPath, finalLog, false);
         task.LogPath = finalLog;
-        Directory.Delete(plan.WorkDirectory, true);
+        Directory.Delete(work, true);
     }
 
     public static async Task RunStepAsync(EncodingStep step, Action<string> report, CancellationToken token)

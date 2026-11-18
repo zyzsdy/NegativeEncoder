@@ -116,6 +116,34 @@ public sealed class EncodingTests
             VideoArguments.Build(p, Host("osx"), true, pipe));
     }
 
+    [Fact]
+    public void VtPipeKeepsDetectedFieldsAndDefaultsOnlyMissingOnes()
+    {
+        var log = new List<string>();
+        var color = VtPipeColor.FromProbe("""
+            {"streams":[{"color_space":"bt2020nc","color_transfer":"arib-std-b67",
+                         "color_primaries":"unknown","color_range":"pc","chroma_location":"topleft"}]}
+            """, log.Add);
+        Assert.Equal("matrix=bt2020nc:auto,transfer=arib-std-b67:auto,colorprim=bt709:auto,range=full:auto", color.Colorspace);
+        Assert.Equal("top-left", color.VtChromaLocation);
+        Assert.Contains("out_range=full", color.FfmpegScale);
+        Assert.Contains("color_primaries", Assert.Single(log));
+
+        log.Clear();
+        color = VtPipeColor.FromProbe("""{"streams":[{}]}""", log.Add);
+        Assert.Equal(new VtPipeColor("bt709", "bt709", "bt709", "limited", "left"), color);
+        Assert.Equal(5, log.Count);
+    }
+
+    [Theory]
+    [InlineData("""{"streams":[]}""", "v:0")]
+    [InlineData("""{"streams":[{"color_space":"bt2020c"}]}""", "color_space=bt2020c")]
+    public void VtPipeReportsMissingStreamsAndUnsupportedColor(string probe, string diagnostic)
+    {
+        var error = Assert.Throws<InvalidDataException>(() => VtPipeColor.FromProbe(probe, _ => { }));
+        Assert.Contains(diagnostic, error.Message);
+    }
+
     [AvaloniaFact]
     public void VtFrameRateAcceptsMenuSelectionAndCustomText()
     {
