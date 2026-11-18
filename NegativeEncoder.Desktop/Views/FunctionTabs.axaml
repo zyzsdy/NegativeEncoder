@@ -79,7 +79,6 @@
                   <TextBox Grid.Column="1" Text="{Binding CurrentPreset.VtQuality}" AutomationProperties.Name="VTEnc Quality 0 到 1"/>
                 </Grid>
               </views:ResponsiveFormPanel>
-              <TextBlock IsVisible="{Binding CurrentPreset.IsVtEnc}" Classes="muted" TextWrapping="Wrap" Text="Quality 为 VideoToolbox 原生质量模式；VBR 需要 macOS 26+。CBR 需要 CFR / Force CFR 与目标帧率；具体支持由硬件编码会话检查。"/>
               <TextBlock Classes="section" Text="编码选项"/>
               <views:ResponsiveFormPanel Name="EncodingOptionFields">
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
@@ -171,7 +170,7 @@
                   </Panel>
                 </Grid>
               </views:ResponsiveFormPanel>
-              <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" RowSpacing="4" IsVisible="{Binding CurrentPreset.IsVtEnc}">
+              <Grid ColumnDefinitions="120,*" IsVisible="{Binding CurrentPreset.IsVtEnc}">
                 <Label Content="CFR 目标帧率" Target="{Binding #VtFrameRate}" VerticalAlignment="Center"/>
                 <ComboBox Grid.Column="1" Name="VtFrameRate" IsEditable="True" ItemsSource="{Binding Options.FrameRateOptions}"
                           Text="{Binding CurrentPreset.FrameRate, Mode=TwoWay}" AutomationProperties.Name="VTEnc CFR 目标帧率">
@@ -179,8 +178,6 @@
                     <DataTemplate><TextBlock Text="{Binding Label}"/></DataTemplate>
                   </ComboBox.ItemTemplate>
                 </ComboBox>
-                <TextBlock Grid.Row="1" Grid.Column="1" Classes="muted" TextWrapping="Wrap"
-                           Text="30000/1001 约为 29.97 帧/秒。可直接输入正整数或分数，例如 120000/1001。"/>
               </Grid>
               <TextBlock Classes="section" Text="画面处理"/>
               <CheckBox Name="DeinterlaceCheckBox" Content="反交错" IsChecked="{Binding CurrentPreset.IsUseDeInterlace}"/>
