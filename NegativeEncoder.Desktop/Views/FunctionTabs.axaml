@@ -171,27 +171,24 @@
                   </Panel>
                 </Grid>
               </views:ResponsiveFormPanel>
-              <Grid ColumnDefinitions="120,*" IsVisible="{Binding CurrentPreset.IsVtEnc}">
-                <Label Content="CFR 目标帧率" Target="{Binding #VtFrameRate}"/>
-                <TextBox Grid.Column="1" Name="VtFrameRate" Text="{Binding CurrentPreset.FrameRate}" AutomationProperties.Name="VTEnc CFR 目标帧率"/>
+              <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" RowSpacing="4" IsVisible="{Binding CurrentPreset.IsVtEnc}">
+                <Label Content="CFR 目标帧率" Target="{Binding #VtFrameRate}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="1" Name="VtFrameRate" IsEditable="True" ItemsSource="{Binding Options.FrameRateOptions}"
+                          Text="{Binding CurrentPreset.FrameRate, Mode=TwoWay}" AutomationProperties.Name="VTEnc CFR 目标帧率">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate><TextBlock Text="{Binding Label}"/></DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Grid.Row="1" Grid.Column="1" Classes="muted" TextWrapping="Wrap"
+                           Text="30000/1001 约为 29.97 帧/秒。可直接输入正整数或分数，例如 120000/1001。"/>
               </Grid>
-              <StackPanel IsVisible="{Binding CurrentPreset.IsVtEnc}" Spacing="6">
-                <TextBlock Classes="section" Text="VTEnc 输入色彩（管道 / 字幕）"/>
-                <TextBlock Classes="muted" TextWrapping="Wrap" Text="管道与普通字幕压制使用此色彩解释，默认 BT.709 SDR 有限范围。请按源视频或脚本的实际色彩填写；HDR 字幕使用 HDR 页的转换设置。"/>
-                <views:ResponsiveFormPanel>
-                  <Grid ColumnDefinitions="120,*"><Label Content="Matrix" Target="{Binding #PipeMatrix}"/><TextBox Grid.Column="1" Name="PipeMatrix" Text="{Binding CurrentPreset.PipeMatrix}" AutomationProperties.Name="管道输入 Matrix"/></Grid>
-                  <Grid ColumnDefinitions="120,*"><Label Content="Transfer" Target="{Binding #PipeTransfer}"/><TextBox Grid.Column="1" Name="PipeTransfer" Text="{Binding CurrentPreset.PipeTransfer}" AutomationProperties.Name="管道输入 Transfer"/></Grid>
-                  <Grid ColumnDefinitions="120,*"><Label Content="Primaries" Target="{Binding #PipePrimaries}"/><TextBox Grid.Column="1" Name="PipePrimaries" Text="{Binding CurrentPreset.PipePrimaries}" AutomationProperties.Name="管道输入 Primaries"/></Grid>
-                  <Grid ColumnDefinitions="120,*"><Label Content="Range" Target="{Binding #PipeRange}"/><TextBox Grid.Column="1" Name="PipeRange" Text="{Binding CurrentPreset.PipeRange}" AutomationProperties.Name="管道输入 Range"/></Grid>
-                </views:ResponsiveFormPanel>
-              </StackPanel>
               <TextBlock Classes="section" Text="画面处理"/>
-              <views:ResponsiveFormPanel Name="PictureFields">
-                <CheckBox Content="反交错" IsChecked="{Binding CurrentPreset.IsUseDeInterlace}"/>
+              <CheckBox Name="DeinterlaceCheckBox" Content="反交错" IsChecked="{Binding CurrentPreset.IsUseDeInterlace}"/>
+              <views:ResponsiveFormPanel Name="DeinterlaceFields" IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}">
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
                   <Label Content="场顺序" Target="{Binding #FieldOrderSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="FieldOrderSelect" ItemsSource="{Binding Options.FieldOrderOptions}" SelectedValue="{Binding CurrentPreset.FieldOrder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="场顺序" IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}">
+                    <ComboBox Name="FieldOrderSelect" ItemsSource="{Binding Options.FieldOrderOptions}" SelectedValue="{Binding CurrentPreset.FieldOrder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="场顺序">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -203,7 +200,7 @@
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
                   <Label Content="反交错方式" Target="{Binding #DeInterlaceMethodPresetSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="DeInterlaceMethodPresetSelect" ItemsSource="{Binding Options.DeInterlaceMethodPresetOptions}" SelectedValue="{Binding CurrentPreset.DeInterlaceMethodPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="反交错方式" IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}">
+                    <ComboBox Name="DeInterlaceMethodPresetSelect" ItemsSource="{Binding Options.DeInterlaceMethodPresetOptions}" SelectedValue="{Binding CurrentPreset.DeInterlaceMethodPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="反交错方式">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -212,17 +209,19 @@
                     </ComboBox>
                   </Panel>
                 </Grid>
-                <CheckBox Content="调整分辨率" IsChecked="{Binding CurrentPreset.IsSetOutputRes}"/>
+              </views:ResponsiveFormPanel>
+              <CheckBox Name="ResizeCheckBox" Content="调整分辨率" IsChecked="{Binding CurrentPreset.IsSetOutputRes}"/>
+              <views:ResponsiveFormPanel Name="ResizeFields" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}">
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
                   <Label Content="宽度（px）" Target="{Binding #OutputResWidthField}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <TextBox Name="OutputResWidthField" Text="{Binding CurrentPreset.OutputResWidth}" AutomationProperties.Name="宽度（px）" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}"/>
+                    <TextBox Name="OutputResWidthField" Text="{Binding CurrentPreset.OutputResWidth}" AutomationProperties.Name="宽度（px）"/>
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
                   <Label Content="高度（px）" Target="{Binding #OUtputResHeightField}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <TextBox Name="OUtputResHeightField" Text="{Binding CurrentPreset.OUtputResHeight}" AutomationProperties.Name="高度（px）" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}"/>
+                    <TextBox Name="OUtputResHeightField" Text="{Binding CurrentPreset.OUtputResHeight}" AutomationProperties.Name="高度（px）"/>
                   </Panel>
                 </Grid>
               </views:ResponsiveFormPanel>
@@ -280,7 +279,7 @@
               </Panel>
             </Grid>
             <CheckBox Content="每个 IDR 帧重复输出 Header" IsChecked="{Binding CurrentPreset.IsRepeatHeaders}" IsEnabled="{Binding CurrentPreset.IsNvenc}"/>
-            <TextBlock Classes="section" Text="HDR 格式转换（仅 NVENC）"/>
+            <TextBlock Classes="section" Text="HDR 格式转换（NVENC / VTEnc）"/>
             <CheckBox Content="启用 HDR 格式转换" IsChecked="{Binding CurrentPreset.IsConvertHdrType}" IsEnabled="{Binding CurrentPreset.SupportsColorspace}"/>
             <StackPanel IsEnabled="{Binding CurrentPreset.SupportsColorspace}">
               <Grid ColumnDefinitions="140,*" Margin="0,3">

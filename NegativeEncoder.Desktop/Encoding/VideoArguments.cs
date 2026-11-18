@@ -16,19 +16,25 @@ public static class VideoArguments
         if (!EncoderCapabilities.Modes(p.Encoder, host).Contains(p.EncodeMode)) throw new InvalidOperationException($"{p.Encoder} 不支持 {p.EncodeMode}。");
         if (p.IsUseDeInterlace && !EncoderCapabilities.Deinterlacers(p.Encoder).Contains(p.DeInterlaceMethodPreset))
             throw new InvalidOperationException($"{p.Encoder} 不支持所选反交错方式。");
-        var args = p.IsVtEnc ? Vt(p, hdr, pipe) : LegacyVideoArguments.Build(p, hdr, pipe, host);
+        var args = p.IsVtEnc ? Vt(p, hdr) : LegacyVideoArguments.Build(p, hdr, pipe, host);
         if (p.IsSetOutputRes) args.AddRange(["--output-res", $"{p.OutputResWidth}x{p.OUtputResHeight}"]);
         if (p.IsSetAvSync)
         {
             args.AddRange(["--avsync", p.AVSync.ToString().ToLowerInvariant()]);
-            if (p.IsVtEnc && p.AVSync != AVSync.Vfr) args.AddRange(["--fps", p.FrameRate]);
+            if (p.IsVtEnc && p.AVSync != AVSync.Vfr)
+            {
+                var parts = p.FrameRate.Split('/');
+                if (parts.Length > 2 || parts.Any(part => !int.TryParse(part, NumberStyles.None, CultureInfo.InvariantCulture, out var n) || n <= 0))
+                    throw new InvalidOperationException($"CFR 目标帧率“{p.FrameRate}”无效。请输入正整数或正整数分数，例如 30000/1001。");
+                args.AddRange(["--fps", p.FrameRate]);
+            }
         }
         if (p.IsVtEnc && p.EncodeMode == EncodeMode.CBR && (!p.IsSetAvSync || p.AVSync == AVSync.Vfr))
             throw new InvalidOperationException("VTEnc CBR 需要启用 CFR 或 Force CFR，并填写目标帧率。");
         return args;
     }
 
-    private static List<string> Vt(Preset p, bool hdr, bool pipe)
+    private static List<string> Vt(Preset p, bool hdr)
     {
         if (p.Codec == Codec.AV1 || p.Codec == Codec.AVC && p.ColorDepth == ColorDepth.C10Bit)
             throw new InvalidOperationException("VTEnc 仅支持 H.264 8-bit、HEVC 8/10-bit。");
@@ -64,12 +70,12 @@ public static class VideoArguments
                 _ => throw new InvalidOperationException("不支持的 VTEnc 反交错方式。")
             });
         }
-        if (hdr || pipe)
+        if (hdr)
         {
             // VTEnc requires an explicit colorspace path for HDR, including passthrough.
-            var from = pipe ? (p.PipeMatrix, p.PipePrimaries, p.PipeTransfer) : p.IsConvertHdrType ? Colors(p.OldHdrType) : ("auto", "auto", "auto");
+            var from = p.IsConvertHdrType ? Colors(p.OldHdrType) : ("auto", "auto", "auto");
             var to = p.IsConvertHdrType ? Colors(p.NewHdrType) : ("auto", "auto", "auto");
-            var conversion = $"matrix={from.Item1}:{to.Item1},colorprim={from.Item2}:{to.Item2},transfer={from.Item3}:{to.Item3},range={(pipe ? p.PipeRange : "auto")}:auto";
+            var conversion = $"matrix={from.Item1}:{to.Item1},colorprim={from.Item2}:{to.Item2},transfer={from.Item3}:{to.Item3},range=auto:auto";
             if (p.IsConvertHdrType && p.OldHdrType != HdrType.SDR && p.NewHdrType == HdrType.SDR)
                 conversion += $",hdr2sdr={p.Hdr2SdrMethod.ToString().ToLowerInvariant()},desat_strength={p.Hdr2SdrDeSatStrength}";
             args.AddRange(["--vpp-colorspace", conversion]);

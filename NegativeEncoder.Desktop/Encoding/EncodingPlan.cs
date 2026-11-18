@@ -87,8 +87,6 @@ public sealed class EncodingPlanBuilder(ToolLibraryService library)
         if (task.Operation.StartsWith("字幕压制", StringComparison.Ordinal))
         {
             if (task.SubtitlePath.Contains('"')) throw new ArgumentException("字幕路径不能包含双引号。");
-            if (p.IsVtEnc && !p.IsUseCustomParameters && !task.Operation.Contains("HDR", StringComparison.Ordinal))
-                args.AddRange(["--vpp-colorspace", $"matrix={p.PipeMatrix}:auto,transfer={p.PipeTransfer}:auto,colorprim={p.PipePrimaries}:auto,range={p.PipeRange}:auto"]);
             args.AddRange(["--vpp-subburn", "filename=\"" + task.SubtitlePath + "\""]);
         }
         EncoderCommand? producer = null;

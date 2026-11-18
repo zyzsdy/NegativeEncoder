@@ -55,6 +55,12 @@ public class PresetOption
         new EnumOption<AVSync> { Value = AVSync.Vfr, Name = "VFR（使用时间码）" }
     };
 
+    public IReadOnlyList<FrameRateOption> FrameRateOptions { get; } =
+    [
+        new("24000/1001", "23.976"), new("24"), new("25"), new("30000/1001", "29.97"), new("30"),
+        new("48"), new("50"), new("60000/1001", "59.94"), new("60"), new("120")
+    ];
+
     public ObservableCollection<EnumOption<FieldOrder>> FieldOrderOptions { get; set; } = new()
     {
         new EnumOption<FieldOrder> { Value = FieldOrder.TFF, Name = "TFF" },
@@ -138,4 +144,12 @@ public class EnumOption<T>
     public override string ToString() => Name;
     public T Value { get; set; } = default!;
     public string Name { get; set; } = "";
+}
+
+public sealed record FrameRateOption(string Value, string? Approximation = null)
+{
+    public string Label => Approximation is null ? Value : $"{Value} ({Approximation})";
+
+    // The editable ComboBox writes the exact rate into the preset.
+    public override string ToString() => Value;
 }

@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using NegativeEncoder.Desktop.Models;
 using NegativeEncoder.Desktop.Views;
 using Xunit;
 
@@ -47,6 +48,47 @@ public sealed class WorkbenchTests
             model.DeletePreset();
             CheckSelection("Default");
             Assert.Single(PresetItems());
+        }
+        finally { window.Close(); }
+    }
+
+    [AvaloniaFact]
+    public void PictureControlsStayGroupedAcrossEncodersAndWindowSizes()
+    {
+        var window = new MainWindow(false);
+        window.Show();
+        try
+        {
+            var view = window.FindControl<FunctionTabs>("EditorTabs")!;
+            var deinterlace = view.FindControl<CheckBox>("DeinterlaceCheckBox")!;
+            var resize = view.FindControl<CheckBox>("ResizeCheckBox")!;
+            var deinterlaceFields = view.FindControl<ResponsiveFormPanel>("DeinterlaceFields")!;
+            var resizeFields = view.FindControl<ResponsiveFormPanel>("ResizeFields")!;
+            foreach (var encoder in Enum.GetValues<Encoder>())
+            {
+                window.Model.CurrentPreset.Encoder = encoder;
+                foreach (var width in new[] { 1000, 1320 })
+                {
+                    window.Width = width;
+                    deinterlace.IsChecked = width == 1000;
+                    resize.IsChecked = width == 1320;
+                    window.UpdateLayout();
+                    Dispatcher.UIThread.RunJobs();
+                    Assert.Equal(deinterlace.IsChecked, view.FindControl<ComboBox>("FieldOrderSelect")!.IsEffectivelyEnabled);
+                    Assert.Equal(deinterlace.IsChecked, view.FindControl<ComboBox>("DeInterlaceMethodPresetSelect")!.IsEffectivelyEnabled);
+                    Assert.Equal(resize.IsChecked, view.FindControl<TextBox>("OutputResWidthField")!.IsEffectivelyEnabled);
+                    Assert.Equal(resize.IsChecked, view.FindControl<TextBox>("OUtputResHeightField")!.IsEffectivelyEnabled);
+                    Assert.True(deinterlace.Bounds.Bottom <= deinterlaceFields.Bounds.Top);
+                    Assert.True(deinterlaceFields.Bounds.Bottom <= resize.Bounds.Top);
+                    Assert.True(resize.Bounds.Bottom <= resizeFields.Bounds.Top);
+                    foreach (var group in new[] { deinterlaceFields, resizeFields })
+                    {
+                        var first = group.Children[0].Bounds;
+                        var second = group.Children[1].Bounds;
+                        Assert.True(width == 1000 ? second.Top >= first.Bottom : second.Left >= first.Right);
+                    }
+                }
+            }
         }
         finally { window.Close(); }
     }

@@ -105,14 +105,15 @@ public sealed partial class MainWindowViewModel : ObservableObject
         {
             foreach (var saved in catalog)
             {
-                var snapshot = saved.Settings;
-                if (recovery is not null && recovery.Changes.TryGetValue(saved.Id, out var draft)
-                    && !JsonElement.DeepEquals(snapshot, draft))
+                var preset = Preset.FromSnapshot(saved.Settings);
+                var baseline = saved with { Settings = preset.Snapshot() };
+                if (recovery is not null && recovery.Changes.TryGetValue(saved.Id, out var draft))
                 {
-                    snapshot = draft;
-                    _drafts.Add(saved.Id, draft);
+                    preset = Preset.FromSnapshot(draft);
+                    var settings = preset.Snapshot();
+                    if (!JsonElement.DeepEquals(baseline.Settings, settings)) _drafts.Add(saved.Id, settings);
                 }
-                RegisterPreset(Preset.FromSnapshot(snapshot), saved);
+                RegisterPreset(preset, baseline);
             }
             // A catalog change can reach disk before the selection update (e.g. deletion).
             _currentPreset = Presets.FirstOrDefault(p => _savedPresets[p].Id == recovery?.Selected) ?? Presets[0];

@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
@@ -91,6 +92,40 @@ public sealed class PresetPersistenceTests : IDisposable
         Assert.Equal(Encoder.QSV, reopened.CurrentPreset.Encoder);
         Assert.False(reopened.IsPresetDirty);
         Assert.Equal(Encoder.QSV, Open().CurrentPreset.Encoder);
+    }
+
+    [Fact]
+    public void ObsoletePipeColorsAreIgnoredInSavedPresetsAndDrafts()
+    {
+        var model = Open();
+        model.CurrentPreset.FrameRate = "120000/1001";
+        model.SavePreset();
+        var catalogPath = Path.Combine(_directory, "presets.json");
+        var catalog = JsonNode.Parse(File.ReadAllText(catalogPath))!;
+        var settings = catalog[0]!["settings"]!.AsObject();
+        string[] obsolete = ["PipeMatrix", "PipeTransfer", "PipePrimaries", "PipeRange"];
+        foreach (var name in obsolete)
+        {
+            Assert.False(settings.ContainsKey(name));
+            settings[name] = "old value";
+        }
+        File.WriteAllText(catalogPath, catalog.ToJsonString());
+        var draftPath = Path.Combine(_directory, "preset-draft.json");
+        var draft = JsonNode.Parse(File.ReadAllText(draftPath))!;
+        var edited = settings.DeepClone();
+        edited["PipeMatrix"] = 123;
+        draft["changes"]![draft["selected"]!.GetValue<string>()] = edited;
+        File.WriteAllText(draftPath, draft.ToJsonString());
+
+        var restored = Open();
+        Assert.False(restored.IsPresetDirty);
+        Assert.Equal("120000/1001", restored.CurrentPreset.FrameRate);
+        restored.CurrentPreset.FrameRate = "24";
+        restored.CurrentPreset.FrameRate = "120000/1001";
+        Assert.False(restored.IsPresetDirty);
+        restored.SavePreset();
+        var saved = JsonNode.Parse(File.ReadAllText(catalogPath))![0]!["settings"]!.AsObject();
+        Assert.All(obsolete, name => Assert.False(saved.ContainsKey(name)));
     }
 
     [Fact]

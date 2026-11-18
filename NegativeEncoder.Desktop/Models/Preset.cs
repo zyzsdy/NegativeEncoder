@@ -336,14 +336,6 @@ public sealed class Preset : ObservableObject
     public string VtQuality { get => _vtQuality; set => Set(ref _vtQuality, value); }
     private string _frameRate = "30000/1001";
     public string FrameRate { get => _frameRate; set => Set(ref _frameRate, value); }
-    private string _pipeMatrix = "bt709";
-    public string PipeMatrix { get => _pipeMatrix; set => Set(ref _pipeMatrix, value); }
-    private string _pipeTransfer = "bt709";
-    public string PipeTransfer { get => _pipeTransfer; set => Set(ref _pipeTransfer, value); }
-    private string _pipePrimaries = "bt709";
-    public string PipePrimaries { get => _pipePrimaries; set => Set(ref _pipePrimaries, value); }
-    private string _pipeRange = "limited";
-    public string PipeRange { get => _pipeRange; set => Set(ref _pipeRange, value); }
     public bool IsVtEnc => Encoder == Encoder.VTEnc;
     public bool SupportsVbr => AvailableModes.Contains(EncodeMode.VBR);
     public bool SupportsCqp => AvailableModes.Contains(EncodeMode.CQP);

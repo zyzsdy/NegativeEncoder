@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using NegativeEncoder.Desktop.EncodingTasks;
 using NegativeEncoder.Desktop.Models;
 using NegativeEncoder.Desktop.ToolLibrary;
@@ -93,14 +94,70 @@ public sealed class EncodingTests
         Assert.Contains("24000/1001", VideoArguments.Build(p, Host("osx"), false, false));
     }
 
-    [Fact]
-    public void VtPipesDeclareColorInterpretationAndHdrUsesNativeTags()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void VtColorArgumentsOnlyUseHdrSettingsForHdrJobs(bool pipe)
     {
-        var p = new Preset { Encoder = Encoder.VTEnc, IsOutputHdr = true, OutputHdrType = HdrType.HDR10 };
-        var args = VideoArguments.Build(p, Host("osx"), true, true);
-        Assert.Contains("--color-tags", args);
-        Assert.Contains("matrix=bt709:auto,colorprim=bt709:auto,transfer=bt709:auto,range=limited:auto", args);
-        Assert.DoesNotContain("--transfer", args);
+        var p = new Preset
+        {
+            Encoder = Encoder.VTEnc, IsOutputHdr = true, OutputHdrType = HdrType.HDR10,
+            IsConvertHdrType = true, OldHdrType = HdrType.HLG, NewHdrType = HdrType.HDR10
+        };
+        var ordinary = VideoArguments.Build(p, Host("osx"), false, pipe);
+        Assert.DoesNotContain("--vpp-colorspace", ordinary);
+        Assert.DoesNotContain("--color-tags", ordinary);
+
+        var hdr = VideoArguments.Build(p, Host("osx"), true, pipe);
+        Assert.Contains("matrix=bt2020nc:bt2020nc,colorprim=bt2020:bt2020,transfer=arib-std-b67:smpte2084,range=auto:auto", hdr);
+        Assert.Contains("--color-tags", hdr);
+        p.IsConvertHdrType = false;
+        Assert.Contains("matrix=auto:auto,colorprim=auto:auto,transfer=auto:auto,range=auto:auto",
+            VideoArguments.Build(p, Host("osx"), true, pipe));
+    }
+
+    [AvaloniaFact]
+    public void VtFrameRateAcceptsMenuSelectionAndCustomText()
+    {
+        var window = new MainWindow(false);
+        window.Show();
+        try
+        {
+            var preset = window.Model.CurrentPreset;
+            preset.Encoder = Encoder.VTEnc;
+            preset.IsSetAvSync = true;
+            var view = window.FindControl<FunctionTabs>("EditorTabs")!;
+            var combo = view.FindControl<ComboBox>("VtFrameRate")!;
+            combo.BringIntoView();
+            window.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("30000/1001", combo.Text);
+            Assert.Contains(combo.Items.OfType<FrameRateOption>(), o => o.Label == "30000/1001 (29.97)");
+            combo.IsDropDownOpen = true;
+            combo.SelectedItem = combo.Items.OfType<FrameRateOption>().Single(o => o.Value == "60000/1001");
+            combo.IsDropDownOpen = false;
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("60000/1001", preset.FrameRate);
+
+            var editor = combo.GetVisualDescendants().OfType<TextBox>().Single();
+            editor.Focus();
+            editor.Text = "120000/1001";
+            view.FindControl<CheckBox>("ResizeCheckBox")!.Focus();
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("120000/1001", preset.FrameRate);
+            Assert.True(window.Model.CreatePreset("另一帧率", false));
+            Assert.Equal("30000/1001", combo.Text);
+            window.Model.CurrentPreset = preset;
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("120000/1001", editor.Text);
+            var args = VideoArguments.Build(preset.Copy(), Host("osx"), false, false);
+            Assert.Equal("120000/1001", args[args.IndexOf("--fps") + 1]);
+            editor.Text = "120000/0";
+            Dispatcher.UIThread.RunJobs();
+            Assert.Contains("CFR 目标帧率", Assert.Throws<InvalidOperationException>(
+                () => VideoArguments.Build(preset, Host("osx"), false, false)).Message);
+        }
+        finally { window.Close(); }
     }
 
     [Fact]
