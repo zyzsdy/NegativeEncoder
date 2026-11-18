@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using NegativeEncoder.Desktop.ViewModels;
 
 namespace NegativeEncoder.Desktop.Models;
@@ -349,9 +351,13 @@ public sealed class Preset : ObservableObject
     public bool SupportsColorspace => IsNvenc || IsVtEnc;
     public bool SupportsMaxBitrate => !IsVtEnc || EncodeMode is EncodeMode.ABR or EncodeMode.VBR;
     public bool SupportsD3D => IsQsv && OperatingSystem.IsWindows();
+    [JsonIgnore]
     public EncodeMode[] AvailableModes => EncodingTasks.EncoderCapabilities.Modes(Encoder, ToolLibrary.HostPlatform.Current);
+    [JsonIgnore]
     public Codec[] AvailableCodecs => IsVtEnc ? [Codec.AVC, Codec.HEVC] : Enum.GetValues<Codec>();
+    [JsonIgnore]
     public ColorDepth[] AvailableDepths => IsVtEnc && Codec == Codec.AVC || Encoder == Encoder.VCE ? [ColorDepth.C8Bit] : [ColorDepth.C8Bit, ColorDepth.C10Bit];
+    [JsonIgnore]
     public DeInterlaceMethodPreset[] AvailableDeinterlacers => EncodingTasks.EncoderCapabilities.Deinterlacers(Encoder);
     private void RefreshCapabilities()
     {
@@ -365,60 +371,48 @@ public sealed class Preset : ObservableObject
     public bool IsAudioEncoding => AudioEncode == AudioEncode.Encode;
     public bool IsSdrConversion => IsConvertHdrType && NewHdrType == HdrType.SDR;
 
-    public Preset Copy()
-    {
-        var copy = new Preset();
-        copy.PresetName = PresetName;
-        copy.Encoder = Encoder;
-        copy.Codec = Codec;
-        copy.EncodeMode = EncodeMode;
-        copy.CqpParam = CqpParam;
-        copy.AbrParam = AbrParam;
-        copy.VtQuality = VtQuality;
-        copy.FrameRate = FrameRate;
-        copy.PipeMatrix = PipeMatrix;
-        copy.PipeTransfer = PipeTransfer;
-        copy.PipePrimaries = PipePrimaries;
-        copy.PipeRange = PipeRange;
-        copy.CbrParam = CbrParam;
-        copy.VbrParam = VbrParam;
-        copy.LaParam = LaParam;
-        copy.LaicqParam = LaicqParam;
-        copy.QvbrParam = QvbrParam;
-        copy.QualityPreset = QualityPreset;
-        copy.ColorDepth = ColorDepth;
-        copy.VbrQuailty = VbrQuailty;
-        copy.IsSetMaxGop = IsSetMaxGop;
-        copy.MaxGop = MaxGop;
-        copy.IsStrictGop = IsStrictGop;
-        copy.IsSetDar = IsSetDar;
-        copy.Dar = Dar;
-        copy.IsSetMaxBitrate = IsSetMaxBitrate;
-        copy.MaxBitrate = MaxBitrate;
-        copy.Decoder = Decoder;
-        copy.D3DMode = D3DMode;
-        copy.IsSetAvSync = IsSetAvSync;
-        copy.AVSync = AVSync;
-        copy.IsUseDeInterlace = IsUseDeInterlace;
-        copy.FieldOrder = FieldOrder;
-        copy.DeInterlaceMethodPreset = DeInterlaceMethodPreset;
-        copy.IsSetOutputRes = IsSetOutputRes;
-        copy.OutputResWidth = OutputResWidth;
-        copy.OUtputResHeight = OUtputResHeight;
-        copy.AudioEncode = AudioEncode;
-        copy.AudioBitrate = AudioBitrate;
-        copy.OutputFormat = OutputFormat;
-        copy.IsUseCustomParameters = IsUseCustomParameters;
-        copy.CustomParameters = CustomParameters;
-        copy.IsOutputHdr = IsOutputHdr;
-        copy.OutputHdrType = OutputHdrType;
-        copy.IsRepeatHeaders = IsRepeatHeaders;
-        copy.IsConvertHdrType = IsConvertHdrType;
-        copy.OldHdrType = OldHdrType;
-        copy.NewHdrType = NewHdrType;
-        copy.Hdr2SdrMethod = Hdr2SdrMethod;
-        copy.Hdr2SdrDeSatStrength = Hdr2SdrDeSatStrength;
-        copy.MuxFormat = MuxFormat;
-        return copy;
-    }
+    private bool _processAll;
+    public bool ProcessAll { get => _processAll; set => Set(ref _processAll, value); }
+    private string? _outputPath;
+    public string? OutputPath { get => _outputPath; set => Set(ref _outputPath, value); }
+    private string _audioOutput = "";
+    public string AudioOutput { get => _audioOutput; set => Set(ref _audioOutput, value); }
+    private string _muxAudio = "";
+    public string MuxAudio { get => _muxAudio; set => Set(ref _muxAudio, value); }
+    private string _muxOutput = "";
+    public string MuxOutput { get => _muxOutput; set => Set(ref _muxOutput, value); }
+    private string _subtitle = "";
+    public string Subtitle { get => _subtitle; set => Set(ref _subtitle, value); }
+    private string _subtitleRenderer = "subtext";
+    public string SubtitleRenderer { get => _subtitleRenderer; set => Set(ref _subtitleRenderer, value); }
+    private bool _useRepeat;
+    public bool UseRepeat { get => _useRepeat; set => Set(ref _useRepeat, value); }
+    private bool _useQtgmc;
+    public bool UseQtgmc { get => _useQtgmc; set => Set(ref _useQtgmc, value); }
+    private bool _useIvtc;
+    public bool UseIvtc { get => _useIvtc; set => Set(ref _useIvtc, value); }
+    private bool _useYadifDouble;
+    public bool UseYadifDouble { get => _useYadifDouble; set => Set(ref _useYadifDouble, value); }
+    private bool _useYadifNormal;
+    public bool UseYadifNormal { get => _useYadifNormal; set => Set(ref _useYadifNormal, value); }
+    private bool _useBwdifNormal;
+    public bool UseBwdifNormal { get => _useBwdifNormal; set => Set(ref _useBwdifNormal, value); }
+    private bool _useBwdifDouble;
+    public bool UseBwdifDouble { get => _useBwdifDouble; set => Set(ref _useBwdifDouble, value); }
+    private bool _vsResize;
+    public bool VsResize { get => _vsResize; set => Set(ref _vsResize, value); }
+    private string _vsWidth = "1920";
+    public string VsWidth { get => _vsWidth; set => Set(ref _vsWidth, value); }
+    private string _vsHeight = "1080";
+    public string VsHeight { get => _vsHeight; set => Set(ref _vsHeight, value); }
+    private string _script = "";
+    public string Script { get => _script; set => Set(ref _script, value); }
+
+    // Only editable properties belong to a preset. Capabilities depend on the current host.
+    private static readonly JsonSerializerOptions SnapshotOptions = new() { IgnoreReadOnlyProperties = true };
+    internal JsonElement Snapshot() => JsonSerializer.SerializeToElement(this, SnapshotOptions);
+    internal static Preset FromSnapshot(JsonElement snapshot) =>
+        snapshot.Deserialize<Preset>(SnapshotOptions) ?? throw new InvalidDataException("预设内容为空。");
+
+    public Preset Copy() => FromSnapshot(Snapshot());
 }

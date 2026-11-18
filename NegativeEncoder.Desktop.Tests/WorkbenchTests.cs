@@ -12,7 +12,7 @@ public sealed class WorkbenchTests
     [AvaloniaFact]
     public void PresetMenusTrackSelectionRenameAndDeletionWithoutLosingEdits()
     {
-        var window = new MainWindow();
+        var window = new MainWindow(false);
         window.Show();
         try
         {
@@ -33,11 +33,11 @@ public sealed class WorkbenchTests
             Assert.True(model.CreatePreset("测试预设", false));
             CheckSelection("测试预设");
             PresetItems()[0].RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-            CheckSelection("Default");
+            CheckSelection("*Default");
             Assert.Equal("8765", model.CurrentPreset.VbrParam);
             Assert.True(model.IsPresetDirty);
             Assert.True(model.RenamePreset("重命名"));
-            CheckSelection("重命名");
+            CheckSelection("*重命名");
             Assert.Contains("*重命名", window.Title);
             model.SavePreset();
             Assert.DoesNotContain("*", window.Title);
@@ -54,7 +54,7 @@ public sealed class WorkbenchTests
     [AvaloniaFact]
     public void EncoderReflowsInPlaceAndKeepsValuesAcrossWindowSizes()
     {
-        var window = new MainWindow { Width = 1320, Height = 850 };
+        var window = new MainWindow(false) { Width = 1320, Height = 850 };
         window.Show();
         try
         {

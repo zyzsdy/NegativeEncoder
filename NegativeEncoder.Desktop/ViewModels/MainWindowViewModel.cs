@@ -9,7 +9,10 @@ namespace NegativeEncoder.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel : ObservableObject
 {
-    private readonly Dictionary<Preset, string> _savedPresets = new();
+    private readonly Dictionary<Preset, SavedPreset> _savedPresets = new();
+    private readonly Dictionary<Guid, JsonElement> _drafts = new();
+    private readonly PresetStore? _store;
+    private Preset? _initialDefault;
     public ObservableCollection<VideoFile> Files { get; } = [];
     public ObservableCollection<TaskDraft> Tasks { get; } = [];
     public ObservableCollection<Preset> Presets { get; } = [];
@@ -21,18 +24,31 @@ public sealed partial class MainWindowViewModel : ObservableObject
         get => _currentPreset;
         set
         {
-            if (value is null || !Set(ref _currentPreset, value)) return;
-            RefreshEncoderOptions();
-            Raise(nameof(IsPresetDirty));
-            Raise(nameof(Title));
-            if (SelectedFile is not null)
-                OutputPath = Path.ChangeExtension(OutputPath, Extension(value.OutputFormat));
+            if (value is null || value == _currentPreset) return;
+            if (!_savedPresets.ContainsKey(value)) throw new ArgumentException("请选择列表中的预设。", nameof(value));
+            _initialDefault = null;
+            _currentPreset = value;
+            ActivatePreset();
+            WriteDrafts();
         }
     }
 
-    public bool IsPresetDirty => !_savedPresets.TryGetValue(CurrentPreset, out var saved) ||
-                                 saved != JsonSerializer.Serialize(CurrentPreset);
-    public string Title => $"消极压制 v{AppVersion.Current}（预设：{(IsPresetDirty ? "*" : "")}{CurrentPreset.PresetName}）";
+    private void ActivatePreset()
+    {
+        LoadScriptDocument();
+        RefreshEncoderOptions();
+        VsIssue = UnavailableVsReason();
+        Raise(nameof(CurrentPreset));
+        foreach (var name in WorkbenchProperties.Concat(VsOptions)) Raise(name);
+        RefreshVsControls();
+        Raise(nameof(IsPresetDirty));
+        Raise(nameof(Title));
+    }
+
+    public bool IsPresetDirty => _drafts.ContainsKey(_savedPresets[CurrentPreset].Id);
+    public string PresetLabel(Preset preset) =>
+        (_drafts.ContainsKey(_savedPresets[preset].Id) ? "*" : "") + preset.PresetName;
+    public string Title => $"消极压制 v{AppVersion.Current}（预设：{PresetLabel(CurrentPreset)}）";
     public bool FilesEmpty => Files.Count == 0;
     public bool TasksEmpty => Tasks.Count == 0;
     public string FileCount => $"{Files.Count} 个文件";
@@ -47,57 +63,134 @@ public sealed partial class MainWindowViewModel : ObservableObject
         {
             if (!Set(ref _selectedFile, value)) return;
             Raise(nameof(InputPath));
-            OutputPath = value is null ? "" : MakeOutputPath(value.Path);
+            CurrentPreset.OutputPath = null;
+            Raise(nameof(OutputPath));
             GenerateVsScript();
         }
     }
 
     public string InputPath => SelectedFile?.Path ?? "";
-    private string _outputPath = "";
-    public string OutputPath { get => _outputPath; set => Set(ref _outputPath, value); }
-    private bool _processAll;
-    public bool ProcessAll { get => _processAll; set => Set(ref _processAll, value); }
+    public string OutputPath
+    {
+        get => CurrentPreset.OutputPath ?? (SelectedFile is null ? "" : MakeOutputPath(SelectedFile.Path));
+        set => CurrentPreset.OutputPath = value;
+    }
+    public bool ProcessAll { get => CurrentPreset.ProcessAll; set => CurrentPreset.ProcessAll = value; }
     private string _status = "就绪";
     public string Status { get => _status; set => Set(ref _status, value); }
-    private string _audioOutput = "";
-    public string AudioOutput { get => _audioOutput; set => Set(ref _audioOutput, value); }
-    private string _muxAudio = "";
-    public string MuxAudio { get => _muxAudio; set => Set(ref _muxAudio, value); }
-    private string _muxOutput = "";
-    public string MuxOutput { get => _muxOutput; set => Set(ref _muxOutput, value); }
+    public string AudioOutput { get => CurrentPreset.AudioOutput; set => CurrentPreset.AudioOutput = value; }
+    public string MuxAudio { get => CurrentPreset.MuxAudio; set => CurrentPreset.MuxAudio = value; }
+    public string MuxOutput { get => CurrentPreset.MuxOutput; set => CurrentPreset.MuxOutput = value; }
 
-    public MainWindowViewModel(VsCapabilities? capabilities = null)
+    private static readonly string[] WorkbenchProperties =
+        [nameof(OutputPath), nameof(ProcessAll), nameof(AudioOutput), nameof(MuxAudio), nameof(MuxOutput)];
+
+    public MainWindowViewModel(VsCapabilities? capabilities = null, string? presetDirectory = null)
     {
         if (capabilities is not null) _vsCapabilities = capabilities;
-        _currentPreset = NewDefaultPreset();
-        RefreshEncoderOptions();
-        RegisterPreset(_currentPreset);
-        SavePreset();
-        Status = "就绪";
+        _store = presetDirectory is null ? null : new PresetStore(presetDirectory);
+        var catalog = _store?.LoadCatalog();
+        var recovery = _store?.LoadDrafts();
+        if (catalog is null)
+        {
+            if (recovery is not null) throw new InvalidDataException("预设草稿缺少对应的预设列表。");
+            _currentPreset = NewDefaultPreset();
+            LoadScriptDocument();
+            GenerateVsScript();
+            RegisterPreset(_currentPreset, NewBaseline(_currentPreset));
+            _initialDefault = _currentPreset;
+            WriteCatalog(_savedPresets.Values);
+        }
+        else
+        {
+            foreach (var saved in catalog)
+            {
+                var snapshot = saved.Settings;
+                if (recovery is not null && recovery.Changes.TryGetValue(saved.Id, out var draft)
+                    && !JsonElement.DeepEquals(snapshot, draft))
+                {
+                    snapshot = draft;
+                    _drafts.Add(saved.Id, draft);
+                }
+                RegisterPreset(Preset.FromSnapshot(snapshot), saved);
+            }
+            // A catalog change can reach disk before the selection update (e.g. deletion).
+            _currentPreset = Presets.FirstOrDefault(p => _savedPresets[p].Id == recovery?.Selected) ?? Presets[0];
+        }
+        ActivatePreset();
         Files.CollectionChanged += (_, _) => { Raise(nameof(FilesEmpty)); Raise(nameof(FileCount)); };
         Tasks.CollectionChanged += (_, _) => { Raise(nameof(TasksEmpty)); Raise(nameof(TaskCount)); };
-        GenerateVsScript();
     }
 
-    private void RegisterPreset(Preset preset)
+    private static SavedPreset NewBaseline(Preset preset) => new(Guid.NewGuid(), preset.Snapshot());
+
+    private void RegisterPreset(Preset preset, SavedPreset saved)
     {
-        Presets.Add(preset);
+        _savedPresets.Add(preset, saved);
         preset.PropertyChanged += PresetChanged;
+        Presets.Add(preset);
+    }
+
+    private void WriteCatalog(IEnumerable<SavedPreset> catalog)
+    {
+        try { _store?.WriteCatalog(catalog); }
+        catch (Exception error)
+        {
+            Status = "预设保存失败：" + error.Message;
+            throw;
+        }
+    }
+
+    private void WriteDrafts()
+    {
+        try { _store?.WriteDrafts(new(_savedPresets[CurrentPreset].Id, _drafts)); }
+        catch (Exception error)
+        {
+            Status = "预设草稿写入失败：" + error.Message;
+            throw;
+        }
     }
 
     private void PresetChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender != CurrentPreset) return;
-        if (e.PropertyName is nameof(Preset.Encoder) or nameof(Preset.Codec)) RefreshEncoderOptions();
+        if (sender is not Preset preset || e.PropertyName is not { } name ||
+            typeof(Preset).GetProperty(name)?.CanWrite != true) return;
+        _initialDefault = null;
+        var saved = _savedPresets[preset];
+        var snapshot = preset.Snapshot();
+        if (JsonElement.DeepEquals(saved.Settings, snapshot)) _drafts.Remove(saved.Id);
+        else _drafts[saved.Id] = snapshot;
+
+        if (preset == CurrentPreset)
+        {
+            if (name is nameof(Preset.Encoder) or nameof(Preset.Codec)) RefreshEncoderOptions();
+            if (WorkbenchProperties.Contains(name) || VsOptions.Contains(name)) Raise(name);
+            if (VsOptions.Contains(name))
+            {
+                RefreshVsControls();
+                GenerateVsScript();
+            }
+            if (name == nameof(Preset.Script) && Script != preset.Script) Script = preset.Script;
+            if (name == nameof(Preset.OutputFormat))
+            {
+                if (preset.OutputPath is { Length: > 0 } path)
+                    OutputPath = Path.ChangeExtension(path, Extension(preset.OutputFormat));
+                Raise(nameof(OutputPath));
+            }
+        }
         Raise(nameof(IsPresetDirty));
         Raise(nameof(Title));
-        if (e.PropertyName == nameof(Preset.OutputFormat) && SelectedFile is not null)
-            OutputPath = Path.ChangeExtension(OutputPath, Extension(CurrentPreset.OutputFormat));
+        WriteDrafts();
     }
 
     public void SavePreset()
     {
-        _savedPresets[CurrentPreset] = JsonSerializer.Serialize(CurrentPreset);
+        _initialDefault = null;
+        var saved = _savedPresets[CurrentPreset] with { Settings = CurrentPreset.Snapshot() };
+        WriteCatalog(Presets.Select(p => p == CurrentPreset ? saved : _savedPresets[p]));
+        _savedPresets[CurrentPreset] = saved;
+        _drafts.Remove(saved.Id);
+        WriteDrafts();
         Raise(nameof(IsPresetDirty));
         Raise(nameof(Title));
         Status = "预设已保存。";
@@ -108,9 +201,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
         if (!ValidatePresetName(name, null)) return false;
         var preset = copy ? CurrentPreset.Copy() : NewDefaultPreset();
         preset.PresetName = name.Trim();
-        RegisterPreset(preset);
+        var saved = NewBaseline(preset);
+        WriteCatalog(Presets.Select(p => _savedPresets[p]).Append(saved));
+        RegisterPreset(preset, saved);
         CurrentPreset = preset;
-        SavePreset();
+        Status = "预设已保存。";
         return true;
     }
 
@@ -132,7 +227,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public void DeletePreset()
     {
         var old = CurrentPreset;
-        if (Presets.Count == 1) RegisterPreset(NewDefaultPreset());
+        if (Presets.Count == 1)
+        {
+            var replacement = NewDefaultPreset();
+            var saved = NewBaseline(replacement);
+            WriteCatalog([saved]);
+            RegisterPreset(replacement, saved);
+        }
+        else WriteCatalog(Presets.Where(p => p != old).Select(p => _savedPresets[p]));
+
+        _drafts.Remove(_savedPresets[old].Id);
         CurrentPreset = Presets.First(p => p != old);
         old.PropertyChanged -= PresetChanged;
         Presets.Remove(old);
@@ -217,7 +321,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         if (selected is null) { Status = "未检测到支持的显卡，请手动选择编码器并检查驱动。"; return; }
         _defaultEncoder = selected.Value;
         // An asynchronous startup probe must not overwrite a user's edits.
-        if (Presets.Count == 1 && !IsPresetDirty)
+        if (CurrentPreset == _initialDefault)
         {
             CurrentPreset.Encoder = selected.Value;
             SavePreset();

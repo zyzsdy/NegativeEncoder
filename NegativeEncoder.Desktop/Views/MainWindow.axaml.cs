@@ -10,7 +10,7 @@ namespace NegativeEncoder.Desktop.Views;
 
 public partial class MainWindow : Window
 {
-    public MainWindowViewModel Model { get; } = new();
+    public MainWindowViewModel Model { get; }
     private bool _pickerOpen;
     private readonly Stack<TaskDraft> _removedTasks = new();
     private readonly NativeMenu? _nativePresetMenu;
@@ -21,10 +21,12 @@ public partial class MainWindow : Window
     private ToolLibraryWindow? _toolWindow;
     private readonly CancellationTokenSource _lifetime = new();
 
-    public MainWindow() : this(true) { }
+    public MainWindow() : this(true, Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NegativeEncoder", "Desktop")) { }
 
-    public MainWindow(bool initializeLibrary)
+    public MainWindow(bool initializeLibrary, string? presetDirectory = null)
     {
+        Model = new MainWindowViewModel(presetDirectory: presetDirectory);
         InitializeComponent();
         DataContext = Model;
         if (!OperatingSystem.IsMacOS()) NativeMenu.SetMenu(this, null);
@@ -107,8 +109,7 @@ public partial class MainWindow : Window
     {
         foreach (var (preset, item) in _presetItems)
         {
-            item.Menu.Header = preset.PresetName;
-            item.Native.Header = preset.PresetName;
+            item.Menu.Header = item.Native.Header = Model.PresetLabel(preset);
             item.Menu.IsChecked = item.Native.IsChecked = preset == Model.CurrentPreset;
         }
     }

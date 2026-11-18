@@ -96,7 +96,7 @@ public sealed class DesktopTests
     [AvaloniaFact]
     public void AllSixTabsLoadAndBindingsRetainEditsAtMinimumSize()
     {
-        var window = new MainWindow { Width = 1000, Height = 620 };
+        var window = new MainWindow(false) { Width = 1000, Height = 620 };
         window.Show();
         try
         {

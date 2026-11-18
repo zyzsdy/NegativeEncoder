@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Text;
 using AvaloniaEdit.Document;
 using NegativeEncoder.Desktop.ToolLibrary;
@@ -7,7 +6,21 @@ namespace NegativeEncoder.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel
 {
-    public TextDocument ScriptDocument { get; } = new();
+    public TextDocument ScriptDocument { get; private set; } = new();
+    private void LoadScriptDocument()
+    {
+        ScriptDocument.TextChanged -= ScriptEdited;
+        ScriptDocument = new TextDocument(CurrentPreset.Script);
+        ScriptDocument.TextChanged += ScriptEdited;
+        Raise(nameof(ScriptDocument));
+        Raise(nameof(Script));
+    }
+
+    private void ScriptEdited(object? sender, EventArgs e)
+    {
+        CurrentPreset.Script = ScriptDocument.Text;
+        Raise(nameof(Script));
+    }
     public string Script { get => ScriptDocument.Text; set => ScriptDocument.Text = value; }
 
     private VsCapabilities _vsCapabilities = VsCapabilities.Empty;
@@ -22,17 +35,7 @@ public sealed partial class MainWindowViewModel
     public bool CanXyVsf => _vsCapabilities.Has("xyvsf");
     public bool CanLegacyVsf => _vsCapabilities.Has("vsf");
     public bool CanVsfmod => _vsCapabilities.Has("vsfm");
-    private string _subtitleRenderer = "subtext";
-    public string SubtitleRenderer
-    {
-        get => _subtitleRenderer;
-        set
-        {
-            if (!Set(ref _subtitleRenderer, value)) return;
-            foreach (var property in new[] { nameof(UseSubtext), nameof(UseXyVsf), nameof(UseLegacyVsf), nameof(UseVsfmod) }) Raise(property);
-            GenerateVsScript();
-        }
-    }
+    public string SubtitleRenderer { get => CurrentPreset.SubtitleRenderer; set => CurrentPreset.SubtitleRenderer = value; }
     public bool UseSubtext { get => SubtitleRenderer == "subtext"; set { if (value) SubtitleRenderer = "subtext"; } }
     public bool UseXyVsf { get => SubtitleRenderer == "xyvsf"; set { if (value) SubtitleRenderer = "xyvsf"; } }
     public bool UseLegacyVsf { get => SubtitleRenderer == "vsf"; set { if (value) SubtitleRenderer = "vsf"; } }
@@ -51,37 +54,30 @@ public sealed partial class MainWindowViewModel
         VsIssue = message;
     }
 
-    private string _subtitle = "";
-    public string Subtitle { get => _subtitle; set => SetVsOption(ref _subtitle, value); }
     public bool UseVsfmod { get => SubtitleRenderer == "vsfm"; set { if (value) SubtitleRenderer = "vsfm"; } }
-    private bool _useRepeat;
-    public bool UseRepeat { get => _useRepeat; set => SetVsOption(ref _useRepeat, value); }
-    private bool _useQtgmc;
-    public bool UseQtgmc { get => _useQtgmc; set => SetVsOption(ref _useQtgmc, value); }
-    private bool _useIvtc;
-    public bool UseIvtc { get => _useIvtc; set => SetVsOption(ref _useIvtc, value); }
-    private bool _useYadifDouble;
-    public bool UseYadifDouble { get => _useYadifDouble; set => SetVsOption(ref _useYadifDouble, value); }
-    private bool _useYadifNormal;
-    public bool UseYadifNormal { get => _useYadifNormal; set => SetVsOption(ref _useYadifNormal, value); }
-    private bool _useBwdifNormal;
-    public bool UseBwdifNormal { get => _useBwdifNormal; set => SetVsOption(ref _useBwdifNormal, value); }
-    private bool _useBwdifDouble;
-    public bool UseBwdifDouble { get => _useBwdifDouble; set => SetVsOption(ref _useBwdifDouble, value); }
-    private bool _vsResize;
-    public bool VsResize { get => _vsResize; set => SetVsOption(ref _vsResize, value); }
-    private string _vsWidth = "1920";
-    public string VsWidth { get => _vsWidth; set => SetVsOption(ref _vsWidth, value); }
-    private string _vsHeight = "1080";
-    public string VsHeight { get => _vsHeight; set => SetVsOption(ref _vsHeight, value); }
+    public string Subtitle { get => CurrentPreset.Subtitle; set => CurrentPreset.Subtitle = value; }
+    public bool UseRepeat { get => CurrentPreset.UseRepeat; set => CurrentPreset.UseRepeat = value; }
+    public bool UseQtgmc { get => CurrentPreset.UseQtgmc; set => CurrentPreset.UseQtgmc = value; }
+    public bool UseIvtc { get => CurrentPreset.UseIvtc; set => CurrentPreset.UseIvtc = value; }
+    public bool UseYadifDouble { get => CurrentPreset.UseYadifDouble; set => CurrentPreset.UseYadifDouble = value; }
+    public bool UseYadifNormal { get => CurrentPreset.UseYadifNormal; set => CurrentPreset.UseYadifNormal = value; }
+    public bool UseBwdifNormal { get => CurrentPreset.UseBwdifNormal; set => CurrentPreset.UseBwdifNormal = value; }
+    public bool UseBwdifDouble { get => CurrentPreset.UseBwdifDouble; set => CurrentPreset.UseBwdifDouble = value; }
+    public bool VsResize { get => CurrentPreset.VsResize; set => CurrentPreset.VsResize = value; }
+    public string VsWidth { get => CurrentPreset.VsWidth; set => CurrentPreset.VsWidth = value; }
+    public string VsHeight { get => CurrentPreset.VsHeight; set => CurrentPreset.VsHeight = value; }
 
-    private void SetVsOption<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    private static readonly string[] VsOptions =
+    [
+        nameof(SubtitleRenderer), nameof(Subtitle), nameof(UseRepeat), nameof(UseQtgmc), nameof(UseIvtc),
+        nameof(UseYadifDouble), nameof(UseYadifNormal), nameof(UseBwdifNormal), nameof(UseBwdifDouble),
+        nameof(VsResize), nameof(VsWidth), nameof(VsHeight)
+    ];
+
+    private void RefreshVsControls()
     {
-        if (Set(ref field, value, name))
-        {
-            GenerateVsScript();
-            foreach (var property in new[] { nameof(CanIvtc), nameof(CanQtgmc), nameof(CanYadif), nameof(CanBwdif) }) Raise(property);
-        }
+        foreach (var name in new[] { nameof(UseSubtext), nameof(UseXyVsf), nameof(UseLegacyVsf), nameof(UseVsfmod),
+                     nameof(CanIvtc), nameof(CanQtgmc), nameof(CanYadif), nameof(CanBwdif) }) Raise(name);
     }
 
     private string UnavailableVsReason()

@@ -13,10 +13,10 @@ exists in this preview. No legacy configuration is read or written.
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
 | Select/Listbox | Avalonia Fluent ComboBox / ListBox | DESIGN.md | authored dropdown; virtualized local list | headless binding tests and macOS popup check |
-| Form | FunctionTabs.axaml + ResponsiveFormPanel + Preset | legacy parameter fields | editable session presets | headless tab/binding tests |
+| Form | FunctionTabs.axaml + ResponsiveFormPanel + Preset | legacy parameter fields | editable presets | headless tab/binding tests |
 | Scrollbar | Avalonia Fluent + Theme.axaml | DESIGN.md | form / list / code editor | minimum-size and long-form checks |
 | Toast | MainWindowViewModel.Status / StatusText | this contract | persistent status, no transient toast | queue validation tests |
-| CRUD | MainWindowViewModel + PreviewDialog | this contract | in-memory preset operations | snapshot/name tests |
+| CRUD | MainWindowViewModel + PreviewDialog | this contract | persistent preset operations | snapshot/name tests |
 | Menu | MainWindow menu handlers + preset menu synchronization | this contract | macOS NativeMenu; Windows/Linux Fluent Menu | native macOS menu check + desktop layout smoke test |
 | Dialog | PreviewDialog | this contract | notice / live task log / about with app icon / name edit / delete confirmation | Escape + initial focus on macOS |
 
@@ -31,12 +31,12 @@ exists in this preview. No legacy configuration is read or written.
   restrictions, with VTEnc options mapped from its own implementation. Startup selects
   macOS VTEnc or a detected Windows/Linux GPU; failed detection is reported. Options
   describe encoder features; successful execution still requires driver/session support.
-- Presets: create, rename, copy, save and delete operate only in memory. Switching
-  presets retains edits. Switching and management share the Presets menu; checked
-  entries track creation, rename, deletion and selection in both menu surfaces.
-  Save clears the dirty marker for this session. Deletion
+- Presets: each workbench preset owns its encoding, batch, path, generator and script
+  settings. Edits update a separate recovery file immediately. Restart restores the
+  selected preset and each working copy. Both menus and the title prefix edited
+  names with an asterisk. Saving updates the selected baseline and clears its marker. Deletion
   requires confirmation, initially focused on Cancel. Duplicate/blank names show
-  an error in the name dialog. Import/export and persistent storage are deferred.
+  an error in the name dialog. Import/export is deferred.
 - Queue: Add validates inputs/tools/destinations, captures a preset/script snapshot and
   starts serial execution. Changes to forms do not mutate existing tasks. Both sides of
   pipelines must succeed before the staged output is published; existing files are never
@@ -55,7 +55,7 @@ exists in this preview. No legacy configuration is read or written.
   Missing capabilities or invalid dimensions preserve the document and show an error.
   Capability refresh preserves hand edits. Subtitle backends are explicit; no silent fallback.
 - Copy: no persistent preview banner, duplicate preset header or tutorial empty states.
-  README documents the session-only boundary. Validation and actual execution states
+  README documents preset recovery. Validation and actual execution states
   remain visible in the status bar and task list; action buttons contain no “草稿” suffix.
   The bottom status bar remains one line, including messages containing line breaks;
   overflowing messages use an ellipsis with full text in the tooltip and accessible name.
@@ -67,14 +67,14 @@ exists in this preview. No legacy configuration is read or written.
 ## Platform and accessibility
 
 macOS uses the system menu bar, with Command+O for import and Command+S for
-session preset save; Quit remains in the standard application menu. Windows and
+preset save; Quit remains in the standard application menu. Windows and
 Linux retain the in-window menu, including Linux desktops that support global menus.
 Both menu presentations invoke the same handlers and preserve disabled unavailable actions.
 NativeMenu is assigned directly in XAML and removed on non-macOS platforms.
 Native menu inspection requires the main window to be active in the foreground.
 
 Chinese application copy with OS-owned file picker chrome. Desktop has no URL state.
-Preset and task state is session-local; the tool-library path and active manifest persist. Native controls own keyboard/focus behavior; no global
+Input lists and task queues are session-local. Presets, drafts, the tool-library path and active manifest persist. Native controls own keyboard/focus behavior; no global
 Enter shortcut may submit while Chinese IME is composing. Name dialogs submit only
 through their save button. Modal windows have an owner, Escape dismisses, and focus
 returns to the owner. UI animations are not introduced. Screen reader and Windows /
