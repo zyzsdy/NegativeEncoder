@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using NegativeEncoder.Desktop.Models;
 using NegativeEncoder.Desktop.ToolLibrary;
 
@@ -49,20 +50,46 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
         }
         try
         {
+            var colorProbe = builder.SourceColorProbe(task);
+            var length = new VideoLength(null, null);
             VtSourceColor? color = null;
-            if (builder.SourceColorProbe(task) is { } ffprobe)
+            var ffprobe = colorProbe ?? library.FindFfprobe(required: false);
+            if (ffprobe is not null)
             {
-                task.Status = Loc.Text("EncodingRunner.ProbingColor");
-                color = await VtSourceColor.ProbeAsync(ffprobe, task.InputPath, Report, token);
+                task.Status = Loc.Text("EncodingRunner.ProbingVideo");
+                (length, color) = await VideoLength.ProbeAsync(ffprobe, task.InputPath, colorProbe is not null, Report, token);
             }
             var plan = builder.Build(task, work, color);
             if (plan.ScriptPath is not null) await File.WriteAllTextAsync(plan.ScriptPath, plan.Script, token);
-            foreach (var step in plan.Steps)
+            var taskClock = Stopwatch.StartNew();
+            long? encodedVideoFrames = null;
+            for (var index = 0; index < plan.Steps.Count; index++)
             {
+                var step = plan.Steps[index];
                 token.ThrowIfCancellationRequested();
                 task.Status = Loc.Format("EncodingRunner.RunningStep", step.Name);
                 Report($"\n[{step.Name}]\n{step.Producer?.Preview}\n{step.Command.Preview}\n");
-                await RunStepAsync(step, Report, token);
+                var vs = step.Producer is not null && plan.ScriptPath is not null;
+                var stepLength = vs ? new VideoLength(null, null) : length;
+                if (step.IntermediateVideo is { } video)
+                {
+                    stepLength = new(encodedVideoFrames, null);
+                    if (encodedVideoFrames is null && ffprobe is not null)
+                        stepLength = (await VideoLength.ProbeAsync(ffprobe, video, false, Report, token)).Length;
+                }
+                if (step.Command.Arguments.Contains("-vn")) stepLength = stepLength with { Frames = null, EstimatedFrames = false };
+                void Update(EncodingProgress sample)
+                {
+                    var progress = sample.ForTask(index, plan.Steps.Count, taskClock.Elapsed);
+                    // Audio and mux stages advance the task, but the video is already encoded.
+                    task.Progress = encodedVideoFrames is { } encoded
+                        ? progress with { Frames = encoded, TotalFrames = encoded, EstimatedTotal = false }
+                        : progress;
+                }
+                Update(new(TotalFrames: stepLength.Frames, EstimatedTotal: stepLength.EstimatedFrames));
+                var tracker = new StepProgress(stepLength, Update);
+                await RunStepAsync(step, Report, token, tracker, vs);
+                if (index == 0) encodedVideoFrames = tracker.CompletedFrames;
             }
             token.ThrowIfCancellationRequested();
             if (!File.Exists(plan.StagedOutput) || new FileInfo(plan.StagedOutput).Length == 0)
@@ -82,20 +109,32 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
         Directory.Delete(work, true);
     }
 
-    public static async Task RunStepAsync(EncodingStep step, Action<string> report, CancellationToken token)
+    public static async Task RunStepAsync(EncodingStep step, Action<string> report, CancellationToken token,
+        StepProgress? progress = null, bool vsProducer = false)
     {
         using var consumer = CreateProcess(step.Command, step.Producer is not null);
         using var producer = step.Producer is null ? null : CreateProcess(step.Producer, false);
         using var stop = CancellationTokenSource.CreateLinkedTokenSource(token);
         consumer.Start();
         using var consumerCancellation = stop.Token.Register(() => Kill(consumer));
-        void Report(string text)
+        var progressLock = new object();
+        async Task Read(StreamReader reader, Action<string>? onLine = null)
         {
-            try { report(text); }
-            catch { stop.Cancel(); throw; } // A diagnostic IO failure must not leave writers blocked.
+            try
+            {
+                await Pump(reader, report, onLine is null ? null : line =>
+                {
+                    lock (progressLock)
+                    {
+                        if (!stop.IsCancellationRequested) onLine(line);
+                    }
+                });
+            }
+            catch { stop.Cancel(); throw; } // A diagnostic or protocol failure must unblock the whole pipe.
         }
-        Task readOutput = Pump(consumer.StandardOutput, Report);
-        Task readError = Pump(consumer.StandardError, Report);
+        var vt = step.Command.Arguments.Contains("--json-status");
+        Task readOutput = Read(consumer.StandardOutput, !vt && progress is not null ? progress.ReadText : null);
+        Task readError = Read(consumer.StandardError, progress is null ? null : vt ? progress.ReadVt : progress.ReadText);
         Task? producerError = null;
         Task? transfer = null;
         CancellationTokenRegistration producerCancellation = default;
@@ -105,7 +144,7 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
             {
                 producer.Start();
                 producerCancellation = stop.Token.Register(() => Kill(producer));
-                producerError = Pump(producer.StandardError, Report);
+                producerError = Read(producer.StandardError, vsProducer && progress is not null ? progress.ReadVs : null);
                 transfer = Transfer();
             }
             async Task Transfer()
@@ -133,6 +172,7 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
                 throw new InvalidOperationException(producer is null
                     ? Loc.Format("EncodingRunner.EncoderExitCode", step.Name, consumer.ExitCode)
                     : Loc.Format("EncodingRunner.PipelineExitCodes", step.Name, consumer.ExitCode, producer.ExitCode), transferFailure);
+            if (vt && progress is { VtCompleted: false }) throw new InvalidDataException(Loc.Text("EncodingRunner.MissingCompleted"));
             if (transferFailure is not null) throw new IOException(Loc.Text("EncodingRunner.PipeTransferFailed"), transferFailure);
         }
         finally
@@ -164,10 +204,25 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
         catch (InvalidOperationException) when (process.HasExited) { } // Normal exit raced cancellation.
     }
 
-    private static async Task Pump(StreamReader reader, Action<string> report)
+    private static async Task Pump(StreamReader reader, Action<string> report, Action<string>? onLine)
     {
         var buffer = new char[4096];
+        var line = new StringBuilder();
         int count;
-        while ((count = await reader.ReadAsync(buffer)) > 0) report(new string(buffer, 0, count));
+        while ((count = await reader.ReadAsync(buffer)) > 0)
+        {
+            report(new string(buffer, 0, count));
+            if (onLine is null) continue;
+            for (var i = 0; i < count; i++)
+            {
+                if (buffer[i] is not ('\r' or '\n')) line.Append(buffer[i]);
+                else if (line.Length > 0)
+                {
+                    onLine(line.ToString());
+                    line.Clear();
+                }
+            }
+        }
+        if (line.Length > 0) onLine!(line.ToString());
     }
 }

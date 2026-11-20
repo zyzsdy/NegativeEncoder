@@ -122,7 +122,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
         ActivatePreset();
         Files.CollectionChanged += (_, _) => { Raise(nameof(FilesEmpty)); Raise(nameof(FileCount)); };
-        Tasks.CollectionChanged += (_, _) => { Raise(nameof(TasksEmpty)); Raise(nameof(TaskCount)); };
+        Tasks.CollectionChanged += (_, _) => { Raise(nameof(TasksEmpty)); Raise(nameof(TaskCount)); RefreshQueueProgress(); };
     }
 
     private static SavedPreset NewBaseline(Preset preset) => new(Guid.NewGuid(), preset.Snapshot());
@@ -348,6 +348,36 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     private IEncodingRunner? _encodingRunner;
     private TaskCompletionSource? _queueChanged;
+    private int _completedThisRun;
+    public TaskDraft? CurrentTask => Tasks.FirstOrDefault(t => t.Started && !t.Finished);
+    public bool HasRunningTasks => CurrentTask is not null;
+    private static string RunningStatus(TaskDraft task) => Loc.Format("MainWindow.RunningTask", task.Name, task.OperationLabel);
+    public double GlobalProgress
+    {
+        get
+        {
+            var unfinished = Tasks.Where(t => !t.Finished).ToArray();
+            var count = _completedThisRun + unfinished.Length;
+            return count == 0 ? 0 : (_completedThisRun * 100.0 + unfinished.Sum(t => t.ProgressValue)) / count;
+        }
+    }
+    public bool GlobalIndeterminate => HasRunningTasks && Tasks.Where(t => t.Started && !t.Finished).All(t => t.IsProgressIndeterminate) && _completedThisRun == 0;
+
+    private void RefreshQueueProgress()
+    {
+        Raise(nameof(CurrentTask));
+        Raise(nameof(HasRunningTasks));
+        Raise(nameof(GlobalProgress));
+        Raise(nameof(GlobalIndeterminate));
+    }
+
+    private void TaskProgressChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(TaskDraft.Progress)) return;
+        Raise(nameof(GlobalProgress));
+        Raise(nameof(GlobalIndeterminate));
+    }
+
     private bool _pausedAfterFailure;
     private int _maxConcurrentEncodings = AppSettings.DefaultConcurrency;
     public int MaxConcurrentEncodings
@@ -373,6 +403,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             _queueChanged.TrySetResult();
             return;
         }
+        _completedThisRun = 0;
         var active = new List<Task>();
         try
         {
@@ -395,11 +426,15 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private async Task RunTaskAsync(IEncodingRunner runner, TaskDraft task, CancellationToken token)
     {
         task.Started = true;
+        task.PropertyChanged += TaskProgressChanged;
+        RefreshQueueProgress();
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, task.Cancellation.Token);
         try
         {
-            Status = Loc.Format("MainWindow.RunningTask", task.Name, task.OperationLabel);
+            Status = RunningStatus(CurrentTask!);
             await runner.RunAsync(task, cancellation.Token);
+            task.Progress = task.Progress with { Percent = 100, Remaining = TimeSpan.Zero };
+            _completedThisRun++;
             task.Status = Loc.Text("MainWindow.Completed");
             if (!_pausedAfterFailure) Status = Loc.Format("MainWindow.CompletedTask", task.Name);
         }
@@ -415,13 +450,19 @@ public sealed partial class MainWindowViewModel : ObservableObject
             task.Status = cancellation.IsCancellationRequested ? Loc.Text("MainWindow.Cancelled") : Loc.Text("MainWindow.Failed");
             Status = Loc.Format("MainWindow.TaskError", task.Status, task.Name, ex.Message);
         }
-        finally { task.Finished = true; }
+        finally
+        {
+            task.PropertyChanged -= TaskProgressChanged;
+            task.Finished = true;
+            if (!_pausedAfterFailure && CurrentTask is { } current) Status = RunningStatus(current);
+            RefreshQueueProgress();
+        }
     }
 
     public void CancelTask(TaskDraft task)
     {
         if (task.Finished) return;
-        if (!task.Started) { task.Finished = true; task.Status = Loc.Text("MainWindow.Cancelled"); }
+        if (!task.Started) { task.Finished = true; task.Status = Loc.Text("MainWindow.Cancelled"); RefreshQueueProgress(); }
         else task.Status = Loc.Text("MainWindow.Cancelling");
         // Cancel can synchronously finish the runner and publish its final status.
         task.Cancellation.Cancel();

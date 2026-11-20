@@ -32,6 +32,11 @@
   <Style Selector="ComboBox"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="MinHeight" Value="32" /></Style>
   <Style Selector="TextBox"><Setter Property="MinHeight" Value="32" /></Style>
   <Style Selector="TextBox.code"><Setter Property="FontFamily" Value="{StaticResource CodeFont}" /></Style>
+  <Style Selector="ProgressBar.encoding">
+    <Setter Property="Height" Value="5" />
+    <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+    <Setter Property="Background" Value="{StaticResource LineBrush}" />
+  </Style>
   <Style Selector="ListBox"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /></Style>
   <Style Selector="ListBoxItem"><Setter Property="Padding" Value="8" /><Setter Property="HorizontalContentAlignment" Value="Stretch" /></Style>
   <Style Selector="TabItem"><Setter Property="Padding" Value="12,8" /><Setter Property="FontSize" Value="14" /></Style>

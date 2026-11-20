@@ -1,5 +1,4 @@
 using System.Text.Json;
-using NegativeEncoder.Desktop.ToolLibrary;
 
 namespace NegativeEncoder.Desktop.EncodingTasks;
 
@@ -13,17 +12,6 @@ public sealed record VtSourceColor(string Matrix, string Transfer, string Primar
         $":in_chroma_loc={ChromaLocation}:out_chroma_loc={ChromaLocation}";
 
     public string VtChromaLocation => ChromaLocation == "topleft" ? "top-left" : ChromaLocation;
-
-    public static async Task<VtSourceColor> ProbeAsync(string ffprobe, string input, Action<string> log, CancellationToken token)
-    {
-        var args = new[] { "-v", "error", "-select_streams", "v:0", "-show_entries",
-            "stream=color_space,color_transfer,color_primaries,color_range,chroma_location", "-of", "json", "-i", input };
-        log(new EncoderCommand(ffprobe, args).Preview + "\n");
-        var result = await new ProcessRunner().RunAsync(ffprobe, args, token);
-        result.EnsureSuccess(Loc.Text("VtSourceColor.Probe"));
-        log(result.Output + "\n");
-        return FromProbe(result.Output, log);
-    }
 
     public static VtSourceColor FromProbe(string json, Action<string> log)
     {

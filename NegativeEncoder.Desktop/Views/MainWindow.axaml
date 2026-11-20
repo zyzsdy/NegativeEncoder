@@ -113,6 +113,8 @@
                   <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
                   <TextBlock Text="{Binding OperationLabel}" />
                   <TextBlock Text="{Binding Status}" Classes="muted" FontSize="11" />
+                  <ProgressBar Classes="encoding" Value="{Binding ProgressValue}" IsIndeterminate="{Binding IsProgressIndeterminate}"
+                               AutomationProperties.Name="{Binding Name}" ToolTip.Tip="{Binding ProgressSummary}" />
                 </StackPanel>
               </DataTemplate></ListBox.ItemTemplate>
             </ListBox>
@@ -126,9 +128,16 @@
     </Grid>
     <Border Grid.Row="2" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Padding="16,9">
       <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Text="{Binding Status}" Name="StatusText" TextWrapping="NoWrap" MaxLines="1" TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="{Binding Status}" AutomationProperties.Name="{Binding Status}" AutomationProperties.LiveSetting="Polite" />
-        <TextBlock Grid.Column="1" Text="{Binding Platform}" Classes="muted" Margin="16,0,0,0" TextWrapping="NoWrap" MaxLines="1" />
+        <Grid ColumnDefinitions="*,Auto" HorizontalAlignment="Left">
+          <TextBlock Text="{Binding Status}" Name="StatusText" TextWrapping="NoWrap" MaxLines="1" TextTrimming="CharacterEllipsis"
+                     ToolTip.Tip="{Binding Status}" AutomationProperties.Name="{Binding Status}" AutomationProperties.LiveSetting="Polite" />
+          <TextBlock Grid.Column="1" Text="{Binding CurrentTask.ProgressSummary}" IsVisible="{Binding HasRunningTasks}"
+                     Name="ProgressSummary" ToolTip.Tip="{Binding CurrentTask.Name}" Margin="12,0,0,0" TextWrapping="NoWrap" />
+        </Grid>
+        <TextBlock Grid.Column="1" Text="{Binding Platform}" IsVisible="{Binding !HasRunningTasks}" Classes="muted" Margin="16,0,0,0" TextWrapping="NoWrap" MaxLines="1" />
+        <ProgressBar Grid.Column="1" Classes="encoding" Name="QueueProgress" Width="150" Margin="16,0,0,0" VerticalAlignment="Center"
+                     IsVisible="{Binding HasRunningTasks}" IsIndeterminate="{Binding GlobalIndeterminate}" Value="{Binding GlobalProgress}"
+                     AutomationProperties.Name="{loc:Tr MainWindow.QueueProgress}" ToolTip.Tip="{loc:Tr MainWindow.QueueProgress}" />
       </Grid>
     </Border>
   </Grid>

@@ -7,7 +7,7 @@ public sealed record EncoderCommand(string Executable, IReadOnlyList<string> Arg
 {
     public string Preview => string.Join(" ", new[] { Executable }.Concat(Arguments).Select(a => System.Text.Json.JsonSerializer.Serialize(a)));
 }
-public sealed record EncodingStep(string Name, EncoderCommand Command, EncoderCommand? Producer = null);
+public sealed record EncodingStep(string Name, EncoderCommand Command, EncoderCommand? Producer = null, string? IntermediateVideo = null);
 public sealed record EncodingPlan(string WorkDirectory, string StagedOutput, List<EncodingStep> Steps, string? ScriptPath = null, string? Script = null);
 
 public sealed class EncodingPlanBuilder(ToolLibraryService library)
@@ -28,8 +28,14 @@ public sealed class EncodingPlanBuilder(ToolLibraryService library)
         var output = Path.Combine(work, "output" + Path.GetExtension(task.OutputPath));
         var steps = new List<EncodingStep>();
         var plan = new EncodingPlan(work, output, steps);
-        EncoderCommand Command(string id, IEnumerable<string> args, IDictionary<string, string>? environment = null) =>
-            new(library.FindExecutable(ToolDefinition.All.Single(t => t.Id == id)) ?? throw new FileNotFoundException(Loc.Format("EncodingPlan.MissingTool", id)), args.ToArray(), environment);
+        EncoderCommand Command(string id, IEnumerable<string> args, IDictionary<string, string>? environment = null)
+        {
+            var executable = library.FindExecutable(ToolDefinition.All.Single(t => t.Id == id))
+                ?? throw new FileNotFoundException(Loc.Format("EncodingPlan.MissingTool", id));
+            var arguments = args.ToList();
+            if (id == "vtenc" && !arguments.Contains("--json-status")) arguments.Add("--json-status");
+            return new(executable, arguments, environment);
+        }
         EncoderCommand Ffmpeg(IEnumerable<string> args) => Command("ffmpeg", new[] { "-hide_banner", "-nostdin", "-n" }.Concat(args));
         void Audio(string destination)
         {
@@ -48,7 +54,7 @@ public sealed class EncodingPlanBuilder(ToolLibraryService library)
             var args = new List<string> { "-i", video, "-i", audio, "-map", "0:v:0", "-map", "1:a", "-c", "copy" };
             if (format == OutputFormat.MP4) args.AddRange(["-movflags", "+faststart"]);
             args.AddRange(["-f", Format(format), output]);
-            steps.Add(new(Loc.Text("Operation.Mux"), Ffmpeg(args)));
+            steps.Add(new(Loc.Text("Operation.Mux"), Ffmpeg(args), IntermediateVideo: video == task.InputPath ? null : video));
         }
         if (task.Operation == TaskOperation.Audio) { Audio(output); return plan; }
         if (task.Operation == TaskOperation.ExtractAudio)
@@ -107,7 +113,7 @@ public sealed class EncodingPlanBuilder(ToolLibraryService library)
             var runtime = library.ActiveRuntime() ?? throw new InvalidOperationException(Loc.Text("EncodingPlan.MissingRuntime"));
             var scriptPath = Path.Combine(work, "input.vpy");
             plan = plan with { ScriptPath = scriptPath, Script = task.Script };
-            producer = Command("vapoursynth", ["-c", "y4m", scriptPath, "-"], library.RuntimeEnvironment(runtime));
+            producer = Command("vapoursynth", ["--progress", "-c", "y4m", scriptPath, "-"], library.RuntimeEnvironment(runtime));
         }
         else if (pipe)
         {

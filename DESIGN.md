@@ -81,6 +81,11 @@ startup success reports only the default encoder, not the detected adapter list.
 Keep copy focused on controls, validation and operation results; omit
 preview disclaimers, tutorial empty states and repeated implementation notes.
 Unavailable operations stay disabled. Queue entries show waiting, running step, cancelled, failed or completed states; details provide selectable live diagnostics.
+Each queue entry has a Fluent progress bar. During execution the footer shows the first
+running job’s percentage, frame count and ETA on the left and the current queue run’s
+progress on the right. Keep the metrics visible when a long filename is truncated.
+An em dash marks unknown measurements and ≈ marks a frame total estimated from duration
+and average frame rate.
 
 The desktop app icon preserves the original pink fish and yellow-green markings,
 flattened onto a warm off-white macOS tile. Assets/app-icon.png is the 1024px source;

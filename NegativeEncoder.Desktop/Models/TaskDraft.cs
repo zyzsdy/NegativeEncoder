@@ -1,4 +1,5 @@
 using NegativeEncoder.Desktop.ViewModels;
+using NegativeEncoder.Desktop.EncodingTasks;
 
 namespace NegativeEncoder.Desktop.Models;
 
@@ -27,8 +28,34 @@ public sealed class TaskDraft(TaskOperation operation, string inputPath, string 
     public string Log => _log;
     private string _logPath = "";
     public string LogPath { get => _logPath; set { if (Set(ref _logPath, value)) Raise(nameof(Details)); } }
-    public bool Started { get; set; }
-    public bool Finished { get; set; }
+    private EncodingProgress _progress = new();
+    public EncodingProgress Progress
+    {
+        get => _progress;
+        set
+        {
+            if (!Set(ref _progress, value)) return;
+            Raise(nameof(ProgressValue));
+            Raise(nameof(IsProgressIndeterminate));
+            Raise(nameof(ProgressSummary));
+        }
+    }
+    public double ProgressValue => Progress.Percent ?? 0;
+    public bool IsProgressIndeterminate => Started && !Finished && Progress.Percent is null;
+    public string ProgressSummary
+    {
+        get
+        {
+            var percent = Progress.Percent is { } p ? Loc.Format("TaskDraft.Percent", p) : "—";
+            var remaining = Progress.Remaining is { } eta ? $"{(long)eta.TotalHours:D2}:{eta.Minutes:D2}:{eta.Seconds:D2}" : "—";
+            var total = (Progress.EstimatedTotal ? "≈" : "") + (Progress.TotalFrames?.ToString() ?? "—");
+            return Loc.Format("TaskDraft.ProgressSummary", percent, Progress.Frames?.ToString() ?? "—", total, remaining);
+        }
+    }
+    private bool _started;
+    public bool Started { get => _started; set { if (Set(ref _started, value)) Raise(nameof(IsProgressIndeterminate)); } }
+    private bool _finished;
+    public bool Finished { get => _finished; set { if (Set(ref _finished, value)) Raise(nameof(IsProgressIndeterminate)); } }
     public CancellationTokenSource Cancellation { get; } = new();
     public void AppendLog(string text)
     {

@@ -36,17 +36,25 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
         return matches.SingleOrDefault();
     }
 
-    public string FindFfprobe()
+    public string FindFfprobe() => FindFfprobe(required: true)!;
+
+    public string? FindFfprobe(bool required)
     {
         var name = Host.Os == "win" ? "ffprobe.exe" : "ffprobe";
         var root = Paths.Root;
         if (LibraryPaths.ReadManifest(root).Tools.TryGetValue("ffmpeg", out var installed))
             return FindSingle(LibraryPaths.Within(root, installed.Directory), name);
 
-        var ffmpeg = FindExecutable(ToolDefinition.All.Single(tool => tool.Id == "ffmpeg"))
-            ?? throw new FileNotFoundException(Loc.Text("ToolLibraryService.ColorProbeDependency"));
+        var ffmpeg = FindExecutable(ToolDefinition.All.Single(tool => tool.Id == "ffmpeg"));
+        if (ffmpeg is null)
+        {
+            if (required) throw new FileNotFoundException(Loc.Text("ToolLibraryService.ColorProbeDependency"));
+            return null;
+        }
         var probe = Path.Combine(Path.GetDirectoryName(ffmpeg)!, name);
-        return File.Exists(probe) ? probe : throw new FileNotFoundException(Loc.Text("ToolLibraryService.MissingFfprobe"), probe);
+        if (File.Exists(probe)) return probe;
+        if (required) throw new FileNotFoundException(Loc.Text("ToolLibraryService.MissingFfprobe"), probe);
+        return null;
     }
 
     public async Task<ToolProbe?> ProbeAsync(ToolDefinition tool, CancellationToken token)

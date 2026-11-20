@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
@@ -362,6 +363,126 @@ public sealed class EncodingTests
         await queue.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal("已取消", model.Tasks[5].Status);
         Assert.Equal("已完成", model.Tasks[6].Status);
+    }
+
+    [Fact]
+    public void TextProgressPrefersReportedPercentAndFallsBackToEncodedFrames()
+    {
+        var updates = new List<EncodingProgress>();
+        var tracker = new StepProgress(new(200, 10, true), updates.Add);
+        tracker.ReadText("[12.5%] 20/100 frames: 24.0 fps, remain 1:02:03, GPU 98%");
+        Assert.Equal(new EncodingProgress(12.5, 20, 100, new TimeSpan(1, 2, 3)), Assert.Single(updates));
+        tracker.ReadText("35 frames: 28 fps, GPU 92%");
+        Assert.Equal(35, updates[^1].Percent);
+        tracker.ReadText("frame=   40 fps=30 time=00:00:02.00");
+        Assert.Equal(40, updates[^1].Frames);
+        Assert.Equal(40, updates[^1].Percent);
+        tracker.ReadText("progress: 45.6%");
+        Assert.Equal(45.6, updates[^1].Percent);
+        tracker.ReadText("GPU 90%");
+        Assert.Equal(4, updates.Count);
+    }
+
+    [Fact]
+    public async Task PipelineReadsCarriageReturnUpdatesOnlyFromTheEncoder()
+    {
+        var consumer = OperatingSystem.IsWindows()
+            ? new EncoderCommand("powershell.exe", ["-NoProfile", "-Command",
+                "[Console]::In.ReadToEnd() | Out-Null; [Console]::Error.Write('[17.'); Start-Sleep -Milliseconds 50; [Console]::Error.WriteLine(\"3%] 5/100 frames`rframe=23`r\")"])
+            : new EncoderCommand("/bin/sh", ["-c", "cat >/dev/null; printf '[17.' >&2; sleep 0.05; printf '3%%] 5/100 frames\\rframe=23\\r' >&2"]);
+        var producer = OperatingSystem.IsWindows()
+            ? new EncoderCommand("powershell.exe", ["-NoProfile", "-Command", "[Console]::Error.WriteLine('frame=98')"])
+            : new EncoderCommand("/bin/sh", ["-c", "echo frame=98 >&2"]);
+        var updates = new List<EncodingProgress>();
+        await EncodingRunner.RunStepAsync(new("pipe", consumer, producer), _ => { }, CancellationToken.None,
+            new StepProgress(new(null, null), updates.Add));
+        Assert.Collection(updates, first => Assert.Equal(17.3, first.Percent), second => Assert.Equal(23, second.Percent));
+    }
+
+    [Fact]
+    public void VtPipeUsesScriptLengthAndRestartsOnNewAttempts()
+    {
+        var updates = new List<EncodingProgress>();
+        var tracker = new StepProgress(new(null, null), updates.Add);
+        tracker.ReadVt("""{"schema_version":1,"event":"diagnostic","message":"[99%]"}""");
+        Assert.Empty(updates);
+        tracker.ReadVt("""{"schema_version":1,"event":"progress","frames":15,"percent":null,"eta_seconds":null}""");
+        Assert.Null(updates[^1].Percent);
+        tracker.ReadVs("Frame: 48/60 (75.00 fps)");
+        Assert.Equal(15, updates[^1].Frames);
+        Assert.Equal(25, updates[^1].Percent);
+        tracker.ReadVt("""{"schema_version":1,"event":"attempt","attempt":2}""");
+        Assert.Null(updates[^1].Frames);
+        tracker.ReadVt("""{"schema_version":1,"event":"progress","frames":1,"percent":2.1,"eta_seconds":10}""");
+        Assert.Equal(new EncodingProgress(2.1, 1, 60, TimeSpan.FromSeconds(10)), updates[^1]);
+        Assert.False(tracker.VtCompleted);
+        tracker.ReadVt("""{"schema_version":1,"event":"completed","frames":60,"percent":null,"eta_seconds":null,"output_complete":true}""");
+        Assert.True(tracker.VtCompleted);
+        Assert.Equal(60, tracker.CompletedFrames);
+        Assert.Throws<InvalidDataException>(() => tracker.ReadVt("""{"schema_version":2,"event":"progress"}"""));
+    }
+
+    [Theory]
+    [InlineData("""{"streams":[{"nb_frames":"240","avg_frame_rate":"30/1","duration":"10"}]}""", 240L, false)]
+    [InlineData("""{"streams":[{"tags":{"NUMBER_OF_FRAMES":"240"}}]}""", 240L, false)]
+    [InlineData("""{"streams":[{"avg_frame_rate":"24000/1001"}],"format":{"duration":"10"}}""", 240L, true)]
+    [InlineData("""{"streams":[{"avg_frame_rate":"0/0"}]}""", null, false)]
+    public void VideoFrameTotalsDistinguishCountsFromEstimates(string json, long? frames, bool estimated)
+    {
+        var length = VideoLength.FromProbe(json);
+        Assert.Equal(frames, length.Frames);
+        Assert.Equal(estimated, length.EstimatedFrames);
+    }
+
+    [AvaloniaFact]
+    public async Task QueueProgressTracksCurrentRunAndShowsMetricsAtMinimumWidth()
+    {
+        var window = new MainWindow(false) { Width = 1000 };
+        window.Show();
+        try
+        {
+            var model = window.Model;
+            model.MaxConcurrentEncodings = 2;
+            var runner = new ControlledRunner();
+            model.ConfigureEncoding(runner);
+            model.ProcessAll = true;
+            model.AddFiles(["/video/" + new string('a', 160) + ".mp4", "/video/b.mp4", "/video/c.mp4"]);
+            Assert.True(model.AddTask(TaskOperation.Video));
+            var queue = model.RunQueueAsync();
+            var bar = window.FindControl<ProgressBar>("QueueProgress")!;
+            var summary = window.FindControl<TextBlock>("ProgressSummary")!;
+            model.Tasks[0].Progress = new(30, 3, 10, TimeSpan.FromSeconds(7));
+            model.Tasks[1].Progress = new(60, 60, 100);
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            Assert.True(bar.IsVisible);
+            Assert.Equal(30, bar.Value);
+            Assert.Equal("30.0% · 3/10 帧 · 预计剩余 00:00:07", summary.Text);
+            Assert.True(summary.Bounds.Width + summary.Margin.Left >= summary.DesiredSize.Width);
+            var metricsStart = summary.TranslatePoint(default, window)!.Value.X;
+            var barStart = bar.TranslatePoint(default, window)!.Value.X;
+            Assert.InRange(metricsStart + summary.Bounds.Width, 0, barStart);
+            Assert.Equal(new double[] { 30, 60, 0 }, window.FindControl<ListBox>("TaskList")!
+                .GetVisualDescendants().OfType<ProgressBar>().Select(b => b.Value));
+            runner.Calls[model.Tasks[0]].SetResult();
+            await runner.WaitForStartAsync(model.Tasks[2]);
+            Assert.Same(model.Tasks[1], model.CurrentTask);
+            Assert.Equal(160.0 / 3, model.GlobalProgress);
+            model.CancelTask(model.Tasks[1]);
+            runner.Calls[model.Tasks[2]].SetResult();
+            await queue;
+            Assert.Equal(60, model.Tasks[1].ProgressValue);
+            Assert.False(bar.IsVisible);
+            var fresh = new TaskDraft(TaskOperation.Video, "/d.mp4", "/out.mp4", model.CurrentPreset.Copy(), "", "", "");
+            model.Tasks.Add(fresh);
+            queue = model.RunQueueAsync();
+            Assert.True(bar.IsIndeterminate);
+            fresh.Progress = new(20);
+            Assert.Equal(20, bar.Value);
+            runner.Calls[fresh].SetResult();
+            await queue;
+        }
+        finally { window.Close(); }
     }
 
     private sealed class ControlledRunner : IEncodingRunner
