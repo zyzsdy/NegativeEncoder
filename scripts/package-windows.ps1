@@ -33,6 +33,7 @@ try {
     try {
         $publish = Join-Path $stage.FullName 'publish'
         & dotnet publish $project -c Release -r win-x64 --self-contained true -o $publish `
+            -p:Product=NegativeEncoder -p:AssemblyTitle=NegativeEncoder `
             -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none
         if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed ($LASTEXITCODE)." }
         $files = @(Get-ChildItem -LiteralPath $publish -Force)

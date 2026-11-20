@@ -5,7 +5,8 @@
 当前版本使用 **.NET 10 + Avalonia UI** 的 `NegativeEncoder.Desktop`，支持
 Windows / macOS / Linux，已接入工具库管理与主要编码任务执行。
 
-Windows x64 的 NSIS 安装包按当前用户安装，内含 .NET 运行时。
+Windows x64 的 NSIS 安装包内含 .NET 运行时。首次安装默认为 `%LOCALAPPDATA%\NegativeEncoder`。
+从 5.x 升级时沿用原目录和卸载项；升级所有用户的安装（如旧版默认的 Program Files 目录）需要管理员权限。
 首次使用时，从“帮助 → 工具库管理”下载所需的编码工具。升级或卸载桌面应用都会保留已下载的工具库。
 
 ```sh
