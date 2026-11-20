@@ -14,6 +14,10 @@ public sealed class AppSettings
     public string Language => _preferences.Language;
     public int MaxConcurrentEncodings => _preferences.MaxConcurrentEncodings;
 
+    public string? WindowsShell => _preferences.WindowsShell;
+    public string EffectiveWindowsShell(bool pwshAvailable) => WindowsShell is null or "pwsh"
+        ? (pwshAvailable ? "pwsh" : "cmd") : WindowsShell;
+
     public AppSettings(string? file = null)
     {
         _file = file ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NegativeEncoder", "network.json");
@@ -21,15 +25,18 @@ public sealed class AppSettings
         if (File.Exists(_file))
         {
             var saved = LibraryJson.Read<Preferences>(_file);
-            _preferences = Validate(saved.Language, saved.MaxConcurrentEncodings, saved.ProxyAddress);
+            _preferences = Validate(saved.Language, saved.MaxConcurrentEncodings, saved.ProxyAddress, saved.WindowsShell);
         }
     }
 
     public void ApplyProxy(string address) => Save(Language, MaxConcurrentEncodings, address);
 
-    public void Save(string language, int maxConcurrentEncodings, string address)
+    public void Save(string language, int maxConcurrentEncodings, string address) =>
+        Save(language, maxConcurrentEncodings, address, WindowsShell);
+
+    public void Save(string language, int maxConcurrentEncodings, string address, string? windowsShell)
     {
-        var preferences = Validate(language, maxConcurrentEncodings, address);
+        var preferences = Validate(language, maxConcurrentEncodings, address, windowsShell);
         LibraryJson.WriteAtomic(_file, preferences);
         _preferences = preferences;
     }
@@ -37,12 +44,14 @@ public sealed class AppSettings
     public void ApplyUiCulture() => CultureInfo.DefaultThreadCurrentUICulture =
         Language == "system" ? null : CultureInfo.GetCultureInfo(Language);
 
-    private static Preferences Validate(string language, int maxConcurrentEncodings, string? address)
+    private static Preferences Validate(string language, int maxConcurrentEncodings, string? address, string? windowsShell)
     {
         if (language is not ("system" or "zh-CN" or "en-US" or "ja-JP"))
             throw new ArgumentException($"不支持的语言设置：{language}");
         ArgumentOutOfRangeException.ThrowIfLessThan(maxConcurrentEncodings, 1);
-        return new(NormalizeProxy(address), language, maxConcurrentEncodings);
+        if (windowsShell is not (null or "pwsh" or "cmd" or "powershell"))
+            throw new ArgumentException($"不支持的工具包 Shell：{windowsShell}");
+        return new(NormalizeProxy(address), language, maxConcurrentEncodings, windowsShell);
     }
 
     public static string NormalizeProxy(string? address)
@@ -71,5 +80,5 @@ public sealed class AppSettings
         };
     }
 
-    private sealed record Preferences(string ProxyAddress, string Language = "system", int MaxConcurrentEncodings = DefaultConcurrency);
+    private sealed record Preferences(string ProxyAddress, string Language = "system", int MaxConcurrentEncodings = DefaultConcurrency, string? WindowsShell = null);
 }

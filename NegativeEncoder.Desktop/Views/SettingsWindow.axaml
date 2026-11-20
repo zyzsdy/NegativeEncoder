@@ -16,6 +16,14 @@
             <TextBlock Text="当前版本的界面语言为简体中文。" Classes="muted"/>
             <Label Content="允许同时编码的进程数量" Target="{Binding #ConcurrencyField}" Margin="0,6,0,0"/>
             <TextBox Name="ConcurrencyField" AutomationProperties.Name="允许同时编码的进程数量"/>
+            <StackPanel Name="WindowsShellPanel" IsVisible="{OnPlatform Windows=True, Default=False}" Spacing="6" Margin="0,6,0,0">
+              <Label Content="启动工具包命令行的默认Shell" Target="{Binding #ShellField}"/>
+              <ComboBox Name="ShellField" AutomationProperties.Name="启动工具包命令行的默认Shell">
+                <ComboBoxItem Name="PwshOption" Tag="pwsh"/>
+                <ComboBoxItem Name="CmdOption" Tag="cmd"/>
+                <ComboBoxItem Content="powershell" Tag="powershell"/>
+              </ComboBox>
+            </StackPanel>
             <Label Content="代理服务器" Target="{Binding #ProxyAddressField}" Margin="0,6,0,0"/>
             <TextBox Name="ProxyAddressField" Watermark="http://127.0.0.1:7890 或 socks5://127.0.0.1:1080" AutomationProperties.Name="代理服务器"/>
             <TextBlock Text="用于检查更新和下载工具库。留空使用系统网络设置。" Classes="muted"/>

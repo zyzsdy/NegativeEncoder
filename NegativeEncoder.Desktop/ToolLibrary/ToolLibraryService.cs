@@ -16,7 +16,11 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
     public string? FindExecutable(ToolDefinition tool)
     {
         var root = Paths.Root;
-        var manifest = LibraryPaths.ReadManifest(root);
+        return FindExecutable(tool, root, LibraryPaths.ReadManifest(root));
+    }
+
+    internal string? FindExecutable(ToolDefinition tool, string root, LibraryManifest manifest)
+    {
         if (manifest.Tools.TryGetValue(tool.Id == "python" ? "vapoursynth" : tool.Id, out var installed))
         {
             var path = tool.Id == "python" ? PythonPath(LibraryPaths.Within(root, installed.Directory)) : LibraryPaths.Within(root, installed.Executable);
@@ -341,10 +345,12 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
 
     // Hold this lease from resolving a tool path until its process has exited.
     // Install/cleanup take an exclusive lease, including across application instances.
-    public FileStream AcquireUsageLease()
+    public FileStream AcquireUsageLease() => AcquireUsageLease(Paths.Root);
+
+    internal static FileStream AcquireUsageLease(string root)
     {
-        Directory.CreateDirectory(Paths.Root);
-        return new FileStream(LibraryPaths.Within(Paths.Root, ".install.lock"), FileMode.OpenOrCreate,
+        Directory.CreateDirectory(root);
+        return new FileStream(LibraryPaths.Within(root, ".install.lock"), FileMode.OpenOrCreate,
             FileAccess.ReadWrite, FileShare.ReadWrite);
     }
 

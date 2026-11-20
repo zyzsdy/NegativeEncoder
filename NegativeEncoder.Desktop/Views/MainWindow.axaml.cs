@@ -97,6 +97,13 @@ public partial class MainWindow : Window
         finally { _toolWindow = null; }
     }
 
+    private void ToolkitTerminal_Click(object? sender, RoutedEventArgs e) => ToolkitTerminal_NativeClick(sender, e);
+    private async void ToolkitTerminal_NativeClick(object? sender, EventArgs e)
+    {
+        try { await ToolkitTerminal.OpenAsync(GetToolLibrary().Service, _distributionClient.Settings); }
+        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法启动工具包命令行", ex.ToString()); }
+    }
+
     private void ApplySettings()
     {
         var settings = _distributionClient.Settings;

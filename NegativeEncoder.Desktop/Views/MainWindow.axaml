@@ -29,7 +29,7 @@
       <NativeMenuItem Header="帮助">
         <NativeMenu>
           <NativeMenuItem Header="工具库管理" Click="ToolLibrary_NativeClick" />
-          <NativeMenuItem Header="启动工具包命令行" IsEnabled="False" />
+          <NativeMenuItem Header="启动工具包命令行" Click="ToolkitTerminal_NativeClick" />
           <NativeMenuItemSeparator /><NativeMenuItem Header="关于消极压制" Click="About_NativeClick" />
         </NativeMenu>
       </NativeMenuItem>
@@ -58,7 +58,7 @@
         <MenuItem Name="CheckUpdates" Header="立即检查更新" Click="CheckUpdates_Click" />
         <MenuItem Name="NewRelease" IsVisible="False" Click="Release_Click" />
         <MenuItem Header="工具库管理" Click="ToolLibrary_Click" />
-        <MenuItem Header="启动工具包命令行" IsEnabled="False" />
+        <MenuItem Header="启动工具包命令行" Click="ToolkitTerminal_Click" />
         <Separator /><MenuItem Header="关于消极压制" Click="About_Click" />
       </MenuItem>
     </Menu>

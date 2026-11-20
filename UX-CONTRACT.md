@@ -61,7 +61,9 @@ exists in this preview. No legacy configuration is read or written.
   overflowing messages use an ellipsis with full text in the tooltip and accessible name.
   Successful hardware detection reports only the default encoder. Detection failures and
   unsupported hardware still report their existing errors or guidance.
-- Help offers a manual application update check. The toolkit command line remains unavailable.
+- Help offers a manual application update check. “启动工具包命令行” opens an external terminal with the active tool directories prepended to its PATH.
+  macOS and Linux use the account’s login shell. Windows Settings offers pwsh (default when available),
+  cmd (default when pwsh is unavailable), and powershell. The unavailable pwsh item is disabled.
   Tool-library discovery/install/update and hardware detection are implemented. Windows registry integration is intentionally absent.
 
 ## Platform and accessibility

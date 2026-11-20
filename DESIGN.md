@@ -106,7 +106,7 @@ available. Unsupported distributions explain the reason beside a disabled action
 Source paths truncate with full tooltips. Keep plugin descriptions Chinese and native
 component names unchanged. No new global shortcuts or custom animation.
 
-SettingsWindow owns language preference, queue concurrency and the shared network proxy.
+SettingsWindow owns language preference, queue concurrency, the shared network proxy and the Windows toolkit shell choice.
 File and the tool-library manager open the same settings dialog. Settings and Help share
 one update check, with the newer release linked from Help. Application copy remains Chinese.
 

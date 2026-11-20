@@ -36,6 +36,60 @@ public sealed class ToolLibraryTests : IDisposable
         Assert.Throws<InvalidDataException>(() => service.FindExecutable(ToolDefinition.All[0]));
     }
 
+    [Fact]
+    public void ToolkitPathIncludesActiveAndManualCommandsOnceAndSkipsStaleVersions()
+    {
+        var paths = Paths();
+        var host = HostPlatform.Current;
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var service = new ToolLibraryService(paths, host, client, new FakeRunner(false));
+        var tool = ToolDefinition.All.Single(t => t.Id == "ffmpeg");
+        Assert.Empty(ToolkitEnvironment.Read(service).Directories);
+        var active = Path.Combine(".managed", "ffmpeg", "active");
+        var binary = Path.Combine(active, "bin", tool.Executable(host));
+        var companion = Path.Combine(active, "helpers");
+        var manual = "user's tools & scripts";
+        var name = host.Os == "win" ? "helper.cmd" : "helper";
+        foreach (var file in new[] { binary, Path.Combine(companion, name), Path.Combine(manual, name),
+            Path.Combine(".managed", "ffmpeg", "old", name), Path.Combine(".downloads", name) })
+        {
+            var full = Path.Combine(paths.Root, file);
+            Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+            File.WriteAllText(full, "");
+            if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(full, UnixFileMode.UserRead | UnixFileMode.UserExecute);
+        }
+        LibraryJson.WriteAtomic(Path.Combine(paths.Root, "library.json"), new LibraryManifest(1, new()
+        {
+            [tool.Id] = new("1", active, binary, "test", [])
+        }));
+        var pathBefore = Environment.GetEnvironmentVariable("PATH");
+        var environment = ToolkitEnvironment.Read(service);
+        Assert.Equal(new[] { Path.GetDirectoryName(binary)!, companion, manual }
+            .Select(dir => Path.Combine(paths.Root, dir)), environment.Directories);
+        Assert.Empty(environment.Variables);
+        Assert.Equal(pathBefore, Environment.GetEnvironmentVariable("PATH"));
+        File.Delete(Path.Combine(paths.Root, binary));
+        Assert.Throws<FileNotFoundException>(() => ToolkitEnvironment.Read(service));
+    }
+
+    [Fact]
+    public void ToolkitShellDefaultsFollowAvailabilityAndExplicitChoicesPersist()
+    {
+        var file = Path.Combine(_root, "network.json");
+        File.WriteAllText(file, """{"proxyAddress":""}""");
+        var settings = new AppSettings(file);
+        Assert.Equal("pwsh", settings.EffectiveWindowsShell(true));
+        Assert.Equal("cmd", settings.EffectiveWindowsShell(false));
+        foreach (var shell in new[] { "cmd", "powershell", "pwsh" })
+        {
+            settings.Save("system", 2, "", shell);
+            settings.ApplyProxy("http://localhost:8080");
+            settings = new AppSettings(file);
+            Assert.Equal(shell, settings.EffectiveWindowsShell(true));
+            Assert.Equal(shell == "pwsh" ? "cmd" : shell, settings.EffectiveWindowsShell(false));
+        }
+    }
+
     [Theory]
     [InlineData(true, true, false, true, "已是最新版", false)]
     [InlineData(true, false, false, true, "升级", true)]
@@ -373,6 +427,15 @@ public sealed class ToolLibraryTests : IDisposable
             var language = window.FindControl<ComboBox>("LanguageField")!;
             var save = window.FindControl<Button>("SaveButton")!;
             var notice = owner.FindControl<MenuItem>("NewRelease")!;
+            var shellField = window.FindControl<ComboBox>("ShellField")!;
+            Assert.Equal(OperatingSystem.IsWindows(), shellField.IsEffectivelyVisible);
+            if (OperatingSystem.IsWindows())
+            {
+                var available = ToolkitTerminal.FindPwsh() is not null;
+                Assert.Equal(available, window.FindControl<ComboBoxItem>("PwshOption")!.IsEnabled);
+                Assert.Equal(available ? "pwsh" : "cmd", ((ComboBoxItem)shellField.SelectedItem!).Tag);
+                shellField.SelectedIndex = 2;
+            }
             Assert.Equal("http://localhost:7890", field.Text);
             Assert.Equal("3", limit.Text);
             Assert.Equal("system", ((ComboBoxItem)language.SelectedItem!).Tag);
@@ -395,6 +458,7 @@ public sealed class ToolLibraryTests : IDisposable
             var saved = new AppSettings(settingsFile);
             Assert.Equal("socks5://localhost:1080", saved.ProxyAddress);
             Assert.Equal("ja-JP", saved.Language);
+            Assert.Equal(OperatingSystem.IsWindows() ? "powershell" : null, saved.WindowsShell);
             Assert.Equal(5, saved.MaxConcurrentEncodings);
             Assert.Equal(5, owner.Model.MaxConcurrentEncodings);
 
