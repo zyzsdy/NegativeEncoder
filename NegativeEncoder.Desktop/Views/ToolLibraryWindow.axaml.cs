@@ -21,10 +21,10 @@ public partial class ToolLibraryWindow : OwnedDialog
     {
         try
         {
-            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "选择工具库保存位置", AllowMultiple = false });
+            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = Loc.Text("ToolLibraryWindow.ChoosePath"), AllowMultiple = false });
             if (folders.SingleOrDefault()?.TryGetLocalPath() is { } path) Model.LibraryPath = path;
         }
-        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法选择目录", ex.Message); }
+        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, Loc.Text("ToolLibraryWindow.ChoosePathFailed"), ex.Message); }
     }
     private async void Apply_Click(object? sender, RoutedEventArgs e) => await Model.ApplyPathAsync();
     private async void Settings_Click(object? sender, RoutedEventArgs e) =>
@@ -41,10 +41,10 @@ public partial class ToolLibraryWindow : OwnedDialog
     {
         try
         {
-            var clipboard = GetTopLevel(this)?.Clipboard ?? throw new InvalidOperationException("当前环境没有可用剪贴板。");
+            var clipboard = GetTopLevel(this)?.Clipboard ?? throw new InvalidOperationException(Loc.Text("ToolLibraryWindow.ClipboardUnavailable"));
             await clipboard.SetTextAsync(Model.Log);
         }
-        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法复制日志", ex.Message); }
+        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, Loc.Text("ToolLibraryWindow.CopyLogFailed"), ex.Message); }
     }
     private async void OpenPlugins_Click(object? sender, RoutedEventArgs e)
     {
@@ -53,6 +53,6 @@ public partial class ToolLibraryWindow : OwnedDialog
             Directory.CreateDirectory(Model.Service.UserPlugins);
             Process.Start(new ProcessStartInfo(Model.Service.UserPlugins) { UseShellExecute = true });
         }
-        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法打开目录", ex.Message); }
+        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, Loc.Text("ToolLibraryWindow.OpenDirectoryFailed"), ex.Message); }
     }
 }

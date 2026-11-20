@@ -28,16 +28,17 @@ public partial class MainWindow : Window
 
     public MainWindow(bool initializeLibrary, string? presetDirectory = null, DistributionClient? distributionClient = null)
     {
-        Model = new MainWindowViewModel(presetDirectory: presetDirectory);
         _distributionClient = distributionClient ?? new DistributionClient();
+        _distributionClient.Settings.ApplyUiCulture();
+        Model = new MainWindowViewModel(presetDirectory: presetDirectory);
         _updates = new AppUpdateViewModel(_distributionClient);
-        ApplySettings();
+        ApplyConcurrency();
         InitializeComponent();
         DataContext = Model;
         if (!OperatingSystem.IsMacOS()) NativeMenu.SetMenu(this, null);
-        _nativePresetMenu = NativeMenu.GetMenu(this)?.Items.OfType<NativeMenuItem>().Single(item => item.Header == "预设").Menu;
-        var nativeHelp = NativeMenu.GetMenu(this)?.Items.OfType<NativeMenuItem>().Single(item => item.Header == "帮助").Menu;
-        var nativeCheck = new NativeMenuItem("立即检查更新");
+        _nativePresetMenu = OperatingSystem.IsMacOS() ? (NativeMenu)Resources["NativePresetActions"]! : null;
+        var nativeHelp = OperatingSystem.IsMacOS() ? (NativeMenu)Resources["NativeHelpActions"]! : null;
+        var nativeCheck = new NativeMenuItem(Loc.Text("MainWindow.CheckUpdates"));
         var nativeRelease = new NativeMenuItem { IsVisible = false };
         nativeCheck.Click += CheckUpdates_NativeClick;
         nativeRelease.Click += Release_NativeClick;
@@ -67,7 +68,7 @@ public partial class MainWindow : Window
                 Model.ApplyVsCapabilities(await library.ProbeVsAsync(_lifetime.Token));
             }
             catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
-            catch (Exception ex) { Model.SetVsDetectionError("工具库检测失败：" + ex.Message); }
+            catch (Exception ex) { Model.SetVsDetectionError(Loc.Format("MainWindow.LibraryProbeFailed", ex.Message)); }
         };
         Closed += (_, _) => { _lifetime.Cancel(); _distributionClient.Dispose(); _lifetime.Dispose(); };
     }
@@ -93,7 +94,7 @@ public partial class MainWindow : Window
             _toolWindow = new ToolLibraryWindow(GetToolLibrary());
             await _toolWindow.ShowDialog(this);
         }
-        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法打开工具库管理", ex.ToString()); }
+        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, Loc.Text("MainWindow.OpenLibraryFailed"), ex.ToString()); }
         finally { _toolWindow = null; }
     }
 
@@ -101,15 +102,10 @@ public partial class MainWindow : Window
     private async void ToolkitTerminal_NativeClick(object? sender, EventArgs e)
     {
         try { await ToolkitTerminal.OpenAsync(GetToolLibrary().Service, _distributionClient.Settings); }
-        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法启动工具包命令行", ex.ToString()); }
+        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, Loc.Text("MainWindow.OpenTerminalFailed"), ex.ToString()); }
     }
 
-    private void ApplySettings()
-    {
-        var settings = _distributionClient.Settings;
-        settings.ApplyUiCulture();
-        Model.MaxConcurrentEncodings = settings.MaxConcurrentEncodings;
-    }
+    private void ApplyConcurrency() => Model.MaxConcurrentEncodings = _distributionClient.Settings.MaxConcurrentEncodings;
 
     private void Settings_Click(object? sender, RoutedEventArgs e) => Settings_NativeClick(sender, e);
     private async void Settings_NativeClick(object? sender, EventArgs e) => await ShowSettingsAsync(this);
@@ -120,7 +116,7 @@ public partial class MainWindow : Window
         try
         {
             _settingsWindow = new SettingsWindow(_distributionClient.Settings, _updates, _lifetime.Token);
-            _settingsWindow.Saved += ApplySettings;
+            _settingsWindow.Saved += ApplyConcurrency;
             await _settingsWindow.ShowDialog(owner);
         }
         finally { _settingsWindow = null; }
@@ -135,9 +131,9 @@ public partial class MainWindow : Window
         try
         {
             if (!await Launcher.LaunchUriAsync(release.Page))
-                throw new InvalidOperationException($"无法启动浏览器：{release.Page}");
+                throw new InvalidOperationException(Loc.Format("MainWindow.BrowserFailed", release.Page));
         }
-        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法打开版本页面", ex.Message); }
+        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, Loc.Text("MainWindow.ReleasePageFailed"), ex.Message); }
     }
 
     private void RebuildPresetMenu()
@@ -188,11 +184,11 @@ public partial class MainWindow : Window
         {
             if (target is "output" or "audio-output" or "mux-output")
             {
-                if (!StorageProvider.CanSave) { Model.Status = "当前环境不支持文件选择，请直接填写输出路径。"; return; }
+                if (!StorageProvider.CanSave) { Model.Status = Loc.Text("MainWindow.SavePickerUnavailable"); return; }
                 var current = target == "audio-output" ? Model.AudioOutput : target == "mux-output" ? Model.MuxOutput : Model.OutputPath;
                 var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
-                    Title = "选择输出位置",
+                    Title = Loc.Text("MainWindow.ChooseOutput"),
                     SuggestedFileName = string.IsNullOrWhiteSpace(current) ? (target == "audio-output" ? "audio.m4a" : "output.mp4") : Path.GetFileName(current),
                     ShowOverwritePrompt = true
                 });
@@ -203,15 +199,21 @@ public partial class MainWindow : Window
             }
             else
             {
-                if (!StorageProvider.CanOpen) { Model.Status = "当前环境不支持文件选择，请尝试拖入文件。"; return; }
+                if (!StorageProvider.CanOpen) { Model.Status = Loc.Text("MainWindow.OpenPickerUnavailable"); return; }
+                var allFiles = new FilePickerFileType(Loc.Text("MainWindow.AllFiles"))
+                {
+                    Patterns = FilePickerFileTypes.All.Patterns,
+                    AppleUniformTypeIdentifiers = FilePickerFileTypes.All.AppleUniformTypeIdentifiers,
+                    MimeTypes = FilePickerFileTypes.All.MimeTypes
+                };
                 var filters = target == "subtitle"
-                    ? new[] { new FilePickerFileType("ASS 字幕") { Patterns = ["*.ass", "*.ssa"] }, FilePickerFileTypes.All }
+                    ? new[] { new FilePickerFileType(Loc.Text("MainWindow.AssSubtitles")) { Patterns = ["*.ass", "*.ssa"] }, allFiles }
                     : target == "videos"
-                        ? new[] { new FilePickerFileType("视频") { Patterns = ["*.mp4", "*.mkv", "*.mov", "*.avi", "*.ts", "*.m2ts", "*.webm", "*.flv", "*.wmv", "*.m4v", "*.mpg", "*.mpeg"] }, FilePickerFileTypes.All }
-                        : new[] { FilePickerFileTypes.All };
+                        ? new[] { new FilePickerFileType(Loc.Text("MainWindow.VideoFilter")) { Patterns = ["*.mp4", "*.mkv", "*.mov", "*.avi", "*.ts", "*.m2ts", "*.webm", "*.flv", "*.wmv", "*.m4v", "*.mpg", "*.mpeg"] }, allFiles }
+                        : new[] { allFiles };
                 var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    Title = target == "subtitle" ? "选择字幕" : target == "mux-audio" ? "选择音频" : "导入视频",
+                    Title = target == "subtitle" ? Loc.Text("MainWindow.ChooseSubtitle") : target == "mux-audio" ? Loc.Text("MainWindow.ChooseAudio") : Loc.Text("MainWindow.ImportVideos"),
                     AllowMultiple = target == "videos",
                     FileTypeFilter = filters
                 });
@@ -224,7 +226,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Model.Status = $"无法打开文件选择器：{ex.Message}。请重试或直接填写路径。";
+            Model.Status = Loc.Format("MainWindow.PickerFailed", ex.Message);
         }
         finally { _pickerOpen = false; }
     }
@@ -254,34 +256,34 @@ public partial class MainWindow : Window
     private void SavePreset_Click(object? sender, RoutedEventArgs e) => SavePreset_NativeClick(sender, e);
     private void SavePreset_NativeClick(object? sender, EventArgs e) => Model.SavePreset();
     private void NewPreset_Click(object? sender, RoutedEventArgs e) => NewPreset_NativeClick(sender, e);
-    private async void NewPreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, "新建预设", "", name => Model.CreatePreset(name, false), () => Model.Status);
+    private async void NewPreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, Loc.Text("MainWindow.NewPreset"), "", name => Model.CreatePreset(name, false), () => Model.Status);
     private void CopyPreset_Click(object? sender, RoutedEventArgs e) => CopyPreset_NativeClick(sender, e);
-    private async void CopyPreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, "另存为预设", Model.CurrentPreset.PresetName + " 副本", name => Model.CreatePreset(name, true), () => Model.Status);
+    private async void CopyPreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, Loc.Text("MainWindow.SavePresetAs"), Loc.Format("MainWindow.CopyName", Model.CurrentPreset.PresetName), name => Model.CreatePreset(name, true), () => Model.Status);
     private void RenamePreset_Click(object? sender, RoutedEventArgs e) => RenamePreset_NativeClick(sender, e);
-    private async void RenamePreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, "重命名预设", Model.CurrentPreset.PresetName, Model.RenamePreset, () => Model.Status);
+    private async void RenamePreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, Loc.Text("MainWindow.RenamePreset"), Model.CurrentPreset.PresetName, Model.RenamePreset, () => Model.Status);
 
     private void DeletePreset_Click(object? sender, RoutedEventArgs e) => DeletePreset_NativeClick(sender, e);
     private async void DeletePreset_NativeClick(object? sender, EventArgs e)
     {
-        if (await PreviewDialog.ConfirmAsync(this, "删除预设", $"删除“{Model.CurrentPreset.PresetName}”？"))
+        if (await PreviewDialog.ConfirmAsync(this, Loc.Text("MainWindow.DeletePreset"), Loc.Format("MainWindow.ConfirmDelete", Model.CurrentPreset.PresetName)))
             Model.DeletePreset();
     }
 
     private void About_Click(object? sender, RoutedEventArgs e) => About_NativeClick(sender, e);
     private async void About_NativeClick(object? sender, EventArgs e) => await PreviewDialog.AboutAsync(this,
-        $"NegativeEncoder {AppVersion.Current}\n\nAuthor: Ted Zyzsdy\nSpecial Thanks to MeowSound Idols and other supporters.\n\nhttps://github.com/zyzsdy/NegativeEncoder\n\n本软件按照 MIT 协议授权。");
+        Loc.Format("MainWindow.AboutText", AppVersion.Current));
 
-    public async Task RunQueueAsync(string? operation = null)
+    public async Task RunQueueAsync(TaskOperation? operation = null)
     {
         try
         {
             _ = GetToolLibrary();
-            if (operation is null || Model.AddTask(operation)) await Model.RunQueueAsync(_lifetime.Token);
+            if (operation is null || Model.AddTask(operation.Value)) await Model.RunQueueAsync(_lifetime.Token);
         }
         catch (Exception ex)
         {
-            Model.Status = "无法执行任务：" + ex.Message;
-            await PreviewDialog.NoticeAsync(this, "无法执行任务", ex.ToString());
+            Model.Status = Loc.Format("MainWindow.RunTaskError", ex.Message);
+            await PreviewDialog.NoticeAsync(this, Loc.Text("MainWindow.RunTaskFailed"), ex.ToString());
         }
     }
     private async void StartQueue_Click(object? sender, RoutedEventArgs e) => await RunQueueAsync();
@@ -289,7 +291,7 @@ public partial class MainWindow : Window
     private void CancelTask_Click(object? sender, RoutedEventArgs e)
     {
         if (TaskList.SelectedItem is TaskDraft task) Model.CancelTask(task);
-        else Model.Status = "请先选择一个任务。";
+        else Model.Status = Loc.Text("MainWindow.SelectTask");
     }
 
     private async void TaskDetails_Click(object? sender, RoutedEventArgs e) => await ShowTaskAsync();
@@ -298,16 +300,16 @@ public partial class MainWindow : Window
     {
         if (TaskList.SelectedItem is TaskDraft task)
             await PreviewDialog.TaskAsync(this, task);
-        else Model.Status = "请先选择一个任务。";
+        else Model.Status = Loc.Text("MainWindow.SelectTask");
     }
 
     private void RemoveTask_Click(object? sender, RoutedEventArgs e)
     {
-        if (TaskList.SelectedItem is not TaskDraft task) { Model.Status = "请先选择一个任务。"; return; }
-        if (task.Started && !task.Finished) { Model.Status = "请先取消正在运行的任务。"; return; }
+        if (TaskList.SelectedItem is not TaskDraft task) { Model.Status = Loc.Text("MainWindow.SelectTask"); return; }
+        if (task.Started && !task.Finished) { Model.Status = Loc.Text("MainWindow.CancelTaskFirst"); return; }
         Model.Tasks.Remove(task);
         _removedTasks.Push(task);
-        Model.Status = "已移除任务；使用队列下方的“撤销移除”可恢复。";
+        Model.Status = Loc.Text("MainWindow.TaskRemoved");
         UndoTaskButton.IsVisible = true;
     }
 
@@ -315,6 +317,6 @@ public partial class MainWindow : Window
     {
         if (_removedTasks.TryPop(out var task)) { Model.Tasks.Add(task); TaskList.SelectedItem = task; }
         UndoTaskButton.IsVisible = _removedTasks.Count > 0;
-        Model.Status = "已恢复任务。";
+        Model.Status = Loc.Text("MainWindow.TaskRestored");
     }
 }

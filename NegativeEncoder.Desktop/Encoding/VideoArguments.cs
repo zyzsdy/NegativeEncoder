@@ -10,12 +10,12 @@ public static class VideoArguments
 {
     public static List<string> Build(Preset p, HostPlatform host, bool hdr, bool pipe)
     {
-        if (p.Encoder == Encoder.VTEnc && host.Os != "osx") throw new InvalidOperationException("VTEnc 只支持 macOS。");
-        if (p.Encoder != Encoder.VTEnc && host.Os == "osx") throw new InvalidOperationException("macOS 请使用 VTEnc。");
+        if (p.Encoder == Encoder.VTEnc && host.Os != "osx") throw new InvalidOperationException(Loc.Text("VideoArguments.VtMacOnly"));
+        if (p.Encoder != Encoder.VTEnc && host.Os == "osx") throw new InvalidOperationException(Loc.Text("VideoArguments.MacRequiresVt"));
         if (p.IsUseCustomParameters) return ParseCustom(p.CustomParameters);
-        if (!EncoderCapabilities.Modes(p.Encoder, host).Contains(p.EncodeMode)) throw new InvalidOperationException($"{p.Encoder} 不支持 {p.EncodeMode}。");
+        if (!EncoderCapabilities.Modes(p.Encoder, host).Contains(p.EncodeMode)) throw new InvalidOperationException(Loc.Format("VideoArguments.UnsupportedMode", p.Encoder, p.EncodeMode));
         if (p.IsUseDeInterlace && !EncoderCapabilities.Deinterlacers(p.Encoder).Contains(p.DeInterlaceMethodPreset))
-            throw new InvalidOperationException($"{p.Encoder} 不支持所选反交错方式。");
+            throw new InvalidOperationException(Loc.Format("VideoArguments.UnsupportedDeinterlacing", p.Encoder));
         var args = p.IsVtEnc ? Vt(p, hdr) : LegacyVideoArguments.Build(p, hdr, pipe, host);
         if (p.IsSetOutputRes) args.AddRange(["--output-res", $"{p.OutputResWidth}x{p.OUtputResHeight}"]);
         if (p.IsSetAvSync)
@@ -25,19 +25,19 @@ public static class VideoArguments
             {
                 var parts = p.FrameRate.Split('/');
                 if (parts.Length > 2 || parts.Any(part => !int.TryParse(part, NumberStyles.None, CultureInfo.InvariantCulture, out var n) || n <= 0))
-                    throw new InvalidOperationException($"CFR 目标帧率“{p.FrameRate}”无效。请输入正整数或正整数分数，例如 30000/1001。");
+                    throw new InvalidOperationException(Loc.Format("VideoArguments.InvalidFrameRate", p.FrameRate));
                 args.AddRange(["--fps", p.FrameRate]);
             }
         }
         if (p.IsVtEnc && p.EncodeMode == EncodeMode.CBR && (!p.IsSetAvSync || p.AVSync == AVSync.Vfr))
-            throw new InvalidOperationException("VTEnc CBR 需要启用 CFR 或 Force CFR，并填写目标帧率。");
+            throw new InvalidOperationException(Loc.Text("VideoArguments.CbrRequiresCfr"));
         return args;
     }
 
     private static List<string> Vt(Preset p, bool hdr)
     {
         if (p.Codec == Codec.AV1 || p.Codec == Codec.AVC && p.ColorDepth == ColorDepth.C10Bit)
-            throw new InvalidOperationException("VTEnc 仅支持 H.264 8-bit、HEVC 8/10-bit。");
+            throw new InvalidOperationException(Loc.Text("VideoArguments.VtFormats"));
         var args = new List<string> { "--codec", p.Codec == Codec.AVC ? "h264" : "hevc", "--output-depth", ((int)p.ColorDepth).ToString(CultureInfo.InvariantCulture) };
         var (mode, value) = p.EncodeMode switch
         {
@@ -45,16 +45,16 @@ public static class VideoArguments
             EncodeMode.Quality => ("--quality", p.VtQuality),
             EncodeMode.CBR => ("--cbr", p.CbrParam),
             EncodeMode.VBR => ("--vbr", p.VbrParam),
-            _ => throw new InvalidOperationException("不支持的 VTEnc 码率模式。")
+            _ => throw new InvalidOperationException(Loc.Text("VideoArguments.VtRateControl"))
         };
         if (p.EncodeMode == EncodeMode.Quality && (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var quality) || !double.IsFinite(quality) || quality < 0 || quality > 1))
-            throw new InvalidOperationException("VTEnc Quality 必须为 0 到 1 的数值。");
+            throw new InvalidOperationException(Loc.Text("VideoArguments.VtQuality"));
         args.AddRange([mode, value, "--preset", p.QualityPreset switch { QualityPreset.Performance => "performance", QualityPreset.Quality => "quality", _ => "default" }]);
         if (p.IsSetMaxGop) args.AddRange(["--gop-len", p.MaxGop]);
         if (p.IsSetDar) args.AddRange(["--dar", p.Dar]);
         if (p.IsSetMaxBitrate)
         {
-            if (p.EncodeMode is not (EncodeMode.ABR or EncodeMode.VBR)) throw new InvalidOperationException("VTEnc 最大码率仅适用于 ABR/VBR。");
+            if (p.EncodeMode is not (EncodeMode.ABR or EncodeMode.VBR)) throw new InvalidOperationException(Loc.Text("VideoArguments.VtMaxBitrate"));
             args.AddRange(["--max-bitrate", p.MaxBitrate]);
         }
         if (p.IsUseDeInterlace)
@@ -67,7 +67,7 @@ public static class VideoArguments
                 DeInterlaceMethodPreset.YadifTff => ["--vpp-yadif", "mode=tff"],
                 DeInterlaceMethodPreset.YadifBff => ["--vpp-yadif", "mode=bff"],
                 DeInterlaceMethodPreset.YadifBob => ["--vpp-yadif", "mode=bob"],
-                _ => throw new InvalidOperationException("不支持的 VTEnc 反交错方式。")
+                _ => throw new InvalidOperationException(Loc.Text("VideoArguments.VtDeinterlacing"))
             });
         }
         if (hdr)
@@ -105,17 +105,17 @@ public static class VideoArguments
         var started = false;
         foreach (var c in text)
         {
-            if (c == '\0') throw new ArgumentException("自定义参数不能包含 NUL。");
+            if (c == '\0') throw new ArgumentException(Loc.Text("VideoArguments.NullArgument"));
             if (quote != '\0') { if (c == quote) quote = '\0'; else word.Append(c); started = true; }
             else if (c is '\'' or '"') { quote = c; started = true; }
             else if (char.IsWhiteSpace(c)) { if (started) { args.Add(word.ToString()); word.Clear(); started = false; } }
             else { word.Append(c); started = true; }
         }
-        if (quote != '\0') throw new ArgumentException("自定义参数的引号未闭合。");
+        if (quote != '\0') throw new ArgumentException(Loc.Text("VideoArguments.UnclosedQuote"));
         if (started) args.Add(word.ToString());
-        if (args.Count == 0) throw new ArgumentException("请填写自定义参数。");
+        if (args.Count == 0) throw new ArgumentException(Loc.Text("VideoArguments.EmptyArguments"));
         if (args.Any(a => a is "-i" or "--input" or "-o" or "--output" or "-f" or "--output-format" || a.StartsWith("--output=", StringComparison.Ordinal) || a.StartsWith("--input=", StringComparison.Ordinal)))
-            throw new ArgumentException("输入、输出和封装格式由任务管理，请勿在自定义参数中重复设置。");
+            throw new ArgumentException(Loc.Text("VideoArguments.ReservedArguments"));
         return args;
     }
 }

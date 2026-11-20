@@ -8,16 +8,17 @@ public sealed class ToolRowViewModel(string id, string name, string description)
     public string Id { get; } = id;
     public string Name { get; } = name;
     public string Description { get; } = description;
-    private string _current = "检测中";
+    private string _current = Loc.Text("ToolLibrary.Detecting");
     public string Current { get => _current; set => Set(ref _current, value); }
-    private string _target = "未检查";
+    private string _target = Loc.Text("ToolLibrary.Unchecked");
     public string Target { get => _target; set => Set(ref _target, value); }
     private string _state = "";
     public string State { get => _state; set => Set(ref _state, value); }
     private string _source = "";
     public string Source { get => _source; set { if (Set(ref _source, value)) Raise(nameof(HasSource)); } }
+    public bool? Installed { get; set; }
     public bool HasSource => Source.Length > 0;
-    private string _action = "安装";
+    private string _action = Loc.Text("ToolLibrary.Install");
     public string Action { get => _action; set => Set(ref _action, value); }
     private bool _canInstall;
     public bool CanInstall { get => _canInstall; set { if (Set(ref _canInstall, value)) Raise(nameof(CanAct)); } }
@@ -49,13 +50,13 @@ public sealed class ToolLibraryViewModel : ObservableObject
         }
     }
     public bool Idle => !Busy;
-    private string _hardware = "尚未检测硬件";
+    private string _hardware = Loc.Text("ToolLibrary.HardwareUnchecked");
     public string Hardware { get => _hardware; private set => Set(ref _hardware, value); }
-    private string _status = "就绪";
+    private string _status = Loc.Text("MainWindow.Ready");
     public string Status { get => _status; private set => Set(ref _status, value); }
     private string _log = "";
     public string Log { get => _log; private set => Set(ref _log, value); }
-    private HardwareReport _report = new("", [], "尚未检测");
+    private HardwareReport _report = new("", [], Loc.Text("ToolLibrary.NotDetectedYet"));
     private bool _hasErrors;
     public event Action<VsCapabilities>? CapabilitiesChanged;
 
@@ -75,7 +76,7 @@ public sealed class ToolLibraryViewModel : ObservableObject
         if (_report.Error is not null) Append(_report.Error);
         await RefreshLocalAsync(token);
         if (online) await RefreshReleasesAsync(token);
-        Status = _hasErrors ? "检测完成，部分组件检查失败；请查看对应状态和操作日志。" : "检测完成。";
+        Status = _hasErrors ? Loc.Text("ToolLibrary.PartialFailure") : Loc.Text("ToolLibrary.ScanComplete");
     });
 
     public async Task ApplyPathAsync() => await RunAsync(async token =>
@@ -86,7 +87,7 @@ public sealed class ToolLibraryViewModel : ObservableObject
         Capabilities = VsCapabilities.Empty;
         CapabilitiesChanged?.Invoke(Capabilities);
         await RefreshLocalAsync(token);
-        Status = Tools.All(t => t.Current == "未安装") ? "已切换位置。此目录尚未安装工具组件；原目录中的文件未移动或删除。" : "已切换位置并重新检测；原目录中的文件未移动或删除。";
+        Status = Tools.All(t => t.Installed == false) ? Loc.Text("ToolLibrary.SwitchedEmpty") : Loc.Text("ToolLibrary.Switched");
         Append(Status);
     });
 
@@ -95,35 +96,37 @@ public sealed class ToolLibraryViewModel : ObservableObject
         foreach (var tool in ToolDefinition.All)
         {
             var row = Tools.Single(r => r.Id == tool.Id);
+            row.Installed = null;
             var isRuntime = tool.Id is "python" or "vapoursynth";
             if (isRuntime) row.Target = tool.Id == "python" ? Service.Catalog.PythonVersion : Service.Catalog.VapourSynthVersion;
             try
             {
                 var probe = await Service.ProbeAsync(tool, token);
-                row.Current = probe?.Version ?? "未安装";
-                row.Action = probe is null ? "安装" : "升级";
+                row.Installed = probe is not null;
+                row.Current = probe?.Version ?? Loc.Text("ToolLibrary.NotInstalled");
+                row.Action = probe is null ? Loc.Text("ToolLibrary.Install") : Loc.Text("ToolLibrary.Upgrade");
                 row.Source = probe?.Executable ?? "";
-                row.State = probe is { Runs: false } ? "组件存在，但版本检测失败；查看日志" :
-                    (row.Release?.IsPrerelease == true ? "预发布版本；" : "") + _report.Hint(tool);
-                if (probe is { Runs: false }) { _hasErrors = true; Append(tool.Name + "：" + probe.Diagnostic); }
+                row.State = probe is { Runs: false } ? Loc.Text("ToolLibrary.VersionProbeFailed") :
+                    (row.Release?.IsPrerelease == true ? Loc.Text("ToolLibrary.Prerelease") : "") + _report.Hint(tool);
+                if (probe is { Runs: false }) { _hasErrors = true; Append(Loc.Format("Common.Diagnostic", tool.Name, probe.Diagnostic)); }
                 if (row.Release is not null) row.CanInstall = probe is null || !probe.Runs || probe.Version != row.Release.Version;
                 if (isRuntime)
                 {
                     var unavailable = Service.Catalog.Unavailable(Service.Host, "runtime");
                     var isLatest = probe is { Runs: true } && probe.Version == row.Target;
-                    if (isLatest) row.Action = "已是最新版";
+                    if (isLatest) row.Action = Loc.Text("ToolLibrary.Latest");
                     if (probe is not { Runs: false })
-                        row.State = unavailable ?? (tool.Id == "python" ? "VapourSynth 的独立依赖，联动安装／升级" : "使用固定推荐环境；插件在 VS 插件页管理");
+                        row.State = unavailable ?? (tool.Id == "python" ? Loc.Text("ToolLibrary.PythonRuntime") : Loc.Text("ToolLibrary.ManagePlugins"));
                     row.CanInstall = unavailable is null && !isLatest;
                 }
             }
             catch (OperationCanceledException) { throw; }
-            catch (Exception ex) { _hasErrors = true; row.Current = "检测失败"; row.State = ex.Message; row.CanInstall = false; Append(ex.ToString()); }
+            catch (Exception ex) { _hasErrors = true; row.Current = Loc.Text("ToolLibrary.ProbeFailed"); row.State = ex.Message; row.CanInstall = false; Append(ex.ToString()); }
             if (!isRuntime && ReleaseResolver.Unsupported(tool, Service.Host) is { } reason) { row.State = reason; row.CanInstall = false; }
         }
         try { Capabilities = await Service.ProbeVsAsync(token); }
         catch (OperationCanceledException) { Capabilities = VsCapabilities.Empty; CapabilitiesChanged?.Invoke(Capabilities); throw; }
-        catch (Exception ex) { _hasErrors = true; Capabilities = VsCapabilities.Empty; Append(ex.ToString()); Status = "VapourSynth 检测失败，生成器已停止使用该环境。"; }
+        catch (Exception ex) { _hasErrors = true; Capabilities = VsCapabilities.Empty; Append(ex.ToString()); Status = Loc.Text("ToolLibrary.VsProbeFailed"); }
         CapabilitiesChanged?.Invoke(Capabilities);
         var manifest = LibraryPaths.ReadManifest(Service.Paths.Root);
         manifest.Tools.TryGetValue("vapoursynth", out var runtime);
@@ -132,15 +135,15 @@ public sealed class ToolLibraryViewModel : ObservableObject
             var features = ToolLibraryService.FeaturesForGroup(group.Id);
             var unavailable = Service.Catalog.Unavailable(Service.Host, group.Id);
             var installed = runtime?.Groups.Contains(group.Id) == true;
-            group.Current = features.All(Capabilities.Has) ? "已安装 · 运行正常" : installed ? "已安装 · 检测失败" : "未安装";
+            group.Current = features.All(Capabilities.Has) ? Loc.Text("ToolLibrary.InstalledWorking") : installed ? Loc.Text("ToolLibrary.InstalledBroken") : Loc.Text("ToolLibrary.NotInstalled");
             group.Target = Service.Catalog.Combination;
-            group.Action = installed ? "升级" : "安装";
-            group.State = unavailable ?? (Service.ActiveRuntime() is null ? "先安装 VapourSynth，或点击此处联动安装" : "固定推荐组合；安装后进行取帧检查");
+            group.Action = installed ? Loc.Text("ToolLibrary.Upgrade") : Loc.Text("ToolLibrary.Install");
+            group.State = unavailable ?? (Service.ActiveRuntime() is null ? Loc.Text("ToolLibrary.InstallVsFirst") : Loc.Text("ToolLibrary.PinnedPlugins"));
             group.Source = string.Join("\n", Service.Catalog.Packages.Where(p => p.Group == group.Id).Select(p => p.Id + " " +
                 (p.Assets.SingleOrDefault(a => a.Platform == Service.Host.Rid)?.Version ?? p.Version)));
             group.CanInstall = unavailable is null;
             if (installed)
-                foreach (var feature in features.Where(f => Capabilities.Errors.ContainsKey(f))) Append(feature + "：" + Capabilities.Errors[feature]);
+                foreach (var feature in features.Where(f => Capabilities.Errors.ContainsKey(f))) Append(Loc.Format("Common.Diagnostic", feature, Capabilities.Errors[feature]));
         }
     }
 
@@ -151,50 +154,50 @@ public sealed class ToolLibraryViewModel : ObservableObject
             var row = Tools.Single(r => r.Id == definition.Id);
             row.Release = null;
             row.CanInstall = false;
-            if (ReleaseResolver.Unsupported(definition, Service.Host) is { } unsupported) { row.State = unsupported; row.Target = "无匹配发行包"; continue; }
-            Status = "检查 " + definition.Name + (definition.Id == "ffmpeg" ? " 最新稳定版…" : " 最新版本（含预发布）…");
+            if (ReleaseResolver.Unsupported(definition, Service.Host) is { } unsupported) { row.State = unsupported; row.Target = Loc.Text("ToolLibrary.NoMatchingRelease"); continue; }
+            Status = definition.Id == "ffmpeg" ? Loc.Format("ToolLibrary.CheckStable", definition.Name) : Loc.Format("ToolLibrary.CheckRelease", definition.Name);
             try
             {
                 var release = await Service.Releases.ResolveAsync(definition, token);
                 row.Release = release;
                 row.Target = release.Version;
                 row.CanInstall = true;
-                row.State = (release.IsPrerelease ? "预发布版本；" : "") + _report.Hint(definition);
+                row.State = (release.IsPrerelease ? Loc.Text("ToolLibrary.Prerelease") : "") + _report.Hint(definition);
                 row.Source = (row.Source.Length == 0 ? "" : row.Source + "\n") + release.Source;
-                if (row.Current == row.Target) { row.Action = "已是最新版"; row.CanInstall = false; }
+                if (row.Current == row.Target) { row.Action = Loc.Text("ToolLibrary.Latest"); row.CanInstall = false; }
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
             catch (System.Net.Http.HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-            { row.Target = "无可用发行包"; row.State = "上游尚未发布所需版本，或仓库资源不可访问。"; Append(ex.Message); }
-            catch (Exception ex) { _hasErrors = true; row.Target = "检查失败"; row.State = ex.Message; Append(ex.ToString()); }
+            { row.Target = Loc.Text("ToolLibrary.NoRelease"); row.State = Loc.Text("ToolLibrary.UnavailableRelease"); Append(ex.Message); }
+            catch (Exception ex) { _hasErrors = true; row.Target = Loc.Text("ToolLibrary.CheckFailed"); row.State = ex.Message; Append(ex.ToString()); }
         }
     }
 
     public async Task InstallAsync(ToolRowViewModel row) => await RunAsync(async token =>
     {
-        if (!row.CanInstall) throw new InvalidOperationException("此组件当前不可安装：" + row.State);
+        if (!row.CanInstall) throw new InvalidOperationException(Loc.Format("ToolLibrary.CannotInstall", row.State));
         if (row.Id is "python" or "vapoursynth" || Groups.Contains(row))
-            await Service.InstallRuntimeAsync(Groups.Contains(row) ? [row.Id] : [], Report, token);
+            await Service.InstallRuntimeAsync(Groups.Contains(row) ? [row.Id] : [], Report, token, message => Status = message);
         else
-            await Service.InstallToolAsync(ToolDefinition.All.Single(t => t.Id == row.Id), row.Release ?? throw new InvalidOperationException("请先检查最新版本。"), Report, token);
+            await Service.InstallToolAsync(ToolDefinition.All.Single(t => t.Id == row.Id), row.Release ?? throw new InvalidOperationException(Loc.Text("ToolLibrary.CheckVersionFirst")), Report, token, message => Status = message);
         await RefreshLocalAsync(token);
-        Status = "安装完成，当前环境已重新检测。";
+        Status = Loc.Text("ToolLibrary.Installed");
     });
 
     public async Task InstallRecommendedAsync() => await RunAsync(async token =>
     {
         var groups = Groups.Where(g => g.Id != "yadif" && g.CanInstall).Select(g => g.Id).ToArray();
-        if (groups.Length == 0) throw new NotSupportedException("当前平台没有可安装的推荐组合。");
-        await Service.InstallRuntimeAsync(groups, Report, token);
+        if (groups.Length == 0) throw new NotSupportedException(Loc.Text("ToolLibrary.NoRecommendedSet"));
+        await Service.InstallRuntimeAsync(groups, Report, token, message => Status = message);
         await RefreshLocalAsync(token);
-        Status = "推荐插件安装完成。";
+        Status = Loc.Text("ToolLibrary.PluginsInstalled");
     });
 
-    public void Cancel() { _operation?.Cancel(); Status = "正在取消；等待当前操作安全退出…"; }
+    public void Cancel() { _operation?.Cancel(); Status = Loc.Text("ToolLibrary.Cancelling"); }
     private void Report(string message)
     {
         Status = message;
-        if (!message.StartsWith("下载 ", StringComparison.Ordinal)) Append(message);
+        Append(message);
     }
     private void Append(string message) => Log += $"[{DateTimeOffset.Now:HH:mm:ss}] {message}\n";
     private async Task RunAsync(Func<CancellationToken, Task> action)
@@ -205,8 +208,8 @@ public sealed class ToolLibraryViewModel : ObservableObject
         using var operation = new CancellationTokenSource();
         _operation = operation;
         try { await action(operation.Token); }
-        catch (OperationCanceledException) when (operation.IsCancellationRequested) { Status = "操作已取消；未完成的安装未启用。"; Append(Status); }
-        catch (Exception ex) { Status = "操作失败：" + ex.Message; Append(ex.ToString()); }
+        catch (OperationCanceledException) when (operation.IsCancellationRequested) { Status = Loc.Text("ToolLibrary.Cancelled"); Append(Status); }
+        catch (Exception ex) { Status = Loc.Format("ToolLibrary.OperationFailed", ex.Message); Append(ex.ToString()); }
         finally { _operation = null; Busy = false; }
     }
 }

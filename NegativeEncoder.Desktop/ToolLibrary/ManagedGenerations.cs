@@ -11,7 +11,7 @@ internal static class ManagedGenerations
         var manifest = LibraryPaths.ReadManifest(root);
         foreach (var tool in manifest.Tools.Values)
             if (!File.Exists(LibraryPaths.Within(root, tool.Executable)))
-                throw new FileNotFoundException("活动版本文件缺失，停止清理旧目录。", tool.Executable);
+                throw new FileNotFoundException(Loc.Text("ManagedGenerations.MissingActiveFile"), tool.Executable);
         var protectedPaths = ProtectedPaths(root, manifest);
         var managed = LibraryPaths.Within(root, ".managed");
         if (!Directory.Exists(managed)) return;
@@ -33,7 +33,7 @@ internal static class ManagedGenerations
         foreach (var directory in candidates)
         {
             DeleteTree(directory);
-            progress($"已清理未使用的工具目录：{Path.GetRelativePath(root, directory)}");
+            progress(Loc.Format("ManagedGenerations.RemovedDirectory", Path.GetRelativePath(root, directory)));
         }
     }
 
@@ -83,7 +83,7 @@ internal static class ManagedGenerations
 
         void EnqueueTarget(FileSystemInfo link)
         {
-            var target = link.ResolveLinkTarget(true) ?? throw new IOException($"无法解析活动版本的链接：{link.FullName}");
+            var target = link.ResolveLinkTarget(true) ?? throw new IOException(Loc.Format("ManagedGenerations.UnresolvedActiveLink", link.FullName));
             var resolved = LibraryPaths.Within(root, Path.GetRelativePath(root, target.FullName));
             if (!paths.Contains(resolved)) pending.Enqueue(resolved);
         }
@@ -92,7 +92,7 @@ internal static class ManagedGenerations
     private static void RequireRealDirectory(string path)
     {
         if (File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint))
-            throw new IOException($"受管理目录不能是链接，停止自动清理：{path}");
+            throw new IOException(Loc.Format("ManagedGenerations.LinkedDirectory", path));
     }
 
     private static void DeleteTree(string path)

@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:views="using:NegativeEncoder.Desktop.Views" xmlns:edit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit" x:Class="NegativeEncoder.Desktop.Views.FunctionTabs">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:NegativeEncoder.Desktop" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:models="using:NegativeEncoder.Desktop.Models" xmlns:views="using:NegativeEncoder.Desktop.Views" xmlns:edit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit" x:Class="NegativeEncoder.Desktop.Views.FunctionTabs">
 
 
   <UserControl.Resources>
@@ -8,15 +8,15 @@
 
 
   <TabControl Name="Tabs">
-    <TabItem Header="编码器">
+    <TabItem Header="{loc:Tr FunctionTabs.Encoder}">
       <Grid RowDefinitions="*,Auto">
         <ScrollViewer>
           <StackPanel Spacing="6" Margin="0,12,10,12">
             <views:ResponsiveFormPanel Name="EncoderIdentityFields">
               <Grid ColumnDefinitions="120,*" Margin="0,3">
-                <Label Content="编码器" Target="{Binding #EncoderSelect}" VerticalAlignment="Center"/>
+                <Label Content="{loc:Tr FunctionTabs.Encoder}" Target="{Binding #EncoderSelect}" VerticalAlignment="Center"/>
                 <Panel Grid.Column="1">
-                  <ComboBox Name="EncoderSelect" ItemsSource="{Binding Options.EncoderOptions}" SelectedValue="{Binding CurrentPreset.Encoder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="编码器">
+                  <ComboBox Name="EncoderSelect" ItemsSource="{Binding Options.EncoderOptions}" SelectedValue="{Binding CurrentPreset.Encoder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.Encoder}">
                     <ComboBox.ItemTemplate>
                       <DataTemplate>
                         <TextBlock Text="{Binding Name}"/>
@@ -26,9 +26,9 @@
                 </Panel>
               </Grid>
               <Grid ColumnDefinitions="120,*" Margin="0,3">
-                <Label Content="输出编码" Target="{Binding #CodecSelect}" VerticalAlignment="Center"/>
+                <Label Content="{loc:Tr FunctionTabs.Codec}" Target="{Binding #CodecSelect}" VerticalAlignment="Center"/>
                 <Panel Grid.Column="1">
-                  <ComboBox Name="CodecSelect" ItemsSource="{Binding Options.CodecOptions}" SelectedValue="{Binding CurrentPreset.Codec}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="输出编码">
+                  <ComboBox Name="CodecSelect" ItemsSource="{Binding Options.CodecOptions}" SelectedValue="{Binding CurrentPreset.Codec}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.Codec}">
                     <ComboBox.ItemTemplate>
                       <DataTemplate>
                         <TextBlock Text="{Binding Name}"/>
@@ -38,53 +38,53 @@
                 </Panel>
               </Grid>
             </views:ResponsiveFormPanel>
-            <CheckBox Content="使用自定义参数" IsChecked="{Binding CurrentPreset.IsUseCustomParameters}"/>
+            <CheckBox Content="{loc:Tr FunctionTabs.UseCustomArguments}" IsChecked="{Binding CurrentPreset.IsUseCustomParameters}"/>
             <StackPanel IsVisible="{Binding CurrentPreset.IsUseCustomParameters}" Spacing="6">
-              <TextBlock Text="自定义参数"/>
-              <TextBox Name="CustomParametersField" Text="{Binding CurrentPreset.CustomParameters}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="150" Classes="code" AutomationProperties.Name="自定义参数"/>
+              <TextBlock Text="{loc:Tr FunctionTabs.CustomArguments}"/>
+              <TextBox Name="CustomParametersField" Text="{Binding CurrentPreset.CustomParameters}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="150" Classes="code" AutomationProperties.Name="{loc:Tr FunctionTabs.CustomArguments}"/>
             </StackPanel>
             <StackPanel IsVisible="{Binding !CurrentPreset.IsUseCustomParameters}" Spacing="6">
-              <TextBlock Classes="section" Text="编码模式"/>
+              <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.RateControl}"/>
               <views:ResponsiveFormPanel Name="RateControlFields">
                 <Grid ColumnDefinitions="120,*" Margin="0,2" IsVisible="{Binding CurrentPreset.SupportsVbr}">
-                  <RadioButton Content="VBR" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=VBR}"/>
-                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.VbrParam}" AutomationProperties.Name="VBR 参数"/>
+                  <RadioButton Content="{loc:Tr FunctionTabs.VBR}" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=VBR}"/>
+                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.VbrParam}" AutomationProperties.Name="{loc:Tr FunctionTabs.VbrParameters}"/>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,2">
-                  <RadioButton Content="CBR" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=CBR}"/>
-                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.CbrParam}" AutomationProperties.Name="CBR 参数"/>
+                  <RadioButton Content="{loc:Tr FunctionTabs.CBR}" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=CBR}"/>
+                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.CbrParam}" AutomationProperties.Name="{loc:Tr FunctionTabs.CbrParameters}"/>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,2" IsVisible="{Binding CurrentPreset.SupportsCqp}">
-                  <RadioButton Content="CQP" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=CQP}"/>
-                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.CqpParam}" AutomationProperties.Name="CQP 参数"/>
+                  <RadioButton Content="{loc:Tr FunctionTabs.CQP}" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=CQP}"/>
+                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.CqpParam}" AutomationProperties.Name="{loc:Tr FunctionTabs.CqpParameters}"/>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,2" IsVisible="{Binding CurrentPreset.IsQsv}">
-                  <RadioButton Content="LA" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=LA}"/>
-                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.LaParam}" AutomationProperties.Name="LA 参数"/>
+                  <RadioButton Content="{loc:Tr FunctionTabs.LA}" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=LA}"/>
+                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.LaParam}" AutomationProperties.Name="{loc:Tr FunctionTabs.LaParameters}"/>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,2" IsVisible="{Binding CurrentPreset.IsQsv}">
-                  <RadioButton Content="LA-ICQ" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=LAICQ}"/>
-                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.LaicqParam}" AutomationProperties.Name="LAICQ 参数"/>
+                  <RadioButton Content="{loc:Tr FunctionTabs.LAICQ}" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=LAICQ}"/>
+                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.LaicqParam}" AutomationProperties.Name="{loc:Tr FunctionTabs.LaIcqParameters}"/>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,2" IsVisible="{Binding CurrentPreset.IsQsv}">
-                  <RadioButton Content="QVBR" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=QVBR}"/>
-                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.QvbrParam}" AutomationProperties.Name="QVBR 参数"/>
+                  <RadioButton Content="{loc:Tr FunctionTabs.QVBR}" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=QVBR}"/>
+                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.QvbrParam}" AutomationProperties.Name="{loc:Tr FunctionTabs.QvbrParameters}"/>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,2" IsVisible="{Binding CurrentPreset.IsVtEnc}">
-                  <RadioButton Content="ABR" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=ABR}"/>
-                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.AbrParam}" AutomationProperties.Name="ABR 码率 kbps"/>
+                  <RadioButton Content="{loc:Tr FunctionTabs.ABR}" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=ABR}"/>
+                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.AbrParam}" AutomationProperties.Name="{loc:Tr FunctionTabs.AbrBitrate}"/>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,2" IsVisible="{Binding CurrentPreset.IsVtEnc}">
-                  <RadioButton Content="Quality (0–1)" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=Quality}"/>
-                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.VtQuality}" AutomationProperties.Name="VTEnc Quality 0 到 1"/>
+                  <RadioButton Content="{loc:Tr FunctionTabs.QualityRange}" GroupName="EncodeMode" IsChecked="{Binding CurrentPreset.EncodeMode, Converter={StaticResource EnumEquals}, ConverterParameter=Quality}"/>
+                  <TextBox Grid.Column="1" Text="{Binding CurrentPreset.VtQuality}" AutomationProperties.Name="{loc:Tr FunctionTabs.VtQualityRange}"/>
                 </Grid>
               </views:ResponsiveFormPanel>
-              <TextBlock Classes="section" Text="编码选项"/>
+              <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.EncodingOptions}"/>
               <views:ResponsiveFormPanel Name="EncodingOptionFields">
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <Label Content="质量预设" Target="{Binding #QualityPresetSelect}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.QualityPreset}" Target="{Binding #QualityPresetSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="QualityPresetSelect" ItemsSource="{Binding Options.QualityPresetOptions}" SelectedValue="{Binding CurrentPreset.QualityPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="质量预设">
+                    <ComboBox Name="QualityPresetSelect" ItemsSource="{Binding Options.QualityPresetOptions}" SelectedValue="{Binding CurrentPreset.QualityPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.QualityPreset}">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -94,9 +94,9 @@
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <Label Content="色深" Target="{Binding #ColorDepthSelect}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.ColorDepth}" Target="{Binding #ColorDepthSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="ColorDepthSelect" ItemsSource="{Binding Options.ColorDepthOptions}" SelectedValue="{Binding CurrentPreset.ColorDepth}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="色深" IsEnabled="{Binding CurrentPreset.SupportsDepth}">
+                    <ComboBox Name="ColorDepthSelect" ItemsSource="{Binding Options.ColorDepthOptions}" SelectedValue="{Binding CurrentPreset.ColorDepth}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.ColorDepth}" IsEnabled="{Binding CurrentPreset.SupportsDepth}">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -106,37 +106,37 @@
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3" IsVisible="{Binding !CurrentPreset.IsVtEnc}">
-                  <Label Content="VBR 质量（0–51）" Target="{Binding #VbrQuailtyField}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.VbrQuality}" Target="{Binding #VbrQuailtyField}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <TextBox Name="VbrQuailtyField" Text="{Binding CurrentPreset.VbrQuailty}" AutomationProperties.Name="VBR 质量（0–51）" IsEnabled="{Binding CurrentPreset.SupportsDepth}"/>
+                    <TextBox Name="VbrQuailtyField" Text="{Binding CurrentPreset.VbrQuailty}" AutomationProperties.Name="{loc:Tr FunctionTabs.VbrQuality}" IsEnabled="{Binding CurrentPreset.SupportsDepth}"/>
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <CheckBox Content="最大 GOP" IsChecked="{Binding CurrentPreset.IsSetMaxGop}"/>
+                  <CheckBox Content="{loc:Tr FunctionTabs.MaxGop}" IsChecked="{Binding CurrentPreset.IsSetMaxGop}"/>
                   <Panel Grid.Column="1">
-                    <TextBox Name="MaxGopField" Text="{Binding CurrentPreset.MaxGop}" AutomationProperties.Name="最大 GOP" IsEnabled="{Binding CurrentPreset.IsSetMaxGop}"/>
+                    <TextBox Name="MaxGopField" Text="{Binding CurrentPreset.MaxGop}" AutomationProperties.Name="{loc:Tr FunctionTabs.MaxGop}" IsEnabled="{Binding CurrentPreset.IsSetMaxGop}"/>
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <CheckBox Content="显示比例 DAR" IsChecked="{Binding CurrentPreset.IsSetDar}"/>
+                  <CheckBox Content="{loc:Tr FunctionTabs.DisplayAspectRatio}" IsChecked="{Binding CurrentPreset.IsSetDar}"/>
                   <Panel Grid.Column="1">
-                    <TextBox Name="DarField" Text="{Binding CurrentPreset.Dar}" AutomationProperties.Name="显示比例 DAR" IsEnabled="{Binding CurrentPreset.IsSetDar}"/>
+                    <TextBox Name="DarField" Text="{Binding CurrentPreset.Dar}" AutomationProperties.Name="{loc:Tr FunctionTabs.DisplayAspectRatio}" IsEnabled="{Binding CurrentPreset.IsSetDar}"/>
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3" IsVisible="{Binding CurrentPreset.SupportsMaxBitrate}">
-                  <CheckBox Content="最大码率" IsChecked="{Binding CurrentPreset.IsSetMaxBitrate}"/>
+                  <CheckBox Content="{loc:Tr FunctionTabs.MaxBitrate}" IsChecked="{Binding CurrentPreset.IsSetMaxBitrate}"/>
                   <Panel Grid.Column="1">
-                    <TextBox Name="MaxBitrateField" Text="{Binding CurrentPreset.MaxBitrate}" AutomationProperties.Name="最大码率" IsEnabled="{Binding CurrentPreset.IsSetMaxBitrate}"/>
+                    <TextBox Name="MaxBitrateField" Text="{Binding CurrentPreset.MaxBitrate}" AutomationProperties.Name="{loc:Tr FunctionTabs.MaxBitrate}" IsEnabled="{Binding CurrentPreset.IsSetMaxBitrate}"/>
                   </Panel>
                 </Grid>
-                <CheckBox IsVisible="{Binding CurrentPreset.SupportsStrictGop}" Content="固定 GOP" IsChecked="{Binding CurrentPreset.IsStrictGop}" IsEnabled="{Binding CurrentPreset.IsSetMaxGop}"/>
+                <CheckBox IsVisible="{Binding CurrentPreset.SupportsStrictGop}" Content="{loc:Tr FunctionTabs.FixedGop}" IsChecked="{Binding CurrentPreset.IsStrictGop}" IsEnabled="{Binding CurrentPreset.IsSetMaxGop}"/>
               </views:ResponsiveFormPanel>
-              <TextBlock Classes="section" Text="高级选项"/>
+              <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.AdvancedOptions}"/>
               <views:ResponsiveFormPanel Name="AdvancedFields">
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <Label Content="解码模式" Target="{Binding #DecoderSelect}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.Decoder}" Target="{Binding #DecoderSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="DecoderSelect" ItemsSource="{Binding Options.DecoderOptions}" SelectedValue="{Binding CurrentPreset.Decoder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="解码模式">
+                    <ComboBox Name="DecoderSelect" ItemsSource="{Binding Options.DecoderOptions}" SelectedValue="{Binding CurrentPreset.Decoder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.Decoder}">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -146,9 +146,9 @@
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3" IsVisible="{Binding CurrentPreset.SupportsD3D}">
-                  <Label Content="D3D（仅 QSV）" Target="{Binding #D3DModeSelect}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.D3dMode}" Target="{Binding #D3DModeSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="D3DModeSelect" ItemsSource="{Binding Options.D3DModeOptions}" SelectedValue="{Binding CurrentPreset.D3DMode}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="D3D（仅 QSV）" IsEnabled="{Binding CurrentPreset.SupportsD3D}">
+                    <ComboBox Name="D3DModeSelect" ItemsSource="{Binding Options.D3DModeOptions}" SelectedValue="{Binding CurrentPreset.D3DMode}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.D3dMode}" IsEnabled="{Binding CurrentPreset.SupportsD3D}">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -158,9 +158,9 @@
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <CheckBox Content="音画同步" IsChecked="{Binding CurrentPreset.IsSetAvSync}"/>
+                  <CheckBox Content="{loc:Tr FunctionTabs.AvSync}" IsChecked="{Binding CurrentPreset.IsSetAvSync}"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="AVSyncSelect" ItemsSource="{Binding Options.AVSyncOptions}" SelectedValue="{Binding CurrentPreset.AVSync}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="同步方式" IsEnabled="{Binding CurrentPreset.IsSetAvSync}">
+                    <ComboBox Name="AVSyncSelect" ItemsSource="{Binding Options.AVSyncOptions}" SelectedValue="{Binding CurrentPreset.AVSync}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.SyncMode}" IsEnabled="{Binding CurrentPreset.IsSetAvSync}">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -171,21 +171,21 @@
                 </Grid>
               </views:ResponsiveFormPanel>
               <Grid ColumnDefinitions="120,*" IsVisible="{Binding CurrentPreset.IsVtEnc}">
-                <Label Content="CFR 目标帧率" Target="{Binding #VtFrameRate}" VerticalAlignment="Center"/>
+                <Label Content="{loc:Tr FunctionTabs.CfrFrameRate}" Target="{Binding #VtFrameRate}" VerticalAlignment="Center"/>
                 <ComboBox Grid.Column="1" Name="VtFrameRate" IsEditable="True" ItemsSource="{Binding Options.FrameRateOptions}"
-                          Text="{Binding CurrentPreset.FrameRate, Mode=TwoWay}" AutomationProperties.Name="VTEnc CFR 目标帧率">
+                          Text="{Binding CurrentPreset.FrameRate, Mode=TwoWay}" AutomationProperties.Name="{loc:Tr FunctionTabs.VtCfrFrameRate}">
                   <ComboBox.ItemTemplate>
                     <DataTemplate><TextBlock Text="{Binding Label}"/></DataTemplate>
                   </ComboBox.ItemTemplate>
                 </ComboBox>
               </Grid>
-              <TextBlock Classes="section" Text="画面处理"/>
-              <CheckBox Name="DeinterlaceCheckBox" Content="反交错" IsChecked="{Binding CurrentPreset.IsUseDeInterlace}"/>
+              <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.VideoFilters}"/>
+              <CheckBox Name="DeinterlaceCheckBox" Content="{loc:Tr FunctionTabs.Deinterlace}" IsChecked="{Binding CurrentPreset.IsUseDeInterlace}"/>
               <views:ResponsiveFormPanel Name="DeinterlaceFields" IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}">
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <Label Content="场顺序" Target="{Binding #FieldOrderSelect}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.FieldOrder}" Target="{Binding #FieldOrderSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="FieldOrderSelect" ItemsSource="{Binding Options.FieldOrderOptions}" SelectedValue="{Binding CurrentPreset.FieldOrder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="场顺序">
+                    <ComboBox Name="FieldOrderSelect" ItemsSource="{Binding Options.FieldOrderOptions}" SelectedValue="{Binding CurrentPreset.FieldOrder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.FieldOrder}">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -195,9 +195,9 @@
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <Label Content="反交错方式" Target="{Binding #DeInterlaceMethodPresetSelect}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.DeinterlaceMethod}" Target="{Binding #DeInterlaceMethodPresetSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="DeInterlaceMethodPresetSelect" ItemsSource="{Binding Options.DeInterlaceMethodPresetOptions}" SelectedValue="{Binding CurrentPreset.DeInterlaceMethodPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="反交错方式">
+                    <ComboBox Name="DeInterlaceMethodPresetSelect" ItemsSource="{Binding Options.DeInterlaceMethodPresetOptions}" SelectedValue="{Binding CurrentPreset.DeInterlaceMethodPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.DeinterlaceMethod}">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -207,27 +207,27 @@
                   </Panel>
                 </Grid>
               </views:ResponsiveFormPanel>
-              <CheckBox Name="ResizeCheckBox" Content="调整分辨率" IsChecked="{Binding CurrentPreset.IsSetOutputRes}"/>
+              <CheckBox Name="ResizeCheckBox" Content="{loc:Tr FunctionTabs.ResizeVideo}" IsChecked="{Binding CurrentPreset.IsSetOutputRes}"/>
               <views:ResponsiveFormPanel Name="ResizeFields" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}">
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <Label Content="宽度（px）" Target="{Binding #OutputResWidthField}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.Width}" Target="{Binding #OutputResWidthField}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <TextBox Name="OutputResWidthField" Text="{Binding CurrentPreset.OutputResWidth}" AutomationProperties.Name="宽度（px）"/>
+                    <TextBox Name="OutputResWidthField" Text="{Binding CurrentPreset.OutputResWidth}" AutomationProperties.Name="{loc:Tr FunctionTabs.Width}"/>
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <Label Content="高度（px）" Target="{Binding #OUtputResHeightField}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.Height}" Target="{Binding #OUtputResHeightField}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <TextBox Name="OUtputResHeightField" Text="{Binding CurrentPreset.OUtputResHeight}" AutomationProperties.Name="高度（px）"/>
+                    <TextBox Name="OUtputResHeightField" Text="{Binding CurrentPreset.OUtputResHeight}" AutomationProperties.Name="{loc:Tr FunctionTabs.Height}"/>
                   </Panel>
                 </Grid>
               </views:ResponsiveFormPanel>
-              <TextBlock Classes="section" Text="音频"/>
+              <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.Audio}"/>
               <views:ResponsiveFormPanel Name="AudioFields">
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <Label Content="音频处理" Target="{Binding #AudioEncodeSelect}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.AudioMode}" Target="{Binding #AudioEncodeSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <ComboBox Name="AudioEncodeSelect" ItemsSource="{Binding Options.AudioEncodeOptions}" SelectedValue="{Binding CurrentPreset.AudioEncode}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="音频处理">
+                    <ComboBox Name="AudioEncodeSelect" ItemsSource="{Binding Options.AudioEncodeOptions}" SelectedValue="{Binding CurrentPreset.AudioEncode}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.AudioMode}">
                       <ComboBox.ItemTemplate>
                         <DataTemplate>
                           <TextBlock Text="{Binding Name}"/>
@@ -237,36 +237,36 @@
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <Label Content="音频码率（kbps）" Target="{Binding #AudioBitrateField}" VerticalAlignment="Center"/>
+                  <Label Content="{loc:Tr FunctionTabs.AudioBitrate}" Target="{Binding #AudioBitrateField}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
-                    <TextBox Name="AudioBitrateField" Text="{Binding CurrentPreset.AudioBitrate}" AutomationProperties.Name="音频码率（kbps）" IsEnabled="{Binding CurrentPreset.IsAudioEncoding}"/>
+                    <TextBox Name="AudioBitrateField" Text="{Binding CurrentPreset.AudioBitrate}" AutomationProperties.Name="{loc:Tr FunctionTabs.AudioBitrate}" IsEnabled="{Binding CurrentPreset.IsAudioEncoding}"/>
                   </Panel>
                 </Grid>
               </views:ResponsiveFormPanel>
             </StackPanel>
           </StackPanel>
         </ScrollViewer>
-        <Grid Grid.Row="1" ColumnDefinitions="80,*,Auto" Margin="0,10,0,0">
-          <Label Content="输出格式" Target="{Binding #OutputFormatSelect}" VerticalAlignment="Center"/>
-          <ComboBox Grid.Column="1" Name="OutputFormatSelect" ItemsSource="{Binding Options.OutputFormatOptions}" SelectedValue="{Binding CurrentPreset.OutputFormat}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="输出格式">
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="0,10,0,0">
+          <Label Content="{loc:Tr FunctionTabs.OutputFormat}" Target="{Binding #OutputFormatSelect}" VerticalAlignment="Center"/>
+          <ComboBox Grid.Column="1" Name="OutputFormatSelect" ItemsSource="{Binding Options.OutputFormatOptions}" SelectedValue="{Binding CurrentPreset.OutputFormat}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.OutputFormat}">
             <ComboBox.ItemTemplate>
               <DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate>
             </ComboBox.ItemTemplate>
           </ComboBox>
-          <Button Grid.Column="2" Classes="primary" Content="添加到编码队列" Tag="视频编码" Click="AddTask_Click" Margin="8,0,0,0" VerticalAlignment="Center"/>
+          <Button Grid.Column="2" Classes="primary" Content="{loc:Tr FunctionTabs.QueueEncode}" Tag="{x:Static models:TaskOperation.Video}" Click="AddTask_Click" Margin="8,0,0,0" VerticalAlignment="Center"/>
         </Grid>
       </Grid>
     </TabItem>
-    <TabItem Header="HDR">
+    <TabItem Header="{loc:Tr FunctionTabs.HDR}">
       <Grid RowDefinitions="*,Auto">
         <ScrollViewer>
           <StackPanel Spacing="6" Margin="0,12,10,12">
-            <TextBlock Classes="section" Text="HDR 输出"/>
-            <CheckBox Content="输出带有 HDR 标记的视频" IsChecked="{Binding CurrentPreset.IsOutputHdr}"/>
+            <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.HdrOutput}"/>
+            <CheckBox Content="{loc:Tr FunctionTabs.WriteHdrTags}" IsChecked="{Binding CurrentPreset.IsOutputHdr}"/>
             <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="输出 HDR 格式" Target="{Binding #OutputHdrTypeSelect}" VerticalAlignment="Center"/>
+              <Label Content="{loc:Tr FunctionTabs.HdrFormat}" Target="{Binding #OutputHdrTypeSelect}" VerticalAlignment="Center"/>
               <Panel Grid.Column="1">
-                <ComboBox Name="OutputHdrTypeSelect" ItemsSource="{Binding Options.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.OutputHdrType}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="输出 HDR 格式" IsEnabled="{Binding CurrentPreset.IsOutputHdr}">
+                <ComboBox Name="OutputHdrTypeSelect" ItemsSource="{Binding Options.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.OutputHdrType}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.HdrFormat}" IsEnabled="{Binding CurrentPreset.IsOutputHdr}">
                   <ComboBox.ItemTemplate>
                     <DataTemplate>
                       <TextBlock Text="{Binding Name}"/>
@@ -275,14 +275,14 @@
                 </ComboBox>
               </Panel>
             </Grid>
-            <CheckBox Content="每个 IDR 帧重复输出 Header" IsChecked="{Binding CurrentPreset.IsRepeatHeaders}" IsEnabled="{Binding CurrentPreset.IsNvenc}"/>
-            <TextBlock Classes="section" Text="HDR 格式转换（NVENC / VTEnc）"/>
-            <CheckBox Content="启用 HDR 格式转换" IsChecked="{Binding CurrentPreset.IsConvertHdrType}" IsEnabled="{Binding CurrentPreset.SupportsColorspace}"/>
+            <CheckBox Content="{loc:Tr FunctionTabs.RepeatHeaders}" IsChecked="{Binding CurrentPreset.IsRepeatHeaders}" IsEnabled="{Binding CurrentPreset.IsNvenc}"/>
+            <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.HdrConversion}"/>
+            <CheckBox Content="{loc:Tr FunctionTabs.EnableHdrConversion}" IsChecked="{Binding CurrentPreset.IsConvertHdrType}" IsEnabled="{Binding CurrentPreset.SupportsColorspace}"/>
             <StackPanel IsEnabled="{Binding CurrentPreset.SupportsColorspace}">
               <Grid ColumnDefinitions="140,*" Margin="0,3">
-                <Label Content="源格式" Target="{Binding #OldHdrTypeSelect}" VerticalAlignment="Center"/>
+                <Label Content="{loc:Tr FunctionTabs.SourceFormat}" Target="{Binding #OldHdrTypeSelect}" VerticalAlignment="Center"/>
                 <Panel Grid.Column="1">
-                  <ComboBox Name="OldHdrTypeSelect" ItemsSource="{Binding Options.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.OldHdrType}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="源格式" IsEnabled="{Binding CurrentPreset.IsConvertHdrType}">
+                  <ComboBox Name="OldHdrTypeSelect" ItemsSource="{Binding Options.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.OldHdrType}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.SourceFormat}" IsEnabled="{Binding CurrentPreset.IsConvertHdrType}">
                     <ComboBox.ItemTemplate>
                       <DataTemplate>
                         <TextBlock Text="{Binding Name}"/>
@@ -292,9 +292,9 @@
                 </Panel>
               </Grid>
               <Grid ColumnDefinitions="140,*" Margin="0,3">
-                <Label Content="目标格式" Target="{Binding #NewHdrTypeSelect}" VerticalAlignment="Center"/>
+                <Label Content="{loc:Tr FunctionTabs.TargetFormat}" Target="{Binding #NewHdrTypeSelect}" VerticalAlignment="Center"/>
                 <Panel Grid.Column="1">
-                  <ComboBox Name="NewHdrTypeSelect" ItemsSource="{Binding Options.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.NewHdrType}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="目标格式" IsEnabled="{Binding CurrentPreset.IsConvertHdrType}">
+                  <ComboBox Name="NewHdrTypeSelect" ItemsSource="{Binding Options.HdrTypeOptions}" SelectedValue="{Binding CurrentPreset.NewHdrType}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.TargetFormat}" IsEnabled="{Binding CurrentPreset.IsConvertHdrType}">
                     <ComboBox.ItemTemplate>
                       <DataTemplate>
                         <TextBlock Text="{Binding Name}"/>
@@ -304,9 +304,9 @@
                 </Panel>
               </Grid>
               <Grid ColumnDefinitions="140,*" Margin="0,3">
-                <Label Content="HDR 转 SDR 算法" Target="{Binding #Hdr2SdrMethodSelect}" VerticalAlignment="Center"/>
+                <Label Content="{loc:Tr FunctionTabs.ToneMapping}" Target="{Binding #Hdr2SdrMethodSelect}" VerticalAlignment="Center"/>
                 <Panel Grid.Column="1">
-                  <ComboBox Name="Hdr2SdrMethodSelect" ItemsSource="{Binding Options.Hdr2SdrOptions}" SelectedValue="{Binding CurrentPreset.Hdr2SdrMethod}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="HDR 转 SDR 算法" IsEnabled="{Binding CurrentPreset.IsSdrConversion}">
+                  <ComboBox Name="Hdr2SdrMethodSelect" ItemsSource="{Binding Options.Hdr2SdrOptions}" SelectedValue="{Binding CurrentPreset.Hdr2SdrMethod}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.ToneMapping}" IsEnabled="{Binding CurrentPreset.IsSdrConversion}">
                     <ComboBox.ItemTemplate>
                       <DataTemplate>
                         <TextBlock Text="{Binding Name}"/>
@@ -316,127 +316,127 @@
                 </Panel>
               </Grid>
               <Grid ColumnDefinitions="140,*" Margin="0,3">
-                <Label Content="去饱和强度（0–1）" Target="{Binding #Hdr2SdrDeSatStrengthField}" VerticalAlignment="Center"/>
+                <Label Content="{loc:Tr FunctionTabs.Desaturation}" Target="{Binding #Hdr2SdrDeSatStrengthField}" VerticalAlignment="Center"/>
                 <Panel Grid.Column="1">
-                  <TextBox Name="Hdr2SdrDeSatStrengthField" Text="{Binding CurrentPreset.Hdr2SdrDeSatStrength}" AutomationProperties.Name="去饱和强度（0–1）" IsEnabled="{Binding CurrentPreset.IsSdrConversion}"/>
+                  <TextBox Name="Hdr2SdrDeSatStrengthField" Text="{Binding CurrentPreset.Hdr2SdrDeSatStrength}" AutomationProperties.Name="{loc:Tr FunctionTabs.Desaturation}" IsEnabled="{Binding CurrentPreset.IsSdrConversion}"/>
                 </Panel>
               </Grid>
             </StackPanel>
-            <TextBlock Classes="section" Text="覆盖 HDR 标记（ffmpeg）"/>
-            <TextBlock Classes="muted" Text="仅修改 HEVC 色彩元数据，不重新编码。"/>
+            <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.OverrideHdrTags}"/>
+            <TextBlock Classes="muted" Text="{loc:Tr FunctionTabs.MetadataOnly}"/>
             <WrapPanel>
-              <Button Content="标记为 SDR" Tag="标记为 SDR" Click="AddTask_Click" Margin="0,0,8,8"/>
-              <Button Content="标记为 HDR10" Tag="标记为 HDR10" Click="AddTask_Click" Margin="0,0,8,8"/>
-              <Button Content="标记为 HLG" Tag="标记为 HLG" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="{loc:Tr Operation.TagSdr}" Tag="{x:Static models:TaskOperation.TagSdr}" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="{loc:Tr Operation.TagHdr10}" Tag="{x:Static models:TaskOperation.TagHdr10}" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="{loc:Tr Operation.TagHlg}" Tag="{x:Static models:TaskOperation.TagHlg}" Click="AddTask_Click" Margin="0,0,8,8"/>
             </WrapPanel>
           </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
-          <Button Classes="primary" Content="添加到编码队列（HDR）" Tag="HDR 编码" Click="AddTask_Click" HorizontalAlignment="Right"/>
+          <Button Classes="primary" Content="{loc:Tr FunctionTabs.QueueHdr}" Tag="{x:Static models:TaskOperation.HdrVideo}" Click="AddTask_Click" HorizontalAlignment="Right"/>
         </StackPanel>
       </Grid>
     </TabItem>
-    <TabItem Header="VS">
+    <TabItem Header="{loc:Tr FunctionTabs.VS}">
       <Grid RowDefinitions="*,Auto">
         <Grid RowDefinitions="Auto,Auto,*" Margin="0,12,0,0">
-          <Grid ColumnDefinitions="48,*,Auto" Margin="0,0,0,6">
-            <Label Content="字幕" Target="{Binding #SubtitleField}" VerticalAlignment="Center"/>
-            <TextBox Grid.Column="1" Name="SubtitleField" Text="{Binding Subtitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="字幕"/>
-            <Button Grid.Column="2" Content="浏览…" Tag="subtitle" Click="Browse_Click" Margin="8,0,0,0"/>
+          <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,6">
+            <Label Content="{loc:Tr FunctionTabs.Subtitle}" Target="{Binding #SubtitleField}" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" Name="SubtitleField" Text="{Binding Subtitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{loc:Tr FunctionTabs.Subtitle}"/>
+            <Button Grid.Column="2" Content="{loc:Tr FunctionTabs.Browse}" Tag="subtitle" Click="Browse_Click" Margin="8,0,0,0"/>
           </Grid>
           <Grid Grid.Row="1" Name="VsGeneratorToolbar" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,6">
             <Menu Name="VsGeneratorMenu" VerticalAlignment="Center">
-              <MenuItem Header="VS代码生成器">
-                <MenuItem Name="GenerateVsScriptItem" Header="生成" Click="GenerateVsScript_Click"/>
+              <MenuItem Header="{loc:Tr FunctionTabs.ScriptGenerator}">
+                <MenuItem Name="GenerateVsScriptItem" Header="{loc:Tr FunctionTabs.Generate}" Click="GenerateVsScript_Click"/>
                 <Separator/>
-                <MenuItem Header="字幕渲染器">
-                  <MenuItem Header="Subtext / libass" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseSubtext, Mode=TwoWay}" IsEnabled="{Binding CanSubtext}"/>
-                  <MenuItem Header="xy-VSFilter" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseXyVsf, Mode=TwoWay}" IsEnabled="{Binding CanXyVsf}"/>
-                  <MenuItem Header="VSFilter（旧版）" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseLegacyVsf, Mode=TwoWay}" IsEnabled="{Binding CanLegacyVsf}"/>
-                  <MenuItem Name="UseVsfmodItem" Header="VSFilterMod" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseVsfmod, Mode=TwoWay}" IsEnabled="{Binding CanVsfmod}"/>
+                <MenuItem Header="{loc:Tr FunctionTabs.SubtitleRenderer}">
+                  <MenuItem Header="{loc:Tr FunctionTabs.SubtextLibass}" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseSubtext, Mode=TwoWay}" IsEnabled="{Binding CanSubtext}"/>
+                  <MenuItem Header="{loc:Tr FunctionTabs.XyVSFilter}" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseXyVsf, Mode=TwoWay}" IsEnabled="{Binding CanXyVsf}"/>
+                  <MenuItem Header="{loc:Tr FunctionTabs.LegacyVsFilter}" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseLegacyVsf, Mode=TwoWay}" IsEnabled="{Binding CanLegacyVsf}"/>
+                  <MenuItem Name="UseVsfmodItem" Header="{loc:Tr FunctionTabs.VSFilterMod}" ToggleType="Radio" GroupName="SubtitleRenderer" IsChecked="{Binding UseVsfmod, Mode=TwoWay}" IsEnabled="{Binding CanVsfmod}"/>
                 </MenuItem>
-                <MenuItem Name="UseRepeatItem" Header="Repeat" ToggleType="CheckBox" IsChecked="{Binding UseRepeat, Mode=TwoWay}" IsEnabled="{Binding CanVsSource}"/>
-                <MenuItem Name="UseQtgmcItem" Header="QTGMC" ToggleType="CheckBox" IsChecked="{Binding UseQtgmc, Mode=TwoWay}" IsEnabled="{Binding CanQtgmc}"/>
-                <MenuItem Name="UseIvtcItem" Header="IVTC" ToggleType="CheckBox" IsChecked="{Binding UseIvtc, Mode=TwoWay}" IsEnabled="{Binding CanIvtc}"/>
-                <MenuItem Name="UseYadifDoubleItem" Header="Yadif Double" ToggleType="CheckBox" IsChecked="{Binding UseYadifDouble, Mode=TwoWay}" IsEnabled="{Binding CanYadif}"/>
-                <MenuItem Name="UseYadifNormalItem" Header="Yadif Normal" ToggleType="CheckBox" IsChecked="{Binding UseYadifNormal, Mode=TwoWay}" IsEnabled="{Binding CanYadif}"/>
-                <MenuItem Name="UseBwdifNormalItem" Header="Bwdif 普通帧率" ToggleType="CheckBox" IsChecked="{Binding UseBwdifNormal, Mode=TwoWay}" IsEnabled="{Binding CanBwdif}"/>
-                <MenuItem Name="UseBwdifDoubleItem" Header="Bwdif 双倍帧率" ToggleType="CheckBox" IsChecked="{Binding UseBwdifDouble, Mode=TwoWay}" IsEnabled="{Binding CanBwdif}"/>
+                <MenuItem Name="UseRepeatItem" Header="{loc:Tr FunctionTabs.Repeat}" ToggleType="CheckBox" IsChecked="{Binding UseRepeat, Mode=TwoWay}" IsEnabled="{Binding CanVsSource}"/>
+                <MenuItem Name="UseQtgmcItem" Header="{loc:Tr FunctionTabs.QTGMC}" ToggleType="CheckBox" IsChecked="{Binding UseQtgmc, Mode=TwoWay}" IsEnabled="{Binding CanQtgmc}"/>
+                <MenuItem Name="UseIvtcItem" Header="{loc:Tr FunctionTabs.IVTC}" ToggleType="CheckBox" IsChecked="{Binding UseIvtc, Mode=TwoWay}" IsEnabled="{Binding CanIvtc}"/>
+                <MenuItem Name="UseYadifDoubleItem" Header="{loc:Tr FunctionTabs.YadifDouble}" ToggleType="CheckBox" IsChecked="{Binding UseYadifDouble, Mode=TwoWay}" IsEnabled="{Binding CanYadif}"/>
+                <MenuItem Name="UseYadifNormalItem" Header="{loc:Tr FunctionTabs.YadifNormal}" ToggleType="CheckBox" IsChecked="{Binding UseYadifNormal, Mode=TwoWay}" IsEnabled="{Binding CanYadif}"/>
+                <MenuItem Name="UseBwdifNormalItem" Header="{loc:Tr FunctionTabs.BwdifNormal}" ToggleType="CheckBox" IsChecked="{Binding UseBwdifNormal, Mode=TwoWay}" IsEnabled="{Binding CanBwdif}"/>
+                <MenuItem Name="UseBwdifDoubleItem" Header="{loc:Tr FunctionTabs.BwdifDouble}" ToggleType="CheckBox" IsChecked="{Binding UseBwdifDouble, Mode=TwoWay}" IsEnabled="{Binding CanBwdif}"/>
                 <Separator/>
-                <MenuItem Header="工具库管理…" Click="ToolLibrary_Click"/>
+                <MenuItem Header="{loc:Tr FunctionTabs.OpenLibrary}" Click="ToolLibrary_Click"/>
               </MenuItem>
             </Menu>
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-              <CheckBox Name="VsResizeCheckBox" Content="调整大小" IsChecked="{Binding VsResize, Mode=TwoWay}" VerticalAlignment="Center"/>
-              <TextBox Name="VsWidthField" Width="60" Text="{Binding VsWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="宽度（px）" ToolTip.Tip="宽度（px）" IsEnabled="{Binding VsResize}"/>
-              <TextBlock Text="×" VerticalAlignment="Center"/>
-              <TextBox Name="VsHeightField" Width="60" Text="{Binding VsHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="高度（px）" ToolTip.Tip="高度（px）" IsEnabled="{Binding VsResize}"/>
+              <CheckBox Name="VsResizeCheckBox" Content="{loc:Tr FunctionTabs.Resize}" IsChecked="{Binding VsResize, Mode=TwoWay}" VerticalAlignment="Center"/>
+              <TextBox Name="VsWidthField" Width="60" Text="{Binding VsWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{loc:Tr FunctionTabs.Width}" ToolTip.Tip="{loc:Tr FunctionTabs.Width}" IsEnabled="{Binding VsResize}"/>
+              <TextBlock Text="{loc:Tr FunctionTabs.Times}" VerticalAlignment="Center"/>
+              <TextBox Name="VsHeightField" Width="60" Text="{Binding VsHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{loc:Tr FunctionTabs.Height}" ToolTip.Tip="{loc:Tr FunctionTabs.Height}" IsEnabled="{Binding VsResize}"/>
             </StackPanel>
           </Grid>
-          <edit:TextEditor Grid.Row="2" Name="ScriptEditor" Document="{Binding ScriptDocument}" ShowLineNumbers="True" FontFamily="{StaticResource CodeFont}" FontSize="13" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="VapourSynth 脚本编辑器" />
+          <edit:TextEditor Grid.Row="2" Name="ScriptEditor" Document="{Binding ScriptDocument}" ShowLineNumbers="True" FontFamily="{StaticResource CodeFont}" FontSize="13" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="{loc:Tr FunctionTabs.ScriptEditor}" />
         </Grid>
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
           <TextBlock Text="{Binding VsIssue}" Classes="muted" MaxHeight="52" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding VsIssue}"/>
-          <Button Classes="primary" Content="添加 VS 任务" Tag="VapourSynth" Click="AddTask_Click" HorizontalAlignment="Right"/>
+          <Button Classes="primary" Content="{loc:Tr FunctionTabs.QueueVs}" Tag="{x:Static models:TaskOperation.VapourSynth}" Click="AddTask_Click" HorizontalAlignment="Right"/>
         </StackPanel>
       </Grid>
     </TabItem>
-    <TabItem Header="音频">
+    <TabItem Header="{loc:Tr FunctionTabs.Audio}">
       <Grid RowDefinitions="*,Auto">
         <ScrollViewer>
           <StackPanel Spacing="6" Margin="0,12,10,12">
             <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="音频输出" Target="{Binding #AudioOutputField}" VerticalAlignment="Center"/>
+              <Label Content="{loc:Tr FunctionTabs.AudioOutput}" Target="{Binding #AudioOutputField}" VerticalAlignment="Center"/>
               <Panel Grid.Column="1">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBox Name="AudioOutputField" Text="{Binding AudioOutput}" AutomationProperties.Name="音频输出"/>
-                  <Button Grid.Column="1" Content="浏览…" Tag="audio-output" Click="Browse_Click" Margin="8,0,0,0"/>
+                  <TextBox Name="AudioOutputField" Text="{Binding AudioOutput}" AutomationProperties.Name="{loc:Tr FunctionTabs.AudioOutput}"/>
+                  <Button Grid.Column="1" Content="{loc:Tr FunctionTabs.Browse}" Tag="audio-output" Click="Browse_Click" Margin="8,0,0,0"/>
                 </Grid>
               </Panel>
             </Grid>
             <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="音频码率（kbps）" Target="{Binding #AudioBitrateAudioField}" VerticalAlignment="Center"/>
+              <Label Content="{loc:Tr FunctionTabs.AudioBitrate}" Target="{Binding #AudioBitrateAudioField}" VerticalAlignment="Center"/>
               <Panel Grid.Column="1">
-                <TextBox Name="AudioBitrateAudioField" Text="{Binding CurrentPreset.AudioBitrate}" AutomationProperties.Name="音频码率（kbps）"/>
+                <TextBox Name="AudioBitrateAudioField" Text="{Binding CurrentPreset.AudioBitrate}" AutomationProperties.Name="{loc:Tr FunctionTabs.AudioBitrate}"/>
               </Panel>
             </Grid>
           </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
           <WrapPanel HorizontalAlignment="Right">
-            <Button Classes="primary" Content="编码音频" Tag="编码音频" Click="AddTask_Click" HorizontalAlignment="Right"/>
+            <Button Classes="primary" Content="{loc:Tr Operation.Audio}" Tag="{x:Static models:TaskOperation.Audio}" Click="AddTask_Click" HorizontalAlignment="Right"/>
             <Border Width="8"/>
-            <Button Classes="primary" Content="提取音频" Tag="提取音频" Click="AddTask_Click" HorizontalAlignment="Right"/>
+            <Button Classes="primary" Content="{loc:Tr Operation.ExtractAudio}" Tag="{x:Static models:TaskOperation.ExtractAudio}" Click="AddTask_Click" HorizontalAlignment="Right"/>
           </WrapPanel>
         </StackPanel>
       </Grid>
     </TabItem>
-    <TabItem Header="封装">
+    <TabItem Header="{loc:Tr Operation.Mux}">
       <Grid RowDefinitions="*,Auto">
         <ScrollViewer>
           <StackPanel Spacing="6" Margin="0,12,10,12">
             <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="音频输入" Target="{Binding #MuxAudioField}" VerticalAlignment="Center"/>
+              <Label Content="{loc:Tr FunctionTabs.AudioInput}" Target="{Binding #MuxAudioField}" VerticalAlignment="Center"/>
               <Panel Grid.Column="1">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBox Name="MuxAudioField" Text="{Binding MuxAudio}" AutomationProperties.Name="音频输入"/>
-                  <Button Grid.Column="1" Content="浏览…" Tag="mux-audio" Click="Browse_Click" Margin="8,0,0,0"/>
+                  <TextBox Name="MuxAudioField" Text="{Binding MuxAudio}" AutomationProperties.Name="{loc:Tr FunctionTabs.AudioInput}"/>
+                  <Button Grid.Column="1" Content="{loc:Tr FunctionTabs.Browse}" Tag="mux-audio" Click="Browse_Click" Margin="8,0,0,0"/>
                 </Grid>
               </Panel>
             </Grid>
             <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="封装输出" Target="{Binding #MuxOutputField}" VerticalAlignment="Center"/>
+              <Label Content="{loc:Tr FunctionTabs.MuxOutput}" Target="{Binding #MuxOutputField}" VerticalAlignment="Center"/>
               <Panel Grid.Column="1">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBox Name="MuxOutputField" Text="{Binding MuxOutput}" AutomationProperties.Name="封装输出"/>
-                  <Button Grid.Column="1" Content="浏览…" Tag="mux-output" Click="Browse_Click" Margin="8,0,0,0"/>
+                  <TextBox Name="MuxOutputField" Text="{Binding MuxOutput}" AutomationProperties.Name="{loc:Tr FunctionTabs.MuxOutput}"/>
+                  <Button Grid.Column="1" Content="{loc:Tr FunctionTabs.Browse}" Tag="mux-output" Click="Browse_Click" Margin="8,0,0,0"/>
                 </Grid>
               </Panel>
             </Grid>
             <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="封装格式" Target="{Binding #MuxFormatSelect}" VerticalAlignment="Center"/>
+              <Label Content="{loc:Tr FunctionTabs.ContainerFormat}" Target="{Binding #MuxFormatSelect}" VerticalAlignment="Center"/>
               <Panel Grid.Column="1">
-                <ComboBox Name="MuxFormatSelect" ItemsSource="{Binding Options.OutputFormatOptions}" SelectedValue="{Binding CurrentPreset.MuxFormat}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="封装格式">
+                <ComboBox Name="MuxFormatSelect" ItemsSource="{Binding Options.OutputFormatOptions}" SelectedValue="{Binding CurrentPreset.MuxFormat}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.ContainerFormat}">
                   <ComboBox.ItemTemplate>
                     <DataTemplate>
                       <TextBlock Text="{Binding Name}"/>
@@ -448,34 +448,34 @@
           </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
-          <Button Classes="primary" Content="添加封装任务" Tag="封装" Click="AddTask_Click" HorizontalAlignment="Right"/>
+          <Button Classes="primary" Content="{loc:Tr FunctionTabs.QueueMux}" Tag="{x:Static models:TaskOperation.Mux}" Click="AddTask_Click" HorizontalAlignment="Right"/>
         </StackPanel>
       </Grid>
     </TabItem>
-    <TabItem Header="常用">
+    <TabItem Header="{loc:Tr FunctionTabs.Common}">
       <Grid RowDefinitions="*,Auto">
         <ScrollViewer>
           <StackPanel Spacing="6" Margin="0,12,10,12">
-            <TextBlock Classes="section" Text="ffmpeg pipe"/>
-            <TextBlock Classes="muted" Text="通过 FFmpeg 解码和处理视频，并尝试修复音画同步。"/>
+            <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.FfmpegPipe}"/>
+            <TextBlock Classes="muted" Text="{loc:Tr FunctionTabs.PipeDescription}"/>
             <WrapPanel>
-              <Button Content="无音频" Tag="ffmpeg pipe · 无音频" Click="AddTask_Click" Margin="0,0,8,8"/>
-              <Button Content="复制音频" Tag="ffmpeg pipe · 复制音频" Click="AddTask_Click" Margin="0,0,8,8"/>
-              <Button Content="处理音频与视频" Tag="ffmpeg pipe · 处理音频与视频" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="{loc:Tr FunctionTabs.NoAudio}" Tag="{x:Static models:TaskOperation.PipeSilent}" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="{loc:Tr FunctionTabs.CopyAudio}" Tag="{x:Static models:TaskOperation.PipeCopyAudio}" Click="AddTask_Click" Margin="0,0,8,8"/>
+              <Button Content="{loc:Tr FunctionTabs.ProcessAudioVideo}" Tag="{x:Static models:TaskOperation.PipeEncodeAudio}" Click="AddTask_Click" Margin="0,0,8,8"/>
             </WrapPanel>
-            <TextBlock Classes="section" Text="内置字幕压制"/>
+            <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.BurnSubtitles}"/>
             <Grid ColumnDefinitions="140,*" Margin="0,3">
-              <Label Content="ASS 文件" Target="{Binding #BurnSubtitleField}" VerticalAlignment="Center"/>
+              <Label Content="{loc:Tr FunctionTabs.AssFile}" Target="{Binding #BurnSubtitleField}" VerticalAlignment="Center"/>
               <Panel Grid.Column="1">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBox Name="BurnSubtitleField" Text="{Binding Subtitle}" AutomationProperties.Name="ASS 文件"/>
-                  <Button Grid.Column="1" Content="浏览…" Tag="subtitle" Click="Browse_Click" Margin="8,0,0,0"/>
+                  <TextBox Name="BurnSubtitleField" Text="{Binding Subtitle}" AutomationProperties.Name="{loc:Tr FunctionTabs.AssFile}"/>
+                  <Button Grid.Column="1" Content="{loc:Tr FunctionTabs.Browse}" Tag="subtitle" Click="Browse_Click" Margin="8,0,0,0"/>
                 </Grid>
               </Panel>
             </Grid>
-            <TextBlock Classes="muted" Text="使用编码器的内置 libass 压制字幕。"/>
-            <Button Classes="primary" Content="添加字幕压制任务" Tag="字幕压制" Click="AddTask_Click" HorizontalAlignment="Right"/>
-            <Button Classes="primary" Content="添加 HDR 字幕任务" Tag="字幕压制（HDR）" Click="AddTask_Click" HorizontalAlignment="Right"/>
+            <TextBlock Classes="muted" Text="{loc:Tr FunctionTabs.LibassDescription}"/>
+            <Button Classes="primary" Content="{loc:Tr FunctionTabs.QueueSubtitles}" Tag="{x:Static models:TaskOperation.Subtitles}" Click="AddTask_Click" HorizontalAlignment="Right"/>
+            <Button Classes="primary" Content="{loc:Tr FunctionTabs.QueueHdrSubtitles}" Tag="{x:Static models:TaskOperation.HdrSubtitles}" Click="AddTask_Click" HorizontalAlignment="Right"/>
           </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0"/>

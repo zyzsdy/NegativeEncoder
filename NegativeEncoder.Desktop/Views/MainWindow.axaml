@@ -1,65 +1,65 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:NegativeEncoder.Desktop" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="using:NegativeEncoder.Desktop.Views" xmlns:models="using:NegativeEncoder.Desktop.Models"
         x:Class="NegativeEncoder.Desktop.Views.MainWindow" Title="{Binding Title}"
         Width="1320" Height="850" MinWidth="1000" MinHeight="620"
         WindowStartupLocation="CenterScreen" Icon="avares://NegativeEncoder.Desktop/Assets/app-icon.ico">
+  <Window.Resources>
+    <NativeMenu x:Key="NativePresetActions">
+      <NativeMenuItem Header="{loc:Tr MainWindow.New}" Click="NewPreset_NativeClick" />
+      <NativeMenuItem Header="{loc:Tr MainWindow.SavePreset}" Gesture="Meta+S" Click="SavePreset_NativeClick" />
+      <NativeMenuItem Header="{loc:Tr MainWindow.SaveAs}" Click="CopyPreset_NativeClick" />
+      <NativeMenuItem Header="{loc:Tr MainWindow.Rename}" Click="RenamePreset_NativeClick" />
+      <NativeMenuItem Header="{loc:Tr MainWindow.Delete}" Click="DeletePreset_NativeClick" />
+      <NativeMenuItemSeparator />
+      <NativeMenuItem Header="{loc:Tr MainWindow.ImportPresets}" IsEnabled="False" />
+      <NativeMenuItem Header="{loc:Tr MainWindow.ExportPresets}" IsEnabled="False" />
+    </NativeMenu>
+    <NativeMenu x:Key="NativeHelpActions">
+      <NativeMenuItem Header="{loc:Tr MainWindow.ToolLibrary}" Click="ToolLibrary_NativeClick" />
+      <NativeMenuItem Header="{loc:Tr MainWindow.ToolkitTerminal}" Click="ToolkitTerminal_NativeClick" />
+      <NativeMenuItemSeparator /><NativeMenuItem Header="{loc:Tr MainWindow.About}" Click="About_NativeClick" />
+    </NativeMenu>
+  </Window.Resources>
   <NativeMenu.Menu>
     <NativeMenu>
-      <NativeMenuItem Header="文件">
+      <NativeMenuItem Header="{loc:Tr MainWindow.File}">
         <NativeMenu>
-          <NativeMenuItem Header="导入视频…" Gesture="Meta+O" Click="ImportFiles_NativeClick" />
-          <NativeMenuItem Header="清空待处理列表" Click="ClearFiles_NativeClick" />
-          <NativeMenuItem Header="开始任务调度" Click="StartQueue_NativeClick" />
+          <NativeMenuItem Header="{loc:Tr MainWindow.ImportVideosMenu}" Gesture="Meta+O" Click="ImportFiles_NativeClick" />
+          <NativeMenuItem Header="{loc:Tr MainWindow.ClearFiles}" Click="ClearFiles_NativeClick" />
+          <NativeMenuItem Header="{loc:Tr MainWindow.StartQueue}" Click="StartQueue_NativeClick" />
           <NativeMenuItemSeparator />
-          <NativeMenuItem Header="设置" Click="Settings_NativeClick" />
+          <NativeMenuItem Header="{loc:Tr MainWindow.Settings}" Click="Settings_NativeClick" />
         </NativeMenu>
       </NativeMenuItem>
-      <NativeMenuItem Header="预设">
-        <NativeMenu>
-          <NativeMenuItem Header="新建…" Click="NewPreset_NativeClick" />
-          <NativeMenuItem Header="保存预设" Gesture="Meta+S" Click="SavePreset_NativeClick" />
-          <NativeMenuItem Header="另存为…" Click="CopyPreset_NativeClick" />
-          <NativeMenuItem Header="重命名…" Click="RenamePreset_NativeClick" />
-          <NativeMenuItem Header="删除…" Click="DeletePreset_NativeClick" />
-          <NativeMenuItemSeparator />
-          <NativeMenuItem Header="导入预设集合" IsEnabled="False" />
-          <NativeMenuItem Header="导出预设集合" IsEnabled="False" />
-        </NativeMenu>
-      </NativeMenuItem>
-      <NativeMenuItem Header="帮助">
-        <NativeMenu>
-          <NativeMenuItem Header="工具库管理" Click="ToolLibrary_NativeClick" />
-          <NativeMenuItem Header="启动工具包命令行" Click="ToolkitTerminal_NativeClick" />
-          <NativeMenuItemSeparator /><NativeMenuItem Header="关于消极压制" Click="About_NativeClick" />
-        </NativeMenu>
-      </NativeMenuItem>
+      <NativeMenuItem Header="{loc:Tr MainWindow.Presets}" Menu="{StaticResource NativePresetActions}" />
+      <NativeMenuItem Header="{loc:Tr MainWindow.Help}" Menu="{StaticResource NativeHelpActions}" />
     </NativeMenu>
   </NativeMenu.Menu>
   <Grid RowDefinitions="Auto,*,Auto">
     <Menu IsVisible="{OnPlatform macOS=False, Default=True}">
-      <MenuItem Header="文件(_F)">
-        <MenuItem Header="导入视频…" Click="ImportFiles_Click" />
-        <MenuItem Header="清空待处理列表" Click="ClearFiles_Click" />
-        <MenuItem Header="开始任务调度" Click="StartQueue_Click" />
-        <Separator /><MenuItem Header="设置" Click="Settings_Click" />
-        <Separator /><MenuItem Header="退出" Click="Exit_Click" />
+      <MenuItem Header="{loc:Tr MainWindow.FileMnemonic}">
+        <MenuItem Header="{loc:Tr MainWindow.ImportVideosMenu}" Click="ImportFiles_Click" />
+        <MenuItem Header="{loc:Tr MainWindow.ClearFiles}" Click="ClearFiles_Click" />
+        <MenuItem Header="{loc:Tr MainWindow.StartQueue}" Click="StartQueue_Click" />
+        <Separator /><MenuItem Header="{loc:Tr MainWindow.Settings}" Click="Settings_Click" />
+        <Separator /><MenuItem Header="{loc:Tr MainWindow.Exit}" Click="Exit_Click" />
       </MenuItem>
-      <MenuItem Name="PresetMenu" Header="预设(_P)">
-        <MenuItem Header="新建…" Click="NewPreset_Click" />
-        <MenuItem Header="保存预设" Click="SavePreset_Click" />
-        <MenuItem Header="另存为…" Click="CopyPreset_Click" />
-        <MenuItem Header="重命名…" Click="RenamePreset_Click" />
-        <MenuItem Header="删除…" Click="DeletePreset_Click" />
+      <MenuItem Name="PresetMenu" Header="{loc:Tr MainWindow.PresetsMnemonic}">
+        <MenuItem Header="{loc:Tr MainWindow.New}" Click="NewPreset_Click" />
+        <MenuItem Header="{loc:Tr MainWindow.SavePreset}" Click="SavePreset_Click" />
+        <MenuItem Header="{loc:Tr MainWindow.SaveAs}" Click="CopyPreset_Click" />
+        <MenuItem Header="{loc:Tr MainWindow.Rename}" Click="RenamePreset_Click" />
+        <MenuItem Header="{loc:Tr MainWindow.Delete}" Click="DeletePreset_Click" />
         <Separator />
-        <MenuItem Header="导入预设集合" IsEnabled="False" />
-        <MenuItem Header="导出预设集合" IsEnabled="False" />
+        <MenuItem Header="{loc:Tr MainWindow.ImportPresets}" IsEnabled="False" />
+        <MenuItem Header="{loc:Tr MainWindow.ExportPresets}" IsEnabled="False" />
       </MenuItem>
-      <MenuItem Header="帮助(_H)">
-        <MenuItem Name="CheckUpdates" Header="立即检查更新" Click="CheckUpdates_Click" />
+      <MenuItem Header="{loc:Tr MainWindow.HelpMnemonic}">
+        <MenuItem Name="CheckUpdates" Header="{loc:Tr MainWindow.CheckUpdates}" Click="CheckUpdates_Click" />
         <MenuItem Name="NewRelease" IsVisible="False" Click="Release_Click" />
-        <MenuItem Header="工具库管理" Click="ToolLibrary_Click" />
-        <MenuItem Header="启动工具包命令行" Click="ToolkitTerminal_Click" />
-        <Separator /><MenuItem Header="关于消极压制" Click="About_Click" />
+        <MenuItem Header="{loc:Tr MainWindow.ToolLibrary}" Click="ToolLibrary_Click" />
+        <MenuItem Header="{loc:Tr MainWindow.ToolkitTerminal}" Click="ToolkitTerminal_Click" />
+        <Separator /><MenuItem Header="{loc:Tr MainWindow.About}" Click="About_Click" />
       </MenuItem>
     </Menu>
     <Grid Grid.Row="1" Margin="12,10,12,10">
@@ -72,10 +72,10 @@
       </Grid.ColumnDefinitions>
       <Border Classes="panel">
         <Grid RowDefinitions="Auto,Auto,*,Auto">
-          <Grid ColumnDefinitions="*,Auto"><TextBlock Text="待处理视频" Classes="heading" /><TextBlock Grid.Column="1" Text="{Binding FileCount}" Classes="muted" VerticalAlignment="Center" /></Grid>
+          <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{loc:Tr MainWindow.InputVideos}" Classes="heading" /><TextBlock Grid.Column="1" Text="{Binding FileCount}" Classes="muted" VerticalAlignment="Center" /></Grid>
           <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,12,0,8">
-            <Button Name="ImportButton" Content="＋ 导入视频" Click="ImportFiles_Click" HorizontalAlignment="Stretch" />
-            <Button Grid.Column="1" Content="移除" Click="RemoveFiles_Click" Margin="6,0,0,0" />
+            <Button Name="ImportButton" Content="{loc:Tr MainWindow.AddVideos}" Click="ImportFiles_Click" HorizontalAlignment="Stretch" />
+            <Button Grid.Column="1" Content="{loc:Tr MainWindow.Remove}" Click="RemoveFiles_Click" Margin="6,0,0,0" />
           </Grid>
           <Grid Grid.Row="2" DragDrop.AllowDrop="True" Name="FileDropArea">
             <ListBox Name="FileList" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" SelectionMode="Multiple,Toggle" SelectionChanged="Files_SelectionChanged">
@@ -84,20 +84,20 @@
               </DataTemplate></ListBox.ItemTemplate>
             </ListBox>
           </Grid>
-          <CheckBox Grid.Row="3" Content="批量处理全部文件" IsChecked="{Binding ProcessAll}" Margin="0,8,0,0" />
+          <CheckBox Grid.Row="3" Content="{loc:Tr MainWindow.BatchAllFiles}" IsChecked="{Binding ProcessAll}" Margin="0,8,0,0" />
         </Grid>
       </Border>
       <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="Transparent" />
       <Border Grid.Column="2" Classes="panel" Padding="16">
         <Grid RowDefinitions="Auto,Auto,*">
-          <Grid ColumnDefinitions="48,*,Auto" Margin="0,0,0,8">
-            <Label Content="输入" Target="{Binding #InputPath}" VerticalAlignment="Center" />
-            <TextBox Grid.Column="1" Grid.ColumnSpan="2" Name="InputPath" Text="{Binding InputPath}" IsReadOnly="True" Watermark="从左侧选择视频" AutomationProperties.Name="视频输入路径" />
+          <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
+            <Label Content="{loc:Tr MainWindow.Input}" Target="{Binding #InputPath}" VerticalAlignment="Center" />
+            <TextBox Grid.Column="1" Grid.ColumnSpan="2" Name="InputPath" Text="{Binding InputPath}" IsReadOnly="True" Watermark="{loc:Tr MainWindow.SelectInput}" AutomationProperties.Name="{loc:Tr MainWindow.VideoInputPath}" />
           </Grid>
-          <Grid Grid.Row="1" ColumnDefinitions="48,*,Auto" Margin="0,0,0,12">
-            <Label Content="输出" Target="{Binding #OutputPath}" VerticalAlignment="Center" />
-            <TextBox Grid.Column="1" Name="OutputPath" Text="{Binding OutputPath}" Watermark="选择输出位置" AutomationProperties.Name="视频输出路径" />
-            <Button Grid.Column="2" Content="浏览…" Click="OutputBrowse_Click" Margin="8,0,0,0" />
+          <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
+            <Label Content="{loc:Tr MainWindow.Output}" Target="{Binding #OutputPath}" VerticalAlignment="Center" />
+            <TextBox Grid.Column="1" Name="OutputPath" Text="{Binding OutputPath}" Watermark="{loc:Tr MainWindow.ChooseOutput}" AutomationProperties.Name="{loc:Tr MainWindow.VideoOutputPath}" />
+            <Button Grid.Column="2" Content="{loc:Tr FunctionTabs.Browse}" Click="OutputBrowse_Click" Margin="8,0,0,0" />
           </Grid>
           <views:FunctionTabs Grid.Row="2" Name="EditorTabs" />
         </Grid>
@@ -105,22 +105,22 @@
       <GridSplitter Grid.Column="3" Width="6" HorizontalAlignment="Stretch" Background="Transparent" />
       <Border Grid.Column="4" Classes="panel">
         <Grid RowDefinitions="Auto,Auto,*,Auto">
-          <Grid ColumnDefinitions="*,Auto"><TextBlock Text="任务队列" Classes="heading" /><TextBlock Grid.Column="1" Text="{Binding TaskCount}" Classes="muted" VerticalAlignment="Center" /></Grid>
+          <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{loc:Tr MainWindow.TaskQueue}" Classes="heading" /><TextBlock Grid.Column="1" Text="{Binding TaskCount}" Classes="muted" VerticalAlignment="Center" /></Grid>
           <Grid Grid.Row="2">
             <ListBox Name="TaskList" ItemsSource="{Binding Tasks}" DoubleTapped="Task_DoubleTapped">
               <ListBox.ItemTemplate><DataTemplate x:DataType="models:TaskDraft">
                 <StackPanel Spacing="6">
                   <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                  <TextBlock Text="{Binding Operation}" />
+                  <TextBlock Text="{Binding OperationLabel}" />
                   <TextBlock Text="{Binding Status}" Classes="muted" FontSize="11" />
                 </StackPanel>
               </DataTemplate></ListBox.ItemTemplate>
             </ListBox>
           </Grid>
-          <StackPanel Grid.Row="3" Spacing="6"><Button Content="取消任务" Click="CancelTask_Click" /><Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
-            <Button Content="查看详情" Click="TaskDetails_Click" />
-            <Button Grid.Column="1" Content="移除" Click="RemoveTask_Click" />
-          </Grid><Button Name="UndoTaskButton" Content="撤销移除" Click="UndoTask_Click" IsVisible="False" /></StackPanel>
+          <StackPanel Grid.Row="3" Spacing="6"><Button Content="{loc:Tr MainWindow.CancelTask}" Click="CancelTask_Click" /><Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+            <Button Content="{loc:Tr MainWindow.TaskDetails}" Click="TaskDetails_Click" />
+            <Button Grid.Column="1" Content="{loc:Tr MainWindow.Remove}" Click="RemoveTask_Click" />
+          </Grid><Button Name="UndoTaskButton" Content="{loc:Tr MainWindow.UndoRemoval}" Click="UndoTask_Click" IsVisible="False" /></StackPanel>
         </Grid>
       </Border>
     </Grid>

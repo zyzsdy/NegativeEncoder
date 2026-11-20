@@ -17,7 +17,7 @@ internal sealed class PresetStore(string directory)
         if (presets is not null && (presets.Length == 0 ||
             presets.Any(p => p is null || p.Id == Guid.Empty || p.Settings.ValueKind != JsonValueKind.Object) ||
             presets.DistinctBy(p => p.Id).Count() != presets.Length))
-            throw new InvalidDataException($"预设列表无效：{_catalog}");
+            throw new InvalidDataException(Loc.Format("PresetStore.InvalidList", _catalog));
         return presets;
     }
 
@@ -26,7 +26,7 @@ internal sealed class PresetStore(string directory)
         var drafts = ReadIfPresent<PresetDrafts>(_drafts);
         if (drafts is not null && (drafts.Selected == Guid.Empty || drafts.Changes is null ||
             drafts.Changes.Values.Any(snapshot => snapshot.ValueKind != JsonValueKind.Object)))
-            throw new InvalidDataException($"预设草稿无效：{_drafts}");
+            throw new InvalidDataException(Loc.Format("PresetStore.InvalidDraft", _drafts));
         return drafts;
     }
 
@@ -38,6 +38,6 @@ internal sealed class PresetStore(string directory)
         try { return LibraryJson.Read<T>(path); }
         catch (FileNotFoundException) { return null; }
         catch (DirectoryNotFoundException) { return null; }
-        catch (JsonException error) { throw new InvalidDataException($"无法读取预设文件：{path}", error); }
+        catch (JsonException error) { throw new InvalidDataException(Loc.Format("PresetStore.ReadFailed", path), error); }
     }
 }

@@ -20,7 +20,7 @@ internal static class WindowsConsole
         var commandLine = new StringBuilder($"\"{info.FileName}\"");
         if (!CreateProcessW(info.FileName, commandLine, IntPtr.Zero, IntPtr.Zero, false,
                 createNewConsole | createUnicodeEnvironment, environment, null, ref startup, out var process))
-            throw new IOException($"无法创建 Shell 控制台：{info.FileName}", new Win32Exception(Marshal.GetLastWin32Error()));
+            throw new IOException(Loc.Format("WindowsConsole.CreateFailed", info.FileName), new Win32Exception(Marshal.GetLastWin32Error()));
 
         CloseHandle(process.Thread);
         CloseHandle(process.Process);

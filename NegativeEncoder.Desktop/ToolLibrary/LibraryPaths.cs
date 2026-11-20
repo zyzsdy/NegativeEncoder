@@ -18,7 +18,7 @@ public sealed class LibraryPaths
     public void Apply(string path)
     {
         if (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path))
-            throw new ArgumentException("请填写完整的绝对目录路径。");
+            throw new ArgumentException(Loc.Text("LibraryPaths.AbsolutePathRequired"));
         var full = Path.GetFullPath(path.Trim());
         Directory.CreateDirectory(full);
         var check = Path.Combine(full, ".ne-write-check-" + Guid.NewGuid().ToString("N"));
@@ -32,7 +32,7 @@ public sealed class LibraryPaths
     {
         var file = Path.Combine(root, "library.json");
         var manifest = File.Exists(file) ? LibraryJson.Read<LibraryManifest>(file) : LibraryManifest.Empty;
-        if (manifest.Schema != 1) throw new InvalidDataException($"不支持的工具库清单版本：{manifest.Schema}");
+        if (manifest.Schema != 1) throw new InvalidDataException(Loc.Format("LibraryPaths.UnsupportedSchema", manifest.Schema));
         foreach (var tool in manifest.Tools.Values)
         {
             _ = Within(root, tool.Directory);
@@ -43,18 +43,18 @@ public sealed class LibraryPaths
 
     public static string Within(string root, string relative)
     {
-        if (Path.IsPathRooted(relative)) throw new InvalidDataException($"工具库路径必须为相对路径：{relative}");
+        if (Path.IsPathRooted(relative)) throw new InvalidDataException(Loc.Format("LibraryPaths.RelativePathRequired", relative));
         var full = Path.GetFullPath(Path.Combine(root, relative));
         var prefix = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)) + Path.DirectorySeparatorChar;
         if (!full.StartsWith(prefix, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-            throw new InvalidDataException($"路径超出工具库：{relative}");
+            throw new InvalidDataException(Loc.Format("LibraryPaths.OutsideLibrary", relative));
         // An existing symbolic-link ancestor must not redirect managed writes outside Libs.
         for (var current = full; current.Length >= prefix.Length; current = Path.GetDirectoryName(current)!)
             if ((File.Exists(current) || Directory.Exists(current)) && File.GetAttributes(current).HasFlag(FileAttributes.ReparsePoint))
             {
-                var target = new FileInfo(current).ResolveLinkTarget(true)?.FullName ?? throw new IOException($"无法解析链接：{current}");
+                var target = new FileInfo(current).ResolveLinkTarget(true)?.FullName ?? throw new IOException(Loc.Format("LibraryPaths.UnresolvedLink", current));
                 if (!target.StartsWith(prefix, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-                    throw new InvalidDataException($"链接超出工具库：{current}");
+                    throw new InvalidDataException(Loc.Format("LibraryPaths.ExternalLink", current));
             }
         return full;
     }

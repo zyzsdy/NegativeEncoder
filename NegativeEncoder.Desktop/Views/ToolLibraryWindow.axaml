@@ -1,36 +1,36 @@
-<views:OwnedDialog xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<views:OwnedDialog xmlns="https://github.com/avaloniaui" xmlns:loc="using:NegativeEncoder.Desktop" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="using:NegativeEncoder.Desktop.Views" xmlns:vm="using:NegativeEncoder.Desktop.ViewModels"
-        x:Class="NegativeEncoder.Desktop.Views.ToolLibraryWindow" Title="工具库管理"
+        x:Class="NegativeEncoder.Desktop.Views.ToolLibraryWindow" Title="{loc:Tr MainWindow.ToolLibrary}"
         Width="980" Height="780" MinWidth="820" MinHeight="640">
   <Grid RowDefinitions="Auto,*,Auto" Margin="18">
     <StackPanel Spacing="8">
-      <TextBlock Text="工具库保存位置" Classes="heading"/>
+      <TextBlock Text="{loc:Tr ToolLibraryWindow.LibraryPath}" Classes="heading"/>
       <Grid ColumnDefinitions="*,Auto,Auto" IsEnabled="{Binding Idle}">
-        <TextBox Name="LibraryPathField" Text="{Binding LibraryPath, Mode=TwoWay}" AutomationProperties.Name="工具库保存位置"/>
-        <Button Grid.Column="1" Content="浏览…" Click="Browse_Click" Margin="8,0,0,0"/>
-        <Button Grid.Column="2" Content="应用位置" Click="Apply_Click" Margin="8,0,0,0"/>
+        <TextBox Name="LibraryPathField" Text="{Binding LibraryPath, Mode=TwoWay}" AutomationProperties.Name="{loc:Tr ToolLibraryWindow.LibraryPath}"/>
+        <Button Grid.Column="1" Content="{loc:Tr FunctionTabs.Browse}" Click="Browse_Click" Margin="8,0,0,0"/>
+        <Button Grid.Column="2" Content="{loc:Tr ToolLibraryWindow.ApplyPath}" Click="Apply_Click" Margin="8,0,0,0"/>
       </Grid>
-      <TextBlock Text="更改位置仅切换当前工具库，不会移动或删除原目录中的文件。切换后将重新检测组件；新目录为空时需要重新安装。" Classes="muted"/>
+      <TextBlock Text="{loc:Tr ToolLibraryWindow.SwitchPathHint}" Classes="muted"/>
       <StackPanel Orientation="Horizontal" Spacing="12">
-        <TextBlock Text="在“设置”中配置代理服务器" VerticalAlignment="Center" Classes="muted"/>
-        <Button Name="OpenSettingsButton" Content="打开设置" Click="Settings_Click"/>
+        <TextBlock Text="{loc:Tr ToolLibraryWindow.ConfigureProxy}" VerticalAlignment="Center" Classes="muted"/>
+        <Button Name="OpenSettingsButton" Content="{loc:Tr ToolLibraryWindow.OpenSettings}" Click="Settings_Click"/>
       </StackPanel>
       <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,8">
         <TextBlock Text="{Binding Hardware}" VerticalAlignment="Center"/>
-        <Button Grid.Column="1" Content="重新检测 / 检查更新" Click="Refresh_Click" IsEnabled="{Binding Idle}" Margin="12,0,0,0"/>
+        <Button Grid.Column="1" Content="{loc:Tr ToolLibraryWindow.Refresh}" Click="Refresh_Click" IsEnabled="{Binding Idle}" Margin="12,0,0,0"/>
       </Grid>
     </StackPanel>
     <TabControl Grid.Row="1" Name="LibraryTabs">
-      <TabItem Header="工具">
+      <TabItem Header="{loc:Tr ToolLibraryWindow.Tools}">
         <Grid RowDefinitions="Auto,*" Margin="0,10,0,0">
-          <Grid ColumnDefinitions="100,115,115,*,90" Margin="14,0,14,6">
-            <TextBlock Text="组件"/><TextBlock Grid.Column="1" Text="当前版本"/><TextBlock Grid.Column="2" Text="目标版本"/>
-            <TextBlock Grid.Column="3" Text="状态 / 硬件提示"/><TextBlock Grid.Column="4" Text="操作"/>
+          <Grid ColumnDefinitions="100,115,115,*,114" Margin="14,0,14,6">
+            <TextBlock Text="{loc:Tr ToolLibraryWindow.Component}"/><TextBlock Grid.Column="1" Text="{loc:Tr ToolLibraryWindow.CurrentVersion}"/><TextBlock Grid.Column="2" Text="{loc:Tr ToolLibraryWindow.TargetVersion}"/>
+            <TextBlock Grid.Column="3" Text="{loc:Tr ToolLibraryWindow.HardwareStatus}"/><TextBlock Grid.Column="4" Text="{loc:Tr ToolLibraryWindow.Action}"/>
           </Grid>
           <ListBox Grid.Row="1" ItemsSource="{Binding Tools}" Name="ToolRows">
             <ListBox.ItemTemplate><DataTemplate x:DataType="vm:ToolRowViewModel">
               <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="4,8">
-                <Grid ColumnDefinitions="100,115,115,*,90" RowDefinitions="Auto,Auto">
+                <Grid ColumnDefinitions="100,115,115,*,114" RowDefinitions="Auto,Auto">
                   <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                   <TextBlock Grid.Column="1" Text="{Binding Current}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                   <TextBlock Grid.Column="2" Text="{Binding Target}" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -43,13 +43,13 @@
           </ListBox>
         </Grid>
       </TabItem>
-      <TabItem Header="VS 插件">
+      <TabItem Header="{loc:Tr ToolLibraryWindow.VsPlugins}">
         <Grid RowDefinitions="Auto,*,Auto" Margin="0,10,0,0">
-          <TextBlock Text="推荐插件按经过验证的固定组合管理。用户手工添加的插件不会自动升级或删除。" Margin="8,0,8,8"/>
+          <TextBlock Text="{loc:Tr ToolLibraryWindow.PluginsHint}" Margin="8,0,8,8"/>
           <ListBox Grid.Row="1" ItemsSource="{Binding Groups}" Name="PluginRows">
             <ListBox.ItemTemplate><DataTemplate x:DataType="vm:ToolRowViewModel">
               <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="4,8">
-                <Grid ColumnDefinitions="*,160,90" RowDefinitions="Auto,Auto,Auto">
+                <Grid ColumnDefinitions="*,160,114" RowDefinitions="Auto,Auto,Auto">
                   <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/><TextBlock Grid.Column="1" Text="{Binding Current}"/>
                   <Button Grid.Column="2" Grid.RowSpan="3" Content="{Binding Action}" IsEnabled="{Binding CanAct}" Click="Install_Click" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                   <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}" Classes="muted" Margin="0,4,12,0" ToolTip.Tip="{Binding Source}"/>
@@ -59,22 +59,22 @@
             </DataTemplate></ListBox.ItemTemplate>
           </ListBox>
           <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="8">
-            <Button Classes="primary" Content="安装 / 升级推荐插件" Click="Recommended_Click" IsEnabled="{Binding Idle}"/>
-            <Button Content="打开用户插件目录" Click="OpenPlugins_Click" IsEnabled="{Binding Idle}"/>
+            <Button Classes="primary" Content="{loc:Tr ToolLibraryWindow.InstallPlugins}" Click="Recommended_Click" IsEnabled="{Binding Idle}"/>
+            <Button Content="{loc:Tr ToolLibraryWindow.OpenPlugins}" Click="OpenPlugins_Click" IsEnabled="{Binding Idle}"/>
           </StackPanel>
         </Grid>
       </TabItem>
     </TabControl>
     <StackPanel Grid.Row="2" Spacing="8" Margin="0,12,0,0">
       <ProgressBar Height="3" IsIndeterminate="{Binding Busy}"/>
-      <TextBlock Name="LibraryStatus" Text="{Binding Status}" MinHeight="36" MaxHeight="72" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Status}" AutomationProperties.Name="工具库操作状态"/>
-      <Expander Header="操作日志" HorizontalAlignment="Stretch">
-        <TextBox Text="{Binding Log, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="120" Classes="code" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" AutomationProperties.Name="工具库操作日志"/>
+      <TextBlock Name="LibraryStatus" Text="{Binding Status}" MinHeight="36" MaxHeight="72" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Status}" AutomationProperties.Name="{loc:Tr ToolLibraryWindow.LibraryStatus}"/>
+      <Expander Header="{loc:Tr ToolLibraryWindow.OperationLog}" HorizontalAlignment="Stretch">
+        <TextBox Text="{Binding Log, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="120" Classes="code" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" AutomationProperties.Name="{loc:Tr ToolLibraryWindow.LibraryLog}"/>
       </Expander>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-        <Button Content="复制日志" Click="CopyLog_Click"/>
-        <Button Content="取消操作" Click="Cancel_Click" IsEnabled="{Binding Busy}"/>
-        <Button Name="CloseLibraryButton" Content="关闭" Click="Close_Click" IsEnabled="{Binding Idle}"/>
+        <Button Content="{loc:Tr ToolLibraryWindow.CopyLog}" Click="CopyLog_Click"/>
+        <Button Content="{loc:Tr ToolLibraryWindow.CancelOperation}" Click="Cancel_Click" IsEnabled="{Binding Busy}"/>
+        <Button Name="CloseLibraryButton" Content="{loc:Tr SettingsWindow.Close}" Click="Close_Click" IsEnabled="{Binding Idle}"/>
       </StackPanel>
     </StackPanel>
   </Grid>

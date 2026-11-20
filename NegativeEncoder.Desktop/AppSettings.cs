@@ -41,16 +41,20 @@ public sealed class AppSettings
         _preferences = preferences;
     }
 
-    public void ApplyUiCulture() => CultureInfo.DefaultThreadCurrentUICulture =
-        Language == "system" ? null : CultureInfo.GetCultureInfo(Language);
+    public void ApplyUiCulture()
+    {
+        var culture = Language == "system" ? null : CultureInfo.GetCultureInfo(Language);
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        if (culture is not null) CultureInfo.CurrentUICulture = culture;
+    }
 
     private static Preferences Validate(string language, int maxConcurrentEncodings, string? address, string? windowsShell)
     {
         if (language is not ("system" or "zh-CN" or "en-US" or "ja-JP"))
-            throw new ArgumentException($"不支持的语言设置：{language}");
+            throw new ArgumentException(Loc.Format("AppSettings.UnsupportedLanguage", language));
         ArgumentOutOfRangeException.ThrowIfLessThan(maxConcurrentEncodings, 1);
         if (windowsShell is not (null or "pwsh" or "cmd" or "powershell"))
-            throw new ArgumentException($"不支持的工具包 Shell：{windowsShell}");
+            throw new ArgumentException(Loc.Format("AppSettings.UnsupportedShell", windowsShell));
         return new(NormalizeProxy(address), language, maxConcurrentEncodings, windowsShell);
     }
 
@@ -62,9 +66,9 @@ public sealed class AppSettings
             uri.Scheme is not ("http" or "socks5") || string.IsNullOrEmpty(uri.Host) ||
             uri.Port is < 1 or > 65535 || address.Any(char.IsWhiteSpace) || address.Contains('\\') ||
             uri.AbsolutePath is not ("" or "/") || uri.Query.Length > 0 || uri.Fragment.Length > 0)
-            throw new ArgumentException("请填写 HTTP 或 SOCKS5 代理地址，例如 http://127.0.0.1:7890 或 socks5://127.0.0.1:1080；不要包含路径、查询参数或片段。");
+            throw new ArgumentException(Loc.Text("AppSettings.InvalidProxy"));
         if (uri.UserInfo.Length > 0)
-            throw new ArgumentException("代理地址不支持用户名或密码，请使用无需认证的 HTTP / SOCKS5 代理。");
+            throw new ArgumentException(Loc.Text("AppSettings.ProxyCredentials"));
         return uri.GetLeftPart(UriPartial.Authority);
     }
 

@@ -33,7 +33,7 @@ public sealed record ToolDefinition(string Id, string Name, string? Repository, 
         new("qsvenc", "QSVEnc", "rigaya/QSVEnc", "Intel"),
         new("vceenc", "VCEEnc", "rigaya/VCEEnc", "AMD"),
         new("vtenc", "VTEnc", "zyzsdy/VTEnc", "Apple"),
-        new("python", "Python", null, "VapourSynth 的依赖"),
+        new("python", "Python", null, ""),
         new("vapoursynth", "VapourSynth", null, "")
     ];
 
@@ -65,16 +65,16 @@ public sealed record VsCapabilities(string Python, string SitePackages, string U
 }
 public sealed record HardwareReport(string Description, string[] Vendors, string? Error)
 {
-    public string Hint(ToolDefinition tool) => string.IsNullOrEmpty(tool.Vendor) ? "" :
-        tool.Id == "python" ? tool.Vendor : Error is not null ? "硬件检测失败；仍可安装" :
-        Vendors.Contains(tool.Vendor) ? $"检测到 {tool.Vendor}；安装后检查驱动能力" : $"未检测到 {tool.Vendor} 硬件；仍可安装";
+    public string Hint(ToolDefinition tool) => tool.Id == "python" ? Loc.Text("LibraryModels.PythonDependency") :
+        string.IsNullOrEmpty(tool.Vendor) ? "" : Error is not null ? Loc.Text("LibraryModels.DetectionFailed") :
+        Vendors.Contains(tool.Vendor) ? Loc.Format("LibraryModels.VendorDetected", tool.Vendor) : Loc.Format("LibraryModels.VendorMissing", tool.Vendor);
 }
 
 public static partial class LibraryJson
 {
     public static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
     public static T Read<T>(string path) => JsonSerializer.Deserialize<T>(File.ReadAllText(path), Options)
-        ?? throw new InvalidDataException($"空的 JSON 文件：{path}");
+        ?? throw new InvalidDataException(Loc.Format("LibraryModels.EmptyJson", path));
     public static void WriteAtomic<T>(string path, T value)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -89,7 +89,7 @@ public static partial class LibraryJson
             try { File.Delete(temp); }
             catch (Exception cleanupError)
             {
-                throw new AggregateException($"写入失败，且无法清理临时文件：{temp}", error, cleanupError);
+                throw new AggregateException(Loc.Format("LibraryModels.WriteCleanupFailed", temp), error, cleanupError);
             }
             throw;
         }

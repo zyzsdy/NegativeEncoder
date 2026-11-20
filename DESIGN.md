@@ -22,7 +22,7 @@ spacing:
 
 ## Overview
 
-NegativeEncoder is a Chinese desktop video-encoding workbench. Preserve the original
+NegativeEncoder is a multilingual desktop video-encoding workbench. Preserve the original
 WPF workflow: input files on the left, six parameter tabs in the center, queue on the
 right. This is a product surface for configuring many related encoding parameters,
 not a marketing page. The familiar three-pane workbench is the signature.
@@ -44,7 +44,7 @@ scrollbar states. No separate screen-specific palettes. Dark theme is out of sco
 UiFont and CodeFont in Theme.axaml implement the font stacks above. Body copy is
 13 device-independent units, pane headings 16, auxiliary paths 11.
 Use OS-installed CJK fallbacks; never bundle an unlicensed font. Code and scripts
-use monospace; descriptive text remains Chinese. Keep product/codec names intact.
+use monospace; descriptive text follows the selected language. Keep product/codec names intact.
 
 ## Layout
 
@@ -103,12 +103,12 @@ Use the existing light tokens and list/form controls. Owned modal: 980 × 780, m
 and plugin lists scroll independently. Progress, result, expandable copyable diagnostics,
 cancel and close stay below. During operations disable mutations, keep list scrolling
 available. Unsupported distributions explain the reason beside a disabled action.
-Source paths truncate with full tooltips. Keep plugin descriptions Chinese and native
+Source paths truncate with full tooltips. Localize plugin descriptions and keep native
 component names unchanged. No new global shortcuts or custom animation.
 
 SettingsWindow owns language preference, queue concurrency, the shared network proxy and the Windows toolkit shell choice.
 File and the tool-library manager open the same settings dialog. Settings and Help share
-one update check, with the newer release linked from Help. Application copy remains Chinese.
+one update check, with the newer release linked from Help. Application-owned text uses stable IDs in the bundled Chinese, English and Japanese language packs.
 
 ## Encoder capabilities and queue
 

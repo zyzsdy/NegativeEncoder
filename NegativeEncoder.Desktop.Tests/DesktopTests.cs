@@ -24,10 +24,10 @@ public sealed class DesktopTests
     public void QueueRejectsMissingInputAndCapturesAnIndependentPreset()
     {
         var model = new MainWindowViewModel();
-        Assert.False(model.AddTask("视频编码"));
+        Assert.False(model.AddTask(TaskOperation.Video));
         model.AddFiles([Path.Combine(Path.GetTempPath(), "中文 视频.mp4")]);
         model.CurrentPreset.VbrParam = "8000";
-        Assert.True(model.AddTask("视频编码"));
+        Assert.True(model.AddTask(TaskOperation.Video));
         model.CurrentPreset.VbrParam = "1000";
         Assert.Equal("8000", model.Tasks[0].Preset.VbrParam);
         Assert.Equal("等待执行", model.Tasks[0].Status);
@@ -40,11 +40,11 @@ public sealed class DesktopTests
         var model = new MainWindowViewModel { ProcessAll = true };
         model.AddFiles(["/videos/a.mp4", "/videos/b.mp4", "/videos/a.mp4"]);
         Assert.Equal(2, model.Files.Count);
-        Assert.True(model.AddTask("视频编码"));
+        Assert.True(model.AddTask(TaskOperation.Video));
         Assert.Equal(2, model.Tasks.Select(t => t.OutputPath).Distinct().Count());
         model.ProcessAll = false;
         model.OutputPath = model.InputPath;
-        Assert.False(model.AddTask("视频编码"));
+        Assert.False(model.AddTask(TaskOperation.Video));
         Assert.Equal(2, model.Tasks.Count);
     }
 
@@ -53,7 +53,7 @@ public sealed class DesktopTests
     {
         var model = new MainWindowViewModel { ProcessAll = true };
         model.AddFiles(["/videos/one/clip.mp4", "/videos/two/clip.mp4"]);
-        Assert.False(model.AddTask("视频编码"));
+        Assert.False(model.AddTask(TaskOperation.Video));
         Assert.Empty(model.Tasks);
     }
 

@@ -7,7 +7,7 @@ public sealed record ProcessResult(int ExitCode, string Output, string Error)
     public string Combined => Output + "\n" + Error;
     public void EnsureSuccess(string operation)
     {
-        if (ExitCode != 0) throw new InvalidOperationException($"{operation}失败（退出码 {ExitCode}）\n{Combined}");
+        if (ExitCode != 0) throw new InvalidOperationException(Loc.Format("ProcessRunner.Failed", operation, ExitCode, Combined));
     }
 }
 
@@ -35,7 +35,7 @@ public class ProcessRunner
             if (!process.HasExited) process.Kill(true);
             await process.WaitForExitAsync(CancellationToken.None);
             if (cancellationToken.IsCancellationRequested) throw;
-            throw new TimeoutException($"运行超时：{executable}\n{await error}");
+            throw new TimeoutException(Loc.Format("ProcessRunner.Timeout", executable, await error));
         }
         return new(process.ExitCode, await output, await error);
     }

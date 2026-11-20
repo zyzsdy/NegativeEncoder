@@ -128,12 +128,12 @@ public sealed class EncodingTests
                 Host("osx"), client, new ProcessRunner());
             var builder = new EncodingPlanBuilder(library);
             var preset = new Preset { Encoder = Encoder.VTEnc };
-            TaskDraft Subtitle(string operation) => new(operation, "input.mp4", "output.mp4", preset, "", "sub.ass", "");
+            TaskDraft Subtitle(TaskOperation operation) => new(operation, "input.mp4", "output.mp4", preset, "", "sub.ass", "");
 
-            Assert.Equal(Path.Combine(root, "ffprobe"), builder.SourceColorProbe(Subtitle("字幕压制")));
-            Assert.Null(builder.SourceColorProbe(Subtitle("字幕压制（HDR）")));
+            Assert.Equal(Path.Combine(root, "ffprobe"), builder.SourceColorProbe(Subtitle(TaskOperation.Subtitles)));
+            Assert.Null(builder.SourceColorProbe(Subtitle(TaskOperation.HdrSubtitles)));
             preset.IsUseCustomParameters = true;
-            Assert.Null(builder.SourceColorProbe(Subtitle("字幕压制")));
+            Assert.Null(builder.SourceColorProbe(Subtitle(TaskOperation.Subtitles)));
         }
         finally { Directory.Delete(root, true); }
     }
@@ -235,11 +235,11 @@ public sealed class EncodingTests
     {
         var model = new MainWindowViewModel();
         model.AddFiles([Path.Combine(Path.GetTempPath(), "test.mp4")]);
-        Assert.True(model.AddTask("视频编码"));
-        Assert.False(model.AddTask("视频编码"));
+        Assert.True(model.AddTask(TaskOperation.Video));
+        Assert.False(model.AddTask(TaskOperation.Video));
         model.AddFiles([Path.Combine(Path.GetTempPath(), "test2.mp4")]);
         model.ProcessAll = true;
-        Assert.False(model.AddTask("VapourSynth"));
+        Assert.False(model.AddTask(TaskOperation.VapourSynth));
     }
 
     [Fact]
@@ -248,7 +248,7 @@ public sealed class EncodingTests
         var model = new MainWindowViewModel { ProcessAll = true };
         model.AddFiles(["/videos/first.mp4", "/videos/second.mp4"]);
         model.Script = "VIDEO_PATH = '/videos/first.mp4'\nvideo = core.lsmas.LWLibavSource(VIDEO_PATH)\n";
-        Assert.True(model.AddTask("VapourSynth"));
+        Assert.True(model.AddTask(TaskOperation.VapourSynth));
         Assert.Contains("VIDEO_PATH = '/videos/first.mp4'", model.Tasks[0].Script);
         Assert.Contains("VIDEO_PATH = '/videos/second.mp4'", model.Tasks[1].Script);
         Assert.Contains("VIDEO_PATH = '/videos/first.mp4'", model.Script);
@@ -292,7 +292,7 @@ public sealed class EncodingTests
         model.AddFiles([Path.Combine(Path.GetTempPath(), "first.mp4"), Path.Combine(Path.GetTempPath(), "second.mp4")]);
         var runner = new StubRunner();
         model.ConfigureEncoding(runner);
-        Assert.True(model.AddTask("视频编码"));
+        Assert.True(model.AddTask(TaskOperation.Video));
         await model.RunQueueAsync();
         Assert.Equal("失败", model.Tasks[0].Status);
         Assert.Equal("等待执行", model.Tasks[1].Status);
@@ -312,7 +312,7 @@ public sealed class EncodingTests
         model.AddFiles([Path.Combine(Path.GetTempPath(), "input.mp4")]);
         var runner = new StubRunner { Fail = false };
         model.ConfigureEncoding(runner);
-        Assert.True(model.AddTask("视频编码"));
+        Assert.True(model.AddTask(TaskOperation.Video));
         model.CancelTask(model.Tasks[0]);
         await model.RunQueueAsync();
         Assert.Equal("已取消", model.Tasks[0].Status);
@@ -326,7 +326,7 @@ public sealed class EncodingTests
         model.AddFiles(Enumerable.Range(1, 7).Select(i => Path.Combine(Path.GetTempPath(), $"clip-{i}.mp4")));
         var runner = new ControlledRunner();
         model.ConfigureEncoding(runner);
-        Assert.True(model.AddTask("视频编码"));
+        Assert.True(model.AddTask(TaskOperation.Video));
         var queue = model.RunQueueAsync();
         Assert.Equal(model.Tasks.Take(3), runner.Calls.Keys);
         await model.RunQueueAsync();

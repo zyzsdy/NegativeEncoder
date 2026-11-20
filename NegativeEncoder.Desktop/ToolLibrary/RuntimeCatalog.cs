@@ -15,30 +15,30 @@ public sealed record RuntimeCatalog(int Schema, string PythonVersion, string Vap
     CatalogAsset[] PythonAssets, RuntimePackage[] Packages)
 {
     public static RuntimeCatalog Load() => JsonSerializer.Deserialize<RuntimeCatalog>(Resource("runtime-catalog.json"), LibraryJson.Options)
-        ?? throw new InvalidDataException("推荐组件清单为空。");
+        ?? throw new InvalidDataException(Loc.Text("RuntimeCatalog.EmptyCatalog"));
 
     public static string Resource(string name)
     {
         using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("NegativeEncoder.Desktop.ToolLibrary." + name)
-            ?? throw new InvalidDataException($"缺少内置资源：{name}");
+            ?? throw new InvalidDataException(Loc.Format("RuntimeCatalog.MissingResource", name));
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
 
     public string? Unavailable(HostPlatform host, string group)
     {
-        if (!PythonAssets.Any(a => a.Platform == host.Rid)) return "没有匹配此平台的独立 Python 运行时。";
-        if (host.Os == "osx" && host.Version.Major < 15) return "推荐 VapourSynth 环境需要 macOS 15 或更高版本。";
-        if (host.Os == "linux" && (host.GlibcVersion is null || host.GlibcVersion < new Version(2, 28))) return "推荐 VapourSynth 环境需要 glibc 2.28+；不支持 musl。";
+        if (!PythonAssets.Any(a => a.Platform == host.Rid)) return Loc.Text("RuntimeCatalog.NoPython");
+        if (host.Os == "osx" && host.Version.Major < 15) return Loc.Text("RuntimeCatalog.MacVersion");
+        if (host.Os == "linux" && (host.GlibcVersion is null || host.GlibcVersion < new Version(2, 28))) return Loc.Text("RuntimeCatalog.GlibcVersion");
         var missing = Packages.Where(p => (p.Group == group || p.Group == "runtime") && !p.Assets.Any(a => a.Platform == host.Rid)).Select(p => p.Id).ToArray();
-        return missing.Length == 0 ? null : "此平台缺少发行包：" + string.Join("、", missing);
+        return missing.Length == 0 ? null : Loc.Format("RuntimeCatalog.MissingPackages", string.Join(Loc.Text("Common.ListSeparator"), missing));
     }
 
-    public static readonly (string Id, string Name, string Description)[] Groups =
+    public static (string Id, string Name, string Description)[] Groups =>
     [
-        ("basic", "基础处理", "L-SMASH-Works · VIVTC · Subtext · Bwdif"),
-        ("qtgmc", "QTGMC 高质量反交错", "havsfunc r33 · mvsfunc · adjust · MVTools · Miscfilters · RGVS · fmtconv · ZNEDI3 · EEDI3"),
-        ("subtitles", "Windows 字幕兼容", "xy-VSFilter · VSFilterMod"),
-        ("yadif", "旧版 Yadif", "Yadifmod · NNEDI3CL（需要 OpenCL）")
+        ("basic", Loc.Text("RuntimeCatalog.Basic"), "L-SMASH-Works · VIVTC · Subtext · Bwdif"),
+        ("qtgmc", Loc.Text("RuntimeCatalog.Qtgmc"), "havsfunc r33 · mvsfunc · adjust · MVTools · Miscfilters · RGVS · fmtconv · ZNEDI3 · EEDI3"),
+        ("subtitles", Loc.Text("RuntimeCatalog.WindowsSubtitles"), "xy-VSFilter · VSFilterMod"),
+        ("yadif", Loc.Text("RuntimeCatalog.LegacyYadif"), Loc.Text("RuntimeCatalog.YadifDependencies"))
     ];
 }

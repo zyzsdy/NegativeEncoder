@@ -75,7 +75,7 @@ Both menu presentations invoke the same handlers and preserve disabled unavailab
 NativeMenu is assigned directly in XAML and removed on non-macOS platforms.
 Native menu inspection requires the main window to be active in the foreground.
 
-Chinese application copy with OS-owned file picker chrome. Desktop has no URL state.
+Application copy follows the saved language on startup. The system option matches Chinese, English and Japanese by language, with Simplified Chinese for other locales. File picker chrome follows the OS. Desktop has no URL state.
 Input lists and task queues are session-local. Presets, drafts, the tool-library path and active manifest persist. Native controls own keyboard/focus behavior; no global
 Enter shortcut may submit while Chinese IME is composing. Name dialogs submit only
 through their save button. Modal windows have an owner, Escape dismisses, and focus

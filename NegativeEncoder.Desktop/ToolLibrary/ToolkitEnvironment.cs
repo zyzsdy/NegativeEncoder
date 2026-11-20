@@ -33,7 +33,7 @@ public sealed record ToolkitEnvironment(string[] Directories, Dictionary<string,
         void AddDirectory(string path)
         {
             if (path.Contains(Path.PathSeparator))
-                throw new InvalidDataException($"可执行文件目录包含 PATH 分隔符 {Path.PathSeparator}：{path}");
+                throw new InvalidDataException(Loc.Format("ToolkitEnvironment.PathSeparator", Path.PathSeparator, path));
             if (seen.Add(path)) directories.Add(path);
         }
 

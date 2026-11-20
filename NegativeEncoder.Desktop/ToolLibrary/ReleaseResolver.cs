@@ -7,9 +7,9 @@ public sealed class ReleaseResolver(DistributionClient client, HostPlatform host
 {
     public static string? Unsupported(ToolDefinition tool, HostPlatform host) => tool.Id switch
     {
-        "vtenc" when host.Os != "osx" || host.Architecture != "arm64" => "VTEnc 仅提供 Apple Silicon macOS 发行包。",
-        "nvenc" or "qsvenc" or "vceenc" when host.Os == "osx" || host.Architecture != "x64" => "上游没有匹配当前系统和架构的发行包。",
-        "ffmpeg" when host.Os == "win" && host.Architecture != "x64" => "当前稳定版构建源没有 Windows ARM64 发行包。",
+        "vtenc" when host.Os != "osx" || host.Architecture != "arm64" => Loc.Text("ReleaseResolver.VtPlatform"),
+        "nvenc" or "qsvenc" or "vceenc" when host.Os == "osx" || host.Architecture != "x64" => Loc.Text("ReleaseResolver.PlatformUnavailable"),
+        "ffmpeg" when host.Os == "win" && host.Architecture != "x64" => Loc.Text("ReleaseResolver.WindowsArmUnavailable"),
         _ => null
     };
 
@@ -32,19 +32,19 @@ public sealed class ReleaseResolver(DistributionClient client, HostPlatform host
         // Preserve GitHub's release order, allowing prereleases but never drafts.
         foreach (var release in releases.EnumerateArray())
             if (!release.GetProperty("draft").GetBoolean()) return release;
-        throw new NotSupportedException("上游尚未发布可下载版本（包括预发布版本）。");
+        throw new NotSupportedException(Loc.Text("ReleaseResolver.NoRelease"));
     }
 
     public static void EnsureStable(JsonElement release)
     {
         if (release.GetProperty("draft").GetBoolean() || release.GetProperty("prerelease").GetBoolean())
-            throw new InvalidDataException("发行源返回了草稿或预发布版本。");
+            throw new InvalidDataException(Loc.Text("ReleaseResolver.UnstableRelease"));
     }
 
     public static JsonElement SelectAsset(JsonElement release, string pattern)
     {
         var matches = release.GetProperty("assets").EnumerateArray().Where(a => Regex.IsMatch(a.GetProperty("name").GetString()!, pattern, RegexOptions.IgnoreCase)).ToArray();
-        if (matches.Length != 1) throw new NotSupportedException($"没有唯一匹配的二进制发行包（匹配到 {matches.Length} 个）。");
+        if (matches.Length != 1) throw new NotSupportedException(Loc.Format("ReleaseResolver.AmbiguousBinary", matches.Length));
         return matches[0];
     }
 
@@ -55,10 +55,10 @@ public sealed class ReleaseResolver(DistributionClient client, HostPlatform host
         if (digest?.StartsWith("sha256:", StringComparison.Ordinal) == true)
             return new(asset.GetProperty("browser_download_url").GetString()!, digest[7..], name);
         var checksums = release.GetProperty("assets").EnumerateArray().Where(a => a.GetProperty("name").GetString()!.EndsWith("SHA256SUMS.txt", StringComparison.OrdinalIgnoreCase)).ToArray();
-        if (checksums.Length != 1) throw new InvalidDataException($"发行包未提供 SHA256：{name}");
+        if (checksums.Length != 1) throw new InvalidDataException(Loc.Format("ReleaseResolver.NoChecksum", name));
         var text = await client.TextAsync(checksums[0].GetProperty("browser_download_url").GetString()!, token);
         var match = Regex.Match(text, $@"(?m)^([a-fA-F0-9]{{64}})\s+\*?{Regex.Escape(name)}\s*$");
-        if (!match.Success) throw new InvalidDataException($"校验清单缺少 {name}");
+        if (!match.Success) throw new InvalidDataException(Loc.Format("ReleaseResolver.MissingChecksumEntry", name));
         return new(asset.GetProperty("browser_download_url").GetString()!, match.Groups[1].Value, name);
     }
 
@@ -67,29 +67,29 @@ public sealed class ReleaseResolver(DistributionClient client, HostPlatform host
         var upstream = await client.TextAsync("https://ffmpeg.org/download.html", token);
         var versions = Regex.Matches(upstream, @"ffmpeg-(\d+\.\d+(?:\.\d+)?)\.tar\.xz").Select(m => m.Groups[1].Value)
             .Distinct().OrderByDescending(v => Version.Parse(v)).ToArray();
-        if (versions.Length == 0) throw new InvalidDataException("无法从 FFmpeg 官方下载页识别最新稳定版本。");
+        if (versions.Length == 0) throw new InvalidDataException(Loc.Text("ReleaseResolver.UnknownFfmpegVersion"));
         var version = versions[0];
         if (host.Os == "win")
         {
             using var data = await client.JsonAsync("https://api.github.com/repos/GyanD/codexffmpeg/releases/latest", token);
             var release = data.RootElement;
             EnsureStable(release);
-            if (release.GetProperty("tag_name").GetString() != version) throw new NotSupportedException($"FFmpeg 最新稳定版 {version} 尚无此平台构建。");
+            if (release.GetProperty("tag_name").GetString() != version) throw new NotSupportedException(Loc.Format("ReleaseResolver.FfmpegBuildUnavailable", version));
             var asset = SelectAsset(release, $@"^ffmpeg-{Regex.Escape(version)}-full_build\.zip$");
             return new(version, "https://github.com/GyanD/codexffmpeg", [await AssetAsync(asset, release, token)]);
         }
         var html = await client.TextAsync("https://ffmpeg.martin-riedl.de/", token);
         var os = host.Os == "osx" ? "macos" : "linux";
-        var arch = host.Architecture == "arm64" ? "arm64" : host.Architecture == "x64" ? "amd64" : throw new NotSupportedException("不支持的 CPU 架构。");
+        var arch = host.Architecture == "arm64" ? "arm64" : host.Architecture == "x64" ? "amd64" : throw new NotSupportedException(Loc.Text("ReleaseResolver.UnsupportedCpu"));
         var assets = new List<DownloadAsset>();
         foreach (var name in new[] { "ffmpeg", "ffprobe" })
         {
             var match = Regex.Match(html, $"href=\"(/download/{os}/{arch}/[0-9]+_{Regex.Escape(version)}/{name}\\.zip)\"");
-            if (!match.Success) throw new NotSupportedException($"FFmpeg {version} 尚无匹配的平台稳定构建。");
+            if (!match.Success) throw new NotSupportedException(Loc.Format("ReleaseResolver.NoStableBuild", version));
             var url = "https://ffmpeg.martin-riedl.de" + match.Groups[1].Value;
             var checksum = await client.TextAsync(url + ".sha256", token);
             var hash = Regex.Match(checksum, @"\b[a-fA-F0-9]{64}\b").Value;
-            if (hash.Length != 64) throw new InvalidDataException("FFmpeg 校验文件格式无效。");
+            if (hash.Length != 64) throw new InvalidDataException(Loc.Text("ReleaseResolver.InvalidChecksum"));
             assets.Add(new(url, hash, name + ".zip"));
         }
         return new(version, "https://ffmpeg.martin-riedl.de/", assets.ToArray());

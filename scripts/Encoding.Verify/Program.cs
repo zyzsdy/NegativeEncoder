@@ -27,7 +27,7 @@ if (args.Contains("--install-encoder"))
     {
         var tool = ToolDefinition.All.Single(t => t.Id == EncoderCapabilities.ToolId(encoder));
         if (service.FindExecutable(tool) is null)
-            await service.InstallToolAsync(tool, await service.Releases.ResolveAsync(tool, token), message => { if (!message.StartsWith("下载 ", StringComparison.Ordinal)) Console.WriteLine(message); }, token);
+            await service.InstallToolAsync(tool, await service.Releases.ResolveAsync(tool, token), Console.WriteLine, token, downloadProgress: _ => { });
     }
 var ffmpeg = service.FindExecutable(ToolDefinition.All.Single(t => t.Id == "ffmpeg")) ?? throw new FileNotFoundException("Install ffmpeg in verification Libs first.");
 var input = Path.Combine(output, "输入 视频.mp4");
@@ -35,7 +35,7 @@ var input = Path.Combine(output, "输入 视频.mp4");
 var ass = Path.Combine(output, "字幕 测试.ass");
 await File.WriteAllTextAsync(ass, "[Script Info]\nScriptType: v4.00+\nPlayResX: 320\nPlayResY: 240\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,24,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,Encoding test\n", token);
 var executor = new EncodingRunner(service);
-async Task<string> Execute(string name, string operation, Preset preset, string extension = ".mp4", string? audio = null, string? source = null, string script = "")
+async Task<string> Execute(string name, TaskOperation operation, Preset preset, string extension = ".mp4", string? audio = null, string? source = null, string script = "")
 {
     var destination = Path.Combine(output, name + extension);
     var task = new TaskDraft(operation, source ?? input, destination, preset.Copy(), script, ass, audio ?? "");
@@ -46,30 +46,30 @@ async Task<string> Execute(string name, string operation, Preset preset, string 
     return destination;
 }
 var basic = new Preset { Encoder = selected ?? Encoder.NVENC, EncodeMode = selected == Encoder.VTEnc ? EncodeMode.ABR : EncodeMode.VBR, Decoder = Decoder.AVSW };
-var aac = await Execute("audio", "编码音频", basic, ".m4a");
-await Execute("extract", "提取音频", basic, ".m4a");
+var aac = await Execute("audio", TaskOperation.Audio, basic, ".m4a");
+await Execute("extract", TaskOperation.ExtractAudio, basic, ".m4a");
 foreach (var format in new[] { OutputFormat.MP4, OutputFormat.MKV, OutputFormat.MPEGTS })
-    await Execute("mux-" + format, "封装", new Preset { MuxFormat = format }, format == OutputFormat.MPEGTS ? ".ts" : "." + format.ToString().ToLowerInvariant(), aac);
+    await Execute("mux-" + format, TaskOperation.Mux, new Preset { MuxFormat = format }, format == OutputFormat.MPEGTS ? ".ts" : "." + format.ToString().ToLowerInvariant(), aac);
 foreach (var encoder in encoders)
 {
     var p = basic.Copy(); p.Encoder = encoder; p.Codec = Codec.HEVC;
-    var direct = await Execute(encoder + "-direct", "视频编码", p);
+    var direct = await Execute(encoder + "-direct", TaskOperation.Video, p);
     p.AudioEncode = AudioEncode.None;
-    await Execute(encoder + "-silent", "视频编码", p);
+    await Execute(encoder + "-silent", TaskOperation.Video, p);
     p.AudioEncode = AudioEncode.Encode;
-    await Execute(encoder + "-aac", "视频编码", p);
-    await Execute(encoder + "-subtitles", "字幕压制", p);
-    foreach (var action in new[] { "无音频", "复制音频", "处理音频与视频" })
-        await Execute(encoder + "-pipe-" + action, "ffmpeg pipe · " + action, p);
-    foreach (var hdr in new[] { "SDR", "HDR10", "HLG" })
-        await Execute(encoder + "-tag-" + hdr, "标记为 " + hdr, p, source: direct);
+    await Execute(encoder + "-aac", TaskOperation.Video, p);
+    await Execute(encoder + "-subtitles", TaskOperation.Subtitles, p);
+    foreach (var action in new[] { TaskOperation.PipeSilent, TaskOperation.PipeCopyAudio, TaskOperation.PipeEncodeAudio })
+        await Execute(encoder + "-pipe-" + action, action, p);
+    foreach (var hdr in new[] { TaskOperation.TagSdr, TaskOperation.TagHdr10, TaskOperation.TagHlg })
+        await Execute(encoder + "-tag-" + hdr, hdr, p, source: direct);
     if (service.ActiveRuntime() is not null)
     {
         var capabilities = await service.ProbeVsAsync(token);
         var model = new MainWindowViewModel(capabilities);
         model.AddFiles([input]);
         if (model.VsIssue.Length > 0) throw new InvalidOperationException(model.VsIssue);
-        await Execute(encoder + "-vs", "VapourSynth", p, script: model.Script);
+        await Execute(encoder + "-vs", TaskOperation.VapourSynth, p, script: model.Script);
     }
     else Console.WriteLine("NOT TESTED: VS runtime not installed");
 }

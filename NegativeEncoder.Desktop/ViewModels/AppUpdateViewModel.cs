@@ -5,7 +5,7 @@ namespace NegativeEncoder.Desktop.ViewModels;
 
 public sealed record AppRelease(string Tag)
 {
-    public string MenuLabel => $"发现新版本 {Tag}";
+    public string MenuLabel => Loc.Format("AppUpdate.Available", Tag);
     public Uri Page => new($"https://github.com/zyzsdy/NegativeEncoder/releases/tag/{Uri.EscapeDataString(Tag)}");
 
     public static AppRelease? FromTag(string tag, string current)
@@ -27,26 +27,26 @@ public sealed class AppUpdateViewModel(DistributionClient client) : ObservableOb
 
     private bool _canCheck = true;
     public bool CanCheck { get => _canCheck; private set => Set(ref _canCheck, value); }
-    private string _status = $"当前版本 {AppVersion.Current}";
+    private string _status = Loc.Format("AppUpdate.Current", AppVersion.Current);
     public string Status { get => _status; private set => Set(ref _status, value); }
 
     public async Task CheckAsync(CancellationToken token)
     {
         if (!CanCheck) return;
         CanCheck = false;
-        Status = "正在检查程序更新…";
+        Status = Loc.Text("AppUpdate.Checking");
         try
         {
             using var json = await client.JsonAsync(LatestRelease, token);
             var release = json.RootElement;
             if (release.GetProperty("draft").GetBoolean() || release.GetProperty("prerelease").GetBoolean())
-                throw new InvalidDataException("GitHub 返回的最新正式版本被标记为草稿或预发布。");
-            var tag = release.GetProperty("tag_name").GetString() ?? throw new InvalidDataException("发行版本缺少标签。");
+                throw new InvalidDataException(Loc.Text("AppUpdate.InvalidStableRelease"));
+            var tag = release.GetProperty("tag_name").GetString() ?? throw new InvalidDataException(Loc.Text("AppUpdate.MissingTag"));
             Available = AppRelease.FromTag(tag, AppVersion.Current);
-            Status = Available is null ? $"未发现更新的正式版。当前版本 {AppVersion.Current}。" : Available.MenuLabel;
+            Status = Available is null ? Loc.Format("AppUpdate.UpToDate", AppVersion.Current) : Available.MenuLabel;
         }
-        catch (OperationCanceledException) when (token.IsCancellationRequested) { Status = "更新检查已取消。"; }
-        catch (Exception ex) { Status = $"检查更新失败：{ex.Message}"; }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { Status = Loc.Text("AppUpdate.Cancelled"); }
+        catch (Exception ex) { Status = Loc.Format("AppUpdate.CheckFailed", ex.Message); }
         finally { CanCheck = true; }
     }
 }

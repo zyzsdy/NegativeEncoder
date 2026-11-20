@@ -63,7 +63,7 @@ with tempfile.TemporaryDirectory(prefix='.probe-', dir=runtime) as scratch:
             result = test()
             result.get_frame(0)
             result.get_frame(min(5, result.num_frames - 1))
-            available[name] = '已通过取帧检查'
+            available[name] = 'ok'
         except Exception as exc:
             errors[name] = f'{type(exc).__name__}: {exc}'
 

@@ -404,7 +404,7 @@ public sealed class Preset : ObservableObject
     private static readonly JsonSerializerOptions SnapshotOptions = new() { IgnoreReadOnlyProperties = true };
     internal JsonElement Snapshot() => JsonSerializer.SerializeToElement(this, SnapshotOptions);
     internal static Preset FromSnapshot(JsonElement snapshot) =>
-        snapshot.Deserialize<Preset>(SnapshotOptions) ?? throw new InvalidDataException("预设内容为空。");
+        snapshot.Deserialize<Preset>(SnapshotOptions) ?? throw new InvalidDataException(Loc.Text("Preset.Empty"));
 
     public Preset Copy() => FromSnapshot(Snapshot());
 }

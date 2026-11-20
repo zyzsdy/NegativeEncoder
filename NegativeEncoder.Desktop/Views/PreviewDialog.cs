@@ -40,10 +40,10 @@ public sealed class PreviewDialog : OwnedDialog
 
     public static async Task TaskAsync(Window owner, Models.TaskDraft task)
     {
-        var dialog = new PreviewDialog($"任务详情 — {task.Name}", "") { Width = 850, CanResize = true };
+        var dialog = new PreviewDialog(Loc.Format("PreviewDialog.TaskTitle", task.Name), "") { Width = 850, CanResize = true };
         var details = new TextBox { IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 300, DataContext = task };
         details.Bind(TextBox.TextProperty, new Avalonia.Data.Binding(nameof(task.Details)));
-        Avalonia.Automation.AutomationProperties.SetName(details, "任务状态和执行日志");
+        Avalonia.Automation.AutomationProperties.SetName(details, Loc.Text("PreviewDialog.TaskLog"));
         dialog._body.Children.Add(details);
         await ShowNoticeAsync(owner, dialog);
     }
@@ -52,7 +52,7 @@ public sealed class PreviewDialog : OwnedDialog
     {
         using var stream = AssetLoader.Open(new Uri("avares://NegativeEncoder.Desktop/Assets/app-icon.png"));
         using var bitmap = new Bitmap(stream);
-        var dialog = new PreviewDialog("关于消极压制", "") { Width = 640 };
+        var dialog = new PreviewDialog(Loc.Text("MainWindow.About"), "") { Width = 640 };
         var icon = new Image
         {
             Source = bitmap,
@@ -62,7 +62,7 @@ public sealed class PreviewDialog : OwnedDialog
             VerticalAlignment = VerticalAlignment.Top,
             Margin = new Thickness(0, 0, 20, 0)
         };
-        Avalonia.Automation.AutomationProperties.SetName(icon, "消极压制应用图标");
+        Avalonia.Automation.AutomationProperties.SetName(icon, Loc.Text("PreviewDialog.AppIcon"));
         var content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
         content.Children.Add(icon);
         var description = new TextBlock { Text = message };
@@ -74,7 +74,7 @@ public sealed class PreviewDialog : OwnedDialog
 
     private static async Task ShowNoticeAsync(Window owner, PreviewDialog dialog)
     {
-        var close = dialog.AddButton("关闭", () => dialog.Close());
+        var close = dialog.AddButton(Loc.Text("SettingsWindow.Close"), () => dialog.Close());
         dialog.Opened += (_, _) => close.Focus();
         await dialog.ShowDialog(owner);
     }
@@ -82,8 +82,8 @@ public sealed class PreviewDialog : OwnedDialog
     public static async Task<bool> ConfirmAsync(Window owner, string title, string message)
     {
         var dialog = new PreviewDialog(title, message);
-        var cancel = dialog.AddButton("取消", () => dialog.Close(false));
-        dialog.AddButton("删除预设", () => dialog.Close(true));
+        var cancel = dialog.AddButton(Loc.Text("PreviewDialog.Cancel"), () => dialog.Close(false));
+        dialog.AddButton(Loc.Text("MainWindow.DeletePreset"), () => dialog.Close(true));
         dialog.Opened += (_, _) => cancel.Focus();
         return await dialog.ShowDialog<bool>(owner);
     }
@@ -91,13 +91,13 @@ public sealed class PreviewDialog : OwnedDialog
     public static async Task EditNameAsync(Window owner, string title, string initial, Func<string, bool> apply, Func<string> error)
     {
         var dialog = new PreviewDialog(title, "");
-        var input = new TextBox { Text = initial, Watermark = "预设名称" };
-        Avalonia.Automation.AutomationProperties.SetName(input, "预设名称");
+        var input = new TextBox { Text = initial, Watermark = Loc.Text("PreviewDialog.PresetName") };
+        Avalonia.Automation.AutomationProperties.SetName(input, Loc.Text("PreviewDialog.PresetName"));
         var validation = new TextBlock { MinHeight = 22 };
         dialog._body.Children.Add(input);
         dialog._body.Children.Add(validation);
-        dialog.AddButton("取消", () => dialog.Close());
-        dialog.AddButton("保存", () =>
+        dialog.AddButton(Loc.Text("PreviewDialog.Cancel"), () => dialog.Close());
+        dialog.AddButton(Loc.Text("PreviewDialog.Save"), () =>
         {
             if (apply(input.Text ?? "")) dialog.Close();
             else { validation.Text = error(); input.Focus(); }

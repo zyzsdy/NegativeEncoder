@@ -22,11 +22,11 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
 
     private static void ValidatePaths(TaskDraft task)
     {
-        if (!File.Exists(task.InputPath)) throw new FileNotFoundException("输入文件不存在。", task.InputPath);
-        if (File.Exists(task.OutputPath) || Directory.Exists(task.OutputPath)) throw new IOException($"输出已存在，请选择新路径：{task.OutputPath}");
-        if (!Directory.Exists(Path.GetDirectoryName(Path.GetFullPath(task.OutputPath)))) throw new DirectoryNotFoundException("输出目录不存在。");
-        if (task.Operation == "封装" && !File.Exists(task.AudioInputPath)) throw new FileNotFoundException("封装音频不存在。", task.AudioInputPath);
-        if (task.Operation.StartsWith("字幕压制", StringComparison.Ordinal) && !File.Exists(task.SubtitlePath)) throw new FileNotFoundException("字幕文件不存在。", task.SubtitlePath);
+        if (!File.Exists(task.InputPath)) throw new FileNotFoundException(Loc.Text("EncodingRunner.MissingInput"), task.InputPath);
+        if (File.Exists(task.OutputPath) || Directory.Exists(task.OutputPath)) throw new IOException(Loc.Format("EncodingRunner.OutputExists", task.OutputPath));
+        if (!Directory.Exists(Path.GetDirectoryName(Path.GetFullPath(task.OutputPath)))) throw new DirectoryNotFoundException(Loc.Text("EncodingRunner.MissingOutputDirectory"));
+        if (task.Operation == TaskOperation.Mux && !File.Exists(task.AudioInputPath)) throw new FileNotFoundException(Loc.Text("EncodingRunner.MissingMuxAudio"), task.AudioInputPath);
+        if ((task.Operation is TaskOperation.Subtitles or TaskOperation.HdrSubtitles) && !File.Exists(task.SubtitlePath)) throw new FileNotFoundException(Loc.Text("EncodingRunner.MissingSubtitle"), task.SubtitlePath);
     }
 
     public async Task RunAsync(TaskDraft task, CancellationToken token)
@@ -52,7 +52,7 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
             VtSourceColor? color = null;
             if (builder.SourceColorProbe(task) is { } ffprobe)
             {
-                task.Status = "运行中 · 探测源视频色彩";
+                task.Status = Loc.Text("EncodingRunner.ProbingColor");
                 color = await VtSourceColor.ProbeAsync(ffprobe, task.InputPath, Report, token);
             }
             var plan = builder.Build(task, work, color);
@@ -60,18 +60,18 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
             foreach (var step in plan.Steps)
             {
                 token.ThrowIfCancellationRequested();
-                task.Status = "运行中 · " + step.Name;
+                task.Status = Loc.Format("EncodingRunner.RunningStep", step.Name);
                 Report($"\n[{step.Name}]\n{step.Producer?.Preview}\n{step.Command.Preview}\n");
                 await RunStepAsync(step, Report, token);
             }
             token.ThrowIfCancellationRequested();
             if (!File.Exists(plan.StagedOutput) || new FileInfo(plan.StagedOutput).Length == 0)
-                throw new IOException("编码器退出成功，但未生成有效输出文件。");
+                throw new IOException(Loc.Text("EncodingRunner.MissingEncodedOutput"));
             File.Move(plan.StagedOutput, task.OutputPath, false);
         }
         catch (Exception error)
         {
-            Report($"\n{error}\n工作目录已保留：{work}\n");
+            Report(Loc.Format("EncodingRunner.RetainedWorkDirectory", error, work));
             throw;
         }
         // Preserve the real log next to the output. Never silently discard cleanup errors.
@@ -130,8 +130,10 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
             finally { await Task.WhenAll(readOutput, readError, producerError ?? Task.CompletedTask); }
             token.ThrowIfCancellationRequested();
             if (consumer.ExitCode != 0 || producer is not null && producer.ExitCode != 0)
-                throw new InvalidOperationException($"{step.Name}失败：编码器退出码 {consumer.ExitCode}" + (producer is null ? "" : $"，管道生产者退出码 {producer.ExitCode}") + "。详见执行日志。", transferFailure);
-            if (transferFailure is not null) throw new IOException("管道传输失败。", transferFailure);
+                throw new InvalidOperationException(producer is null
+                    ? Loc.Format("EncodingRunner.EncoderExitCode", step.Name, consumer.ExitCode)
+                    : Loc.Format("EncodingRunner.PipelineExitCodes", step.Name, consumer.ExitCode, producer.ExitCode), transferFailure);
+            if (transferFailure is not null) throw new IOException(Loc.Text("EncodingRunner.PipeTransferFailed"), transferFailure);
         }
         finally
         {

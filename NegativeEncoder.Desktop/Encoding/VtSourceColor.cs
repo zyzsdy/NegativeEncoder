@@ -20,7 +20,7 @@ public sealed record VtSourceColor(string Matrix, string Transfer, string Primar
             "stream=color_space,color_transfer,color_primaries,color_range,chroma_location", "-of", "json", "-i", input };
         log(new EncoderCommand(ffprobe, args).Preview + "\n");
         var result = await new ProcessRunner().RunAsync(ffprobe, args, token);
-        result.EnsureSuccess("源视频色彩探测");
+        result.EnsureSuccess(Loc.Text("VtSourceColor.Probe"));
         log(result.Output + "\n");
         return FromProbe(result.Output, log);
     }
@@ -29,18 +29,18 @@ public sealed record VtSourceColor(string Matrix, string Transfer, string Primar
     {
         using var data = JsonDocument.Parse(json);
         var streams = data.RootElement.GetProperty("streams");
-        if (streams.GetArrayLength() != 1) throw new InvalidDataException("ffprobe 未返回选定的视频流 v:0。");
+        if (streams.GetArrayLength() != 1) throw new InvalidDataException(Loc.Text("VtSourceColor.MissingStream"));
         var stream = streams[0];
         string Read(string field, string defaultValue, params string[] supported)
         {
             var value = stream.TryGetProperty(field, out var property) ? property.GetString() : null;
             if (value is null or "" or "unknown" or "unspecified")
             {
-                log($"源视频缺少 {field}，使用默认值 {defaultValue}。\n");
+                log(Loc.Format("VtSourceColor.MissingField", field, defaultValue));
                 return defaultValue;
             }
             if (!supported.Contains(value))
-                throw new InvalidDataException($"VTEnc 不支持源视频的 {field}={value}。");
+                throw new InvalidDataException(Loc.Format("VtSourceColor.UnsupportedColor", field, value));
             return value;
         }
 

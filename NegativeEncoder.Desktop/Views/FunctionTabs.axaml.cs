@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using NegativeEncoder.Desktop.Models;
 using NegativeEncoder.Desktop.ViewModels;
 
 namespace NegativeEncoder.Desktop.Views;
@@ -14,7 +15,7 @@ public partial class FunctionTabs : UserControl
 
     private async void AddTask_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: string operation } && TopLevel.GetTopLevel(this) is MainWindow window)
+        if (sender is Button { Tag: TaskOperation operation } && TopLevel.GetTopLevel(this) is MainWindow window)
             await window.RunQueueAsync(operation);
     }
 

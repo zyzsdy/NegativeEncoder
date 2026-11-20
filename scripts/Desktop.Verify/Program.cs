@@ -56,7 +56,7 @@ sealed class VerificationApp : App
             Require(window.Model.Script == editor.Document.Text, "script binding");
             tabs.SelectedIndex = 0;
             Require(bitrate.Text == "28", "tab retains edit");
-            Require(!window.Model.AddTask("视频编码"), "empty input validation");
+            Require(!window.Model.AddTask(TaskOperation.Video), "empty input validation");
             Console.WriteLine("PASS native Linux UI: six tabs, three sizes, encoder/form/preset/script bindings, popup, validation");
             desktop.Shutdown(0);
         }

@@ -24,7 +24,7 @@ public sealed partial class MainWindowViewModel
     public string Script { get => ScriptDocument.Text; set => ScriptDocument.Text = value; }
 
     private VsCapabilities _vsCapabilities = VsCapabilities.Empty;
-    private string _vsIssue = "尚未安装或检测 VapourSynth；请打开工具库管理。";
+    private string _vsIssue = Loc.Text("MainWindow.VsMissing");
     public string VsIssue { get => _vsIssue; private set => Set(ref _vsIssue, value); }
     public bool CanVsSource => _vsCapabilities.Has("source");
     public bool CanIvtc => _vsCapabilities.Has("ivtc") || UseIvtc;
@@ -89,11 +89,11 @@ public sealed partial class MainWindowViewModel
         if (UseBwdifNormal || UseBwdifDouble) required.Add(("bwdif", "Bwdif"));
         if (!string.IsNullOrEmpty(Subtitle)) required.Add((SubtitleRenderer, SubtitleRenderer));
         var missing = required.Where(r => !_vsCapabilities.Has(r.Feature)).Select(r => r.Label).ToArray();
-        if (missing.Length > 0) return "无法生成：" + string.Join("、", missing) + " 尚未通过当前环境检测。请在工具库管理中查看安装或错误信息；原脚本已保留。";
+        if (missing.Length > 0) return Loc.Format("MainWindow.VsMissingFeatures", string.Join(Loc.Text("Common.ListSeparator"), missing));
         if (new[] { UseQtgmc, UseYadifNormal, UseYadifDouble, UseBwdifNormal, UseBwdifDouble }.Count(v => v) > 1)
-            return "请选择一种反交错算法及帧率模式；原脚本已保留。";
+            return Loc.Text("MainWindow.ConflictingFilters");
         if (VsResize && (!int.TryParse(VsWidth, out var width) || !int.TryParse(VsHeight, out var height) || width <= 0 || height <= 0 || width % 2 != 0 || height % 2 != 0))
-            return "YUV420 输出宽度和高度必须为正偶数；原脚本已保留。";
+            return Loc.Text("MainWindow.InvalidDimensions");
         return "";
     }
 
@@ -105,7 +105,7 @@ public sealed partial class MainWindowViewModel
         script.Append($"VS_SITE = {PythonString(_vsCapabilities.SitePackages)}\n");
         script.Append("os.environ.pop('VAPOURSYNTH_EXTRA_PLUGIN_PATH', None)\nsys.path.insert(0, VS_SITE)\n");
         script.Append($"sys.path.insert(0, {PythonString(_vsCapabilities.UserScripts)})\n");
-        script.Append("import vapoursynth as vs\nif not Path(vs.__file__).resolve().is_relative_to(Path(VS_SITE).resolve()):\n    raise RuntimeError('VapourSynth 来自其他环境，请使用当前 Libs 的 vspipe')\nfrom vapoursynth import core, YUV420P8\n");
+        script.Append("import vapoursynth as vs\nif not Path(vs.__file__).resolve().is_relative_to(Path(VS_SITE).resolve()):\n    raise RuntimeError(" + PythonString(Loc.Text("MainWindow.ForeignRuntime")) + ")\nfrom vapoursynth import core, YUV420P8\n");
         script.Append($"for plugin in sorted(Path({PythonString(_vsCapabilities.UserPlugins)}).rglob('*')):\n    if plugin.suffix.lower() in ('.dll', '.dylib', '.so'):\n        core.std.LoadPlugin(str(plugin))\n");
         if (UseQtgmc) script.Append("from havsfunc import QTGMC\n");
         script.Append($"\nVIDEO_PATH = {PythonString(InputPath)}\n");
@@ -136,7 +136,7 @@ public sealed partial class MainWindowViewModel
                 "xyvsf" => "video = core.xyvsf.TextSub(video, SUB_PATH)\n",
                 "vsf" => "video = core.vsf.TextSub(video, SUB_PATH)\n",
                 "vsfm" => "video = core.vsfm.TextSubMod(video, SUB_PATH)\n",
-                _ => throw new InvalidOperationException("未知字幕渲染器。")
+                _ => throw new InvalidOperationException(Loc.Text("MainWindow.UnknownRenderer"))
             });
         }
         script.Append("video.set_output()\n");

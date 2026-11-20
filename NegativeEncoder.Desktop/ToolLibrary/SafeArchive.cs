@@ -36,7 +36,7 @@ public static class SafeArchive
                 var target = EntryPath(destination, entry.FullName);
                 if (entry.FullName.EndsWith('/')) { Directory.CreateDirectory(target); continue; }
                 var mode = (entry.ExternalAttributes >> 16) & 0xF000;
-                if (mode == 0xA000) throw new InvalidDataException($"ZIP 不允许符号链接：{entry.FullName}");
+                if (mode == 0xA000) throw new InvalidDataException(Loc.Format("SafeArchive.ZipLink", entry.FullName));
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                 entry.ExtractToFile(target, false);
                 if (!OperatingSystem.IsWindows() && ((entry.ExternalAttributes >> 16) & 0x49) != 0)
@@ -51,8 +51,8 @@ public static class SafeArchive
         {
             token.ThrowIfCancellationRequested();
             var entry = reader.Entry;
-            var target = EntryPath(destination, entry.Key ?? throw new InvalidDataException("压缩包条目缺少名称。"));
-            if (!string.IsNullOrEmpty(entry.LinkTarget)) throw new InvalidDataException($"不支持的压缩包链接：{entry.Key}");
+            var target = EntryPath(destination, entry.Key ?? throw new InvalidDataException(Loc.Text("SafeArchive.MissingName")));
+            if (!string.IsNullOrEmpty(entry.LinkTarget)) throw new InvalidDataException(Loc.Format("SafeArchive.UnsupportedLink", entry.Key));
             if (entry.IsDirectory) { Directory.CreateDirectory(target); continue; }
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             using var input = reader.OpenEntryStream();
@@ -65,7 +65,7 @@ public static class SafeArchive
     {
         name = name.Replace('\\', '/');
         if (name.StartsWith('/') || name.Split('/').Any(p => p == ".." || p.Contains(':')))
-            throw new InvalidDataException($"压缩包包含不安全路径：{name}");
+            throw new InvalidDataException(Loc.Format("SafeArchive.UnsafePath", name));
         return LibraryPaths.Within(root, name);
     }
 
@@ -93,7 +93,7 @@ public static class SafeArchive
                 entry.DataStream?.CopyTo(output);
                 if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(path, entry.Mode & (UnixFileMode)0x1FF);
             }
-            else throw new InvalidDataException($"不支持的 TAR 条目：{entry.EntryType} {entry.Name}");
+            else throw new InvalidDataException(Loc.Format("SafeArchive.UnsupportedTarEntry", entry.EntryType, entry.Name));
         }
         // Create links only after files, so no archive entry can write through a link.
         foreach (var link in links)
@@ -110,14 +110,14 @@ public static class SafeArchive
         using var input = File.OpenRead(archive);
         var magic = new byte[8];
         input.ReadExactly(magic);
-        if (Encoding.ASCII.GetString(magic) != "!<arch>\n") throw new InvalidDataException("无效的 deb/ar 文件。");
+        if (Encoding.ASCII.GetString(magic) != "!<arch>\n") throw new InvalidDataException(Loc.Text("SafeArchive.InvalidDeb"));
         while (input.Position < input.Length)
         {
             var header = new byte[60];
             input.ReadExactly(header);
             var name = Encoding.ASCII.GetString(header, 0, 16).Trim().TrimEnd('/');
             var size = long.Parse(Encoding.ASCII.GetString(header, 48, 10).Trim(), System.Globalization.CultureInfo.InvariantCulture);
-            if (size < 0 || input.Position + size > input.Length) throw new InvalidDataException("deb 文件长度不正确。");
+            if (size < 0 || input.Position + size > input.Length) throw new InvalidDataException(Loc.Text("SafeArchive.InvalidDebLength"));
             if (name is "data.tar.xz" or "data.tar.gz")
             {
                 // Only the data member is extracted; maintainer scripts are never run.
@@ -127,6 +127,6 @@ public static class SafeArchive
             }
             input.Seek(size + size % 2, SeekOrigin.Current);
         }
-        throw new NotSupportedException("deb 中没有支持的 data.tar.xz/data.tar.gz 载荷。");
+        throw new NotSupportedException(Loc.Text("SafeArchive.MissingDebPayload"));
     }
 }

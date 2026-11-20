@@ -31,7 +31,7 @@ public sealed class DistributionClient : IDisposable
     {
         var uri = new Uri(url);
         if (uri.Scheme != "https" || !Hosts.Contains(uri.Host, StringComparer.OrdinalIgnoreCase) || !string.IsNullOrEmpty(uri.UserInfo))
-            throw new InvalidDataException($"不允许的下载来源：{uri.Host}");
+            throw new InvalidDataException(Loc.Format("DistributionClient.InvalidHost", uri.Host));
     }
 
     private static async Task<HttpResponseMessage> GetAsync(HttpClient http, string url, CancellationToken token)
@@ -50,11 +50,12 @@ public sealed class DistributionClient : IDisposable
             {
                 var status = response.StatusCode;
                 response.Dispose();
-                throw new HttpRequestException($"请求 {url} 失败：HTTP {(int)status}。{(status == HttpStatusCode.Forbidden ? "可能达到 GitHub API 限额，请稍后重试。" : "")}", null, status);
+                var hint = status == HttpStatusCode.Forbidden ? Loc.Text("DistributionClient.RateLimit") : "";
+                throw new HttpRequestException(Loc.Format("DistributionClient.RequestFailed", url, (int)status, hint), null, status);
             }
             return response;
         }
-        throw new HttpRequestException("下载重定向次数过多。");
+        throw new HttpRequestException(Loc.Text("DistributionClient.RedirectLimit"));
     }
 
     public async Task<string> TextAsync(string url, CancellationToken token)
@@ -74,7 +75,7 @@ public sealed class DistributionClient : IDisposable
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
         timeout.CancelAfter(TimeSpan.FromMinutes(20));
         token = timeout.Token;
-        if (!Regex.IsMatch(asset.Sha256, "^[a-fA-F0-9]{64}$")) throw new InvalidDataException($"缺少有效 SHA256：{asset.FileName}");
+        if (!Regex.IsMatch(asset.Sha256, "^[a-fA-F0-9]{64}$")) throw new InvalidDataException(Loc.Format("DistributionClient.MissingHash", asset.FileName));
         using var response = await GetAsync(http, asset.Url, token);
         await using var input = await response.Content.ReadAsStreamAsync(token);
         await using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 65536, true);
@@ -90,14 +91,15 @@ public sealed class DistributionClient : IDisposable
             downloaded += count;
             if ((DateTime.UtcNow - last).TotalMilliseconds > 200)
             {
-                progress($"下载 {asset.FileName}：{downloaded / 1048576.0:F1} MB" +
-                    (response.Content.Headers.ContentLength is { } total ? $" / {total / 1048576.0:F1} MB" : ""));
+                progress(response.Content.Headers.ContentLength is { } total
+                    ? Loc.Format("DistributionClient.DownloadProgressTotal", asset.FileName, downloaded / 1048576.0, total / 1048576.0)
+                    : Loc.Format("DistributionClient.DownloadProgress", asset.FileName, downloaded / 1048576.0));
                 last = DateTime.UtcNow;
             }
         }
         var actual = Convert.ToHexString(hash.GetHashAndReset());
         if (!actual.Equals(asset.Sha256, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException($"SHA256 校验失败：{asset.FileName}\n期望 {asset.Sha256}\n实际 {actual}");
+            throw new InvalidDataException(Loc.Format("DistributionClient.HashMismatch", asset.FileName, asset.Sha256, actual));
     }
     public void Dispose() => _handler?.Dispose();
 }

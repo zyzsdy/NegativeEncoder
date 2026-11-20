@@ -44,9 +44,9 @@ public static class ToolkitTerminal
             "pwsh" => pwsh!,
             "cmd" => cmd,
             "powershell" => Path.Combine(Environment.SystemDirectory, "WindowsPowerShell", "v1.0", "powershell.exe"),
-            var value => throw new InvalidDataException($"未知的工具包 Shell：{value}")
+            var value => throw new InvalidDataException(Loc.Format("ToolkitTerminal.UnknownShell", value))
         };
-        if (!File.Exists(shell)) throw new FileNotFoundException("找不到所选的 Shell。", shell);
+        if (!File.Exists(shell)) throw new FileNotFoundException(Loc.Text("ToolkitTerminal.ShellMissing"), shell);
         var info = new ProcessStartInfo(shell);
         if (environment.Directories.Length > 0)
         {
@@ -65,12 +65,12 @@ public static class ToolkitTerminal
         var result = mac
             ? await runner.RunAsync("/usr/bin/dscacheutil", ["-q", "user", "-a", "name", Environment.UserName], default)
             : await runner.RunAsync("getent", ["passwd", Environment.UserName], default);
-        result.EnsureSuccess("查询用户默认 Shell");
+        result.EnsureSuccess(Loc.Text("ToolkitTerminal.QueryShell"));
         var shell = mac
             ? result.Output.Split('\n').SingleOrDefault(line => line.StartsWith("shell: ", StringComparison.Ordinal))?[7..]
             : result.Output.TrimEnd().Split(':').ElementAtOrDefault(6);
         if (string.IsNullOrEmpty(shell) || !Path.IsPathFullyQualified(shell) || !File.Exists(shell))
-            throw new InvalidDataException($"找不到用户 {Environment.UserName} 的默认 Shell：{shell}");
+            throw new InvalidDataException(Loc.Format("ToolkitTerminal.UserShellMissing", Environment.UserName, shell));
         return shell;
     }
 
@@ -121,16 +121,16 @@ public static class ToolkitTerminal
             await RunLauncherAsync(new(terminal) { ArgumentList = { argument, "/bin/sh", "-c", command } });
             return;
         }
-        throw new FileNotFoundException("找不到可用的终端模拟器。请安装 xdg-terminal-exec 或 xterm。");
+        throw new FileNotFoundException(Loc.Text("ToolkitTerminal.NoTerminal"));
     }
 
     private static async Task RunLauncherAsync(ProcessStartInfo info)
     {
         info.RedirectStandardError = true;
-        using var process = Process.Start(info) ?? throw new InvalidOperationException($"无法启动 {info.FileName}");
+        using var process = Process.Start(info) ?? throw new InvalidOperationException(Loc.Format("ToolkitTerminal.LaunchFailed", info.FileName));
         var error = process.StandardError.ReadToEndAsync();
         await process.WaitForExitAsync();
         if (process.ExitCode != 0)
-            throw new InvalidOperationException($"{info.FileName} 启动失败（退出码 {process.ExitCode}）\n{await error}");
+            throw new InvalidOperationException(Loc.Format("ToolkitTerminal.ProcessFailed", info.FileName, process.ExitCode, await error));
     }
 }

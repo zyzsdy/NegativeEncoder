@@ -16,6 +16,8 @@ mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cd "$repo_dir"
 "$dotnet_bin" publish NegativeEncoder.Desktop/NegativeEncoder.Desktop.csproj -c Release -r "$runtime" --self-contained true -o "$app_dir/Contents/MacOS"
 cp NegativeEncoder.Desktop/Assets/app-icon.icns "$app_dir/Contents/Resources/app-icon.icns"
+mkdir -p "$app_dir/Contents/Resources/zh-Hans.lproj"
+cp NegativeEncoder.Desktop/Assets/zh-Hans.lproj/InfoPlist.strings "$app_dir/Contents/Resources/zh-Hans.lproj/"
 app_version="$("$dotnet_bin" msbuild NegativeEncoder.Desktop/NegativeEncoder.Desktop.csproj -getProperty:Version)"
 release_version="${app_version%%-*}"
 bundle_version="${app_version/-alpha./a}"
@@ -25,7 +27,9 @@ cat > "$app_dir/Contents/Info.plist" <<PLIST
 <plist version="1.0"><dict>
 <key>CFBundleIdentifier</key><string>io.github.zyzsdy.negativeencoder.preview</string>
 <key>CFBundleName</key><string>NegativeEncoder</string>
-<key>CFBundleDisplayName</key><string>消极压制</string>
+<key>CFBundleDisplayName</key><string>NegativeEncoder</string>
+<key>CFBundleDevelopmentRegion</key><string>en</string>
+<key>CFBundleLocalizations</key><array><string>zh-Hans</string><string>en</string><string>ja</string></array>
 <key>CFBundleExecutable</key><string>NegativeEncoder.Desktop</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>$release_version</string>
