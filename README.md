@@ -3,7 +3,10 @@
 ## next：6.0.0-alpha.1
 
 当前版本使用 **.NET 10 + Avalonia UI** 的 `NegativeEncoder.Desktop`，支持
-Windows / macOS / Linux，已接入工具库管理与主要编码任务执行。旧 WPF 代码、测试和安装器已移除。
+Windows / macOS / Linux，已接入工具库管理与主要编码任务执行。
+
+Windows x64 的 NSIS 安装包按当前用户安装，内含 .NET 运行时。
+首次使用时，从“帮助 → 工具库管理”下载所需的编码工具。升级或卸载桌面应用都会保留已下载的工具库。
 
 ```sh
 # 所有桌面平台：需要稳定版 .NET 10 SDK
