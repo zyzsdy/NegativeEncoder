@@ -70,7 +70,8 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             "vapoursynth" => @"(?:Core R|VapourSynth(?:\s+Video Processing Library)?\s*(?:R)?)(\d+)",
             // Release tags include prerelease/build suffixes; compare the complete version.
             "vtenc" => @"VTEnc(?:\s+version)?\s+v?(\d+(?:\.\d+){1,3}(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)(?=\s|$)",
-            _ => @"(?:NVEncC|QSVEncC|VCEEncC).*?(\d+\.\d+(?:\.\d+)?)"
+            "vceenc" => @"(?m)^[ \t]*VCEEncC?(?:[ \t]+\([^\r\n)]*\))?[ \t]+(\d+\.\d+(?:\.\d+)?)(?=\s|$)",
+            _ => @"(?:NVEncC|QSVEncC).*?(\d+\.\d+(?:\.\d+)?)"
         };
         return Regex.Match(output, pattern, RegexOptions.IgnoreCase).Groups[1].Value;
     }
@@ -135,6 +136,8 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             var result = await runner.RunAsync(executable, [tool.Id == "ffmpeg" ? "-version" : "--version"], token);
             result.EnsureSuccess(Loc.Format("ToolLibraryService.VersionProbeHint", tool.Name));
             var actual = ParseVersion(tool.Id, result.Combined);
+            if (actual.Length == 0)
+                throw new InvalidDataException(Loc.Format("Common.Diagnostic", tool.Name, Loc.Text("ToolLibraryService.UnknownVersion")) + "\n" + result.Combined);
             if (actual != release.Version.TrimStart('v', 'V')) throw new InvalidDataException(Loc.Format("ToolLibraryService.VersionMismatch", tool.Name, release.Version, actual, result.Combined));
             if (tool.Id == "ffmpeg")
             {

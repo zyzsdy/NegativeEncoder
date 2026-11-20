@@ -165,6 +165,38 @@ public sealed class ToolLibraryTests : IDisposable
     }
 
     [Theory]
+    [InlineData("VCEEnc (x64) 9.23 (r2768) by rigaya, Nov 14 2026 12:37:02 (VC 1944/Win)", null)]
+    [InlineData("VCEEncC (x64) 9.23", null)]
+    [InlineData("VCEEnc (x64) 9.22", "期望 9.23，实际 9.22")]
+    [InlineData("VCEEnc (x64)", "版本无法识别")]
+    public async Task VceencInstallChecksEncoderVersionFromBanner(string banner, string? expectedError)
+    {
+        var paths = Paths();
+        var host = new HostPlatform("win", "x64", new Version(10, 0));
+        var tool = ToolDefinition.All.Single(t => t.Id == "vceenc");
+        var bytes = ZipBytes(tool.Executable(host));
+        using var client = new DistributionClient(new ResponseHandler(bytes));
+        var output = banner + "\r\nAMF Version 1.5.0\r\nreader: raw, avs, vpy, avsw, avhw";
+        var service = new ToolLibraryService(paths, host, client, new FakeRunner(false, output));
+        var release = new ToolRelease("9.23", "test",
+            [new("https://github.com/test/test/tool.zip", Convert.ToHexString(SHA256.HashData(bytes)), "tool.zip")]);
+
+        Task Install() => service.InstallToolAsync(tool, release, _ => { }, default);
+        if (expectedError is not null)
+        {
+            var error = await Assert.ThrowsAsync<InvalidDataException>(Install);
+            Assert.Contains(expectedError, error.Message);
+            Assert.Contains(output, error.Message);
+            Assert.False(LibraryPaths.ReadManifest(paths.Root).Tools.ContainsKey(tool.Id));
+            return;
+        }
+
+        await Install();
+        Assert.Equal("9.23", LibraryPaths.ReadManifest(paths.Root).Tools[tool.Id].Version);
+        Assert.Equal("9.23", (await service.ProbeAsync(tool, default))?.Version);
+    }
+
+    [Theory]
     [InlineData("VTEnc 0.1.0-alpha.1 (macOS arm64; VideoToolbox hardware encoder)", "0.1.0-alpha.1")]
     [InlineData("VTEnc 0.1.0", "0.1.0")]
     [InlineData("vtenc version v0.1.0-rc.2", "0.1.0-rc.2")]
