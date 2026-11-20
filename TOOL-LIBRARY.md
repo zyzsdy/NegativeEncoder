@@ -3,9 +3,8 @@
 ## 已确认的产品规则
 
 工具库独立安装，不使用系统已有的编码工具、Python、Python 用户包或 VS 插件。
-Windows/Linux 默认位置为程序目录的 `../Libs`；macOS 为
-`~/Library/Application Support/NegativeEncoder/Libs`。自定义路径持久保存，只切换，
-不搬迁、不删除旧目录。路径区域始终解释这一行为。
+默认使用本地用户数据目录下的 `NegativeEncoder/Libs`。Windows 基目录为 `%LOCALAPPDATA%`，macOS 为 `~/Library/Application Support`，Linux 为 `$XDG_DATA_HOME`（未设置有效绝对路径时使用 `~/.local/share`）。
+已保存的自定义路径优先。切换路径时保留原目录及其内容。路径区域始终解释这一行为。
 
 从工具库管理面板点击“打开设置”，或选择“文件 → 设置”，即可配置代理服务器。
 支持无需认证的 HTTP 和 SOCKS5 代理。点击“保存设置”后，后续程序更新检查、工具库版本检查和下载均使用该配置。

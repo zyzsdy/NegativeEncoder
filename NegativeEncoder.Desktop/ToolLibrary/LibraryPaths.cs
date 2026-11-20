@@ -4,16 +4,18 @@ public sealed class LibraryPaths
 {
     private readonly string _settings;
     public string Root { get; private set; }
-    public static string DefaultRoot(HostPlatform host, string appDirectory, string userDirectory) =>
-        host.Os == "osx" ? Path.Combine(userDirectory, "Library", "Application Support", "NegativeEncoder", "Libs") :
-            Path.GetFullPath(Path.Combine(appDirectory, "..", "Libs"));
 
     public LibraryPaths(string? settings = null, string? defaultRoot = null)
     {
-        _settings = settings ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NegativeEncoder", "tool-library.json");
-        Root = defaultRoot ?? DefaultRoot(HostPlatform.Current, AppContext.BaseDirectory, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
-        if (File.Exists(_settings)) Root = Path.GetFullPath(LibraryJson.Read<Settings>(_settings).LibraryPath);
+        _settings = settings ?? UserPath(Environment.SpecialFolder.ApplicationData, "tool-library.json");
+        Root = File.Exists(_settings)
+            ? Path.GetFullPath(LibraryJson.Read<Settings>(_settings).LibraryPath)
+            : defaultRoot ?? UserPath(Environment.SpecialFolder.LocalApplicationData, "Libs");
     }
+
+    private static string UserPath(Environment.SpecialFolder folder, string name) =>
+        Path.GetFullPath(Path.Combine("NegativeEncoder", name),
+            Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify));
 
     public void Apply(string path)
     {

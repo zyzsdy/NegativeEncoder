@@ -271,8 +271,14 @@ public sealed class ToolLibraryTests : IDisposable
         File.WriteAllText(Path.Combine(broken, "library.json"), "not json");
         Assert.Throws<JsonException>(() => paths.Apply(broken));
         Assert.Equal(second, Paths().Root);
-        Assert.Contains("Application Support", LibraryPaths.DefaultRoot(Mac, "/Applications/NE.app", "/Users/test"));
-        Assert.Equal(Path.GetFullPath("/NegativeEncoder/Libs"), LibraryPaths.DefaultRoot(new("linux", "x64", new(6, 0)), "/NegativeEncoder/NEbin", "/home/test"));
+    }
+
+    [Fact]
+    public void DefaultToolLibraryUsesLocalUserData()
+    {
+        var paths = new LibraryPaths(Path.Combine(_root, "settings.json"));
+        var localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify);
+        Assert.Equal(Path.Combine(localData, "NegativeEncoder", "Libs"), paths.Root);
     }
 
     [Theory]

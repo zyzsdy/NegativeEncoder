@@ -27,10 +27,16 @@ open artifacts/osx-arm64/NegativeEncoder.app
 ```
 
 该脚本生成包含 .NET 运行时和 macOS 应用图标的本地应用包；正式签名、公证与发行安装包尚未实现。
-Intel Mac 使用 `osx-x64`。其他平台可用 `dotnet publish` 的 `win-x64`、
-`win-arm64`、`linux-x64` 或 `linux-arm64` RID；这些目标需要各自的交互验证。
-Linux 需要 Avalonia 的桌面原生依赖和中文字体，参见
-[Avalonia 支持平台](https://v11.docs.avaloniaui.net/docs/get-started/supported-platforms)。
+Intel Mac 使用 `osx-x64`。Windows 也可用 `dotnet publish` 指定 `win-x64` 或 `win-arm64` RID，这些目标需要各自的交互验证。
+
+Linux 提供 x86_64 和 aarch64 两种 AppImage，内含 .NET 运行时。在 Linux 构建机上准备 .NET 10 SDK、`file` 和 `desktop-file-utils`。下载与构建机架构匹配的打包工具，命名为 `appimagetool`，赋予执行权限并放入 PATH。[appimagetool 下载页](https://github.com/AppImage/appimagetool/releases)
+
+```sh
+./scripts/package-linux.sh linux-x64
+./scripts/package-linux.sh linux-arm64
+```
+
+省略参数时按构建机架构打包。产物位于 `artifacts/<RID>/NegativeEncoder-<版本>-<架构>.AppImage`。用户下载后赋予执行权限即可启动。缺少 FUSE 时可用 `./文件名.AppImage --appimage-extract-and-run` 启动。运行需要兼容的 glibc、Avalonia 桌面原生依赖及所需字体，硬件编码还依赖本机显卡驱动。发行前应在最低支持环境验证启动和实际编码。参见 [Avalonia 支持平台](https://v11.docs.avaloniaui.net/docs/get-started/supported-platforms)。
 
 已迁移：三栏主窗口、宽窗口下的编码器两栏表单、六个功能页（编码器 / HDR / VS / 音频 / 封装 / 常用）、
 文件选择及拖放、预设菜单切换和管理、任务状态与执行日志、状态栏和关于窗口。
@@ -65,8 +71,14 @@ VS 编辑器使用 AvaloniaEdit，保留 Python 语法高亮、行号和缩进�
 预设导入导出、自动安装程序更新尚未迁移。
 
 “帮助 → 工具库管理”可切换 Libs 位置、检测显卡、安装／升级独立工具及 VS 推荐插件。
-Windows/Linux 默认使用可执行文件目录的 `../Libs`；macOS 默认使用
-`~/Library/Application Support/NegativeEncoder/Libs`。只切换目录，不搬迁原文件。
+默认工具库位于以下用户数据目录：
+
+- Windows：`%LOCALAPPDATA%\NegativeEncoder\Libs`
+- macOS：`~/Library/Application Support/NegativeEncoder/Libs`
+- Linux：`$XDG_DATA_HOME/NegativeEncoder/Libs`，未设置有效绝对路径时使用 `~/.local/share/NegativeEncoder/Libs`
+
+已保存的自定义路径优先。升级前使用程序旁旧版默认 `../Libs` 的用户，可在工具库管理中选回原目录，继续使用已下载的工具。
+
 FFmpeg 追踪最新稳定版；NVEnc／QSVEnc／VCEEnc／VTEnc 追踪最新发行版（含 pre-release）；Python／VapourSynth／插件使用固定推荐组合。
 没有当前平台发行包时禁用安装；未检测到相应显卡仍允许安装。
 macOS VS 推荐组合要求 15+，Linux 要求 glibc 2.28+。手工插件放在
