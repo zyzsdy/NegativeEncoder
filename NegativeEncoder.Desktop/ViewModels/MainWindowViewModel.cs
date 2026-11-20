@@ -350,49 +350,84 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     private IEncodingRunner? _encodingRunner;
-    private bool _running;
+    private TaskCompletionSource? _queueChanged;
+    private bool _pausedAfterFailure;
+    private int _maxConcurrentEncodings = AppSettings.DefaultConcurrency;
+    public int MaxConcurrentEncodings
+    {
+        get => _maxConcurrentEncodings;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
+            _maxConcurrentEncodings = value;
+            _queueChanged?.TrySetResult();
+        }
+    }
+
     public void ConfigureEncoding(ToolLibraryService library) => ConfigureEncoding(new EncodingRunner(library));
     public void ConfigureEncoding(IEncodingRunner runner) => _encodingRunner = runner;
     public async Task RunQueueAsync(CancellationToken token = default)
     {
-        if (_running) return;
         if (_encodingRunner is null) { Status = "工具库尚未初始化。"; return; }
-        _running = true;
+        _pausedAfterFailure = false;
+        if (_queueChanged is not null)
+        {
+            // A batch was added or scheduling resumed while other jobs were running.
+            _queueChanged.TrySetResult();
+            return;
+        }
+        var active = new List<Task>();
         try
         {
-            while (!token.IsCancellationRequested && Tasks.FirstOrDefault(t => !t.Started && !t.Finished) is { } task)
+            while (true)
             {
-                task.Started = true;
-                using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, task.Cancellation.Token);
-                try
-                {
-                    Status = $"正在执行：{task.Name} · {task.Operation}";
-                    await _encodingRunner.RunAsync(task, cancellation.Token);
-                    task.Status = "已完成";
-                    Status = $"已完成：{task.Name}";
-                }
-                catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
-                { task.Status = "已取消"; Status = $"已取消：{task.Name}"; }
-                catch (Exception ex)
-                {
-                    task.AppendLog("\n" + ex + "\n");
-                    task.Status = cancellation.IsCancellationRequested ? "已取消" : "失败";
-                    Status = $"{task.Status}：{task.Name} · {ex.Message}";
-                    // Fail fast: leave subsequent jobs pending until the user resumes.
-                    break;
-                }
-                finally { task.Finished = true; }
+                _queueChanged = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                active.RemoveAll(job => job.IsCompletedSuccessfully);
+                while (!_pausedAfterFailure && !token.IsCancellationRequested && active.Count < MaxConcurrentEncodings &&
+                       Tasks.FirstOrDefault(t => !t.Started && !t.Finished) is { } task)
+                    active.Add(RunTaskAsync(_encodingRunner, task, token));
+
+                if (active.Count == 0) break;
+                var completed = await Task.WhenAny(active.Append(_queueChanged.Task));
+                await completed;
             }
         }
-        finally { _running = false; }
+        finally { _queueChanged = null; }
+    }
+
+    private async Task RunTaskAsync(IEncodingRunner runner, TaskDraft task, CancellationToken token)
+    {
+        task.Started = true;
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, task.Cancellation.Token);
+        try
+        {
+            Status = $"正在执行：{task.Name} · {task.Operation}";
+            await runner.RunAsync(task, cancellation.Token);
+            task.Status = "已完成";
+            if (!_pausedAfterFailure) Status = $"已完成：{task.Name}";
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            task.Status = "已取消";
+            if (!_pausedAfterFailure) Status = $"已取消：{task.Name}";
+        }
+        catch (Exception ex)
+        {
+            task.AppendLog("\n" + ex + "\n");
+            _pausedAfterFailure = true;
+            task.Status = cancellation.IsCancellationRequested ? "已取消" : "失败";
+            Status = $"{task.Status}：{task.Name} · {ex.Message}";
+        }
+        finally { task.Finished = true; }
     }
 
     public void CancelTask(TaskDraft task)
     {
         if (task.Finished) return;
-        task.Cancellation.Cancel();
         if (!task.Started) { task.Finished = true; task.Status = "已取消"; }
         else task.Status = "正在取消";
+        // Cancel can synchronously finish the runner and publish its final status.
+        task.Cancellation.Cancel();
     }
 
     private string MakeOutputPath(string input) => Path.Combine(Path.GetDirectoryName(input) ?? "",

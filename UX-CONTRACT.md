@@ -38,7 +38,7 @@ exists in this preview. No legacy configuration is read or written.
   requires confirmation, initially focused on Cancel. Duplicate/blank names show
   an error in the name dialog. Import/export is deferred.
 - Queue: Add validates inputs/tools/destinations, captures a preset/script snapshot and
-  starts serial execution. Changes to forms do not mutate existing tasks. Both sides of
+  starts jobs in queue order up to the saved concurrency limit (default 3). Changes to forms do not mutate existing tasks. Both sides of
   pipelines must succeed before the staged output is published; existing files are never
   overwritten. Errors stop scheduling and preserve diagnostics; the File menu resumes
   pending tasks. Cancellation stops the complete process tree. Running entries cannot be
@@ -61,7 +61,7 @@ exists in this preview. No legacy configuration is read or written.
   overflowing messages use an ellipsis with full text in the tooltip and accessible name.
   Successful hardware detection reports only the default encoder. Detection failures and
   unsupported hardware still report their existing errors or guidance.
-- App updates and toolkit command line remain visibly unavailable.
+- Help offers a manual application update check. The toolkit command line remains unavailable.
   Tool-library discovery/install/update and hardware detection are implemented. Windows registry integration is intentionally absent.
 
 ## Platform and accessibility
@@ -85,12 +85,12 @@ Linux interactive coverage must be reported separately from headless checks.
 Help → 工具库管理 opens one owned window. Path application validates before saving;
 only switches, never moves/deletes files. Failed application keeps the active root and
 shows diagnostics. Python/VS are separately visible but installed/upgraded together.
-The proxy form uses the same explicit Apply flow. HTTP/SOCKS5 addresses are saved in
-application-wide network settings; blank restores system defaults. Invalid input keeps
-the active setting, preserves the draft and focuses the field with an inline error.
-Applying a proxy affects subsequent metadata/checksum/download requests, including
-redirects, and future app updates must reuse it. Proxy failure never retries directly.
-The field and Apply action are disabled while an operation is active.
+The manager links to global Settings. Saving validates language, concurrency and proxy together.
+HTTP/SOCKS5 addresses persist in the existing application settings file. Blank restores system
+network defaults. Validation keeps the draft and focuses the field with an inline error.
+Subsequent release checks and tool downloads share the saved proxy, including redirects.
+Settings and Help check the latest GitHub release on demand. Help links to the release tag
+if its version is newer than the installed version.
 All installs use a new generation and commit only after verification; cancellation,
 checksum errors and failed probes preserve the active manifest. User-added plugins are
 never automatically upgraded/deleted; file conflicts abort with details. Active operations

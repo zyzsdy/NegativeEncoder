@@ -1,6 +1,6 @@
+using NegativeEncoder.Desktop;
 using NegativeEncoder.Desktop.EncodingTasks;
 using NegativeEncoder.Desktop.Models;
-using NegativeEncoder.Desktop.Networking;
 using NegativeEncoder.Desktop.ToolLibrary;
 using NegativeEncoder.Desktop.ViewModels;
 
@@ -8,10 +8,10 @@ if (args.Length < 2) throw new ArgumentException("Usage: Encoding.Verify LIBS_RO
 var root = Path.GetFullPath(args[0]);
 var output = Path.GetFullPath(args[1]);
 Directory.CreateDirectory(output);
-var network = new NetworkSettings(Path.Combine(output, "network.json"));
+var settings = new AppSettings(Path.Combine(output, "network.json"));
 var proxyIndex = Array.IndexOf(args, "--proxy");
-if (proxyIndex >= 0) network.ApplyProxy(args[proxyIndex + 1]);
-using var client = new DistributionClient(network: network);
+if (proxyIndex >= 0) settings.ApplyProxy(args[proxyIndex + 1]);
+using var client = new DistributionClient(settings: settings);
 var runner = new ProcessRunner();
 var service = new ToolLibraryService(new LibraryPaths(Path.Combine(output, "settings.json"), root), HostPlatform.Current, client, runner);
 using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(12));

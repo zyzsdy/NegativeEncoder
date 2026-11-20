@@ -7,7 +7,6 @@ namespace NegativeEncoder.Desktop.ToolLibrary;
 public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, DistributionClient client, ProcessRunner runner)
 {
     public LibraryPaths Paths { get; } = paths;
-    public Networking.NetworkSettings Network => client.Network;
     public HostPlatform Host { get; } = host;
     public RuntimeCatalog Catalog { get; } = RuntimeCatalog.Load();
     public ReleaseResolver Releases { get; } = new(client, host);

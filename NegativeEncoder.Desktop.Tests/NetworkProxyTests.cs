@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
-using NegativeEncoder.Desktop.Networking;
 using NegativeEncoder.Desktop.ToolLibrary;
 using Xunit;
 
@@ -11,7 +10,7 @@ namespace NegativeEncoder.Desktop.Tests;
 public sealed class NetworkProxyTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "ne-proxy-test-" + Guid.NewGuid().ToString("N"));
-    private NetworkSettings Settings() => new(Path.Combine(_root, "network.json"));
+    private AppSettings Settings() => new(Path.Combine(_root, "network.json"));
     public void Dispose() { if (Directory.Exists(_root)) Directory.Delete(_root, true); }
 
     [Theory]
@@ -91,7 +90,7 @@ public sealed class NetworkProxyTests : IDisposable
     public async Task RequestsUseHttpThenSocksProxyImmediatelyAndNeverFallBack(bool download)
     {
         var settings = Settings();
-        using var client = new DistributionClient(network: settings);
+        using var client = new DistributionClient(settings: settings);
         foreach (var scheme in new[] { "http", "socks5" })
         {
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));

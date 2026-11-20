@@ -319,6 +319,73 @@ public sealed class EncodingTests
         Assert.Equal(0, runner.Calls);
     }
 
+    [AvaloniaFact]
+    public async Task ConcurrentQueueRefillsInOrderAndRespectsLiveLimitChanges()
+    {
+        var model = new MainWindowViewModel { ProcessAll = true };
+        model.AddFiles(Enumerable.Range(1, 7).Select(i => Path.Combine(Path.GetTempPath(), $"clip-{i}.mp4")));
+        var runner = new ControlledRunner();
+        model.ConfigureEncoding(runner);
+        Assert.True(model.AddTask("视频编码"));
+        var queue = model.RunQueueAsync();
+        Assert.Equal(model.Tasks.Take(3), runner.Calls.Keys);
+        await model.RunQueueAsync();
+        model.MaxConcurrentEncodings = 4;
+        await runner.WaitForStartAsync(model.Tasks[3]);
+
+        model.MaxConcurrentEncodings = 2;
+        runner.Calls[model.Tasks[0]].SetResult();
+        runner.Calls[model.Tasks[1]].SetResult();
+        runner.Calls[model.Tasks[2]].SetResult();
+        await runner.WaitForStartAsync(model.Tasks[4]);
+        Assert.False(model.Tasks[5].Started);
+        Assert.Equal(2, model.Tasks.Count(task => task.Started && !task.Finished));
+
+        var failed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var failingTask = model.Tasks[3];
+        failingTask.PropertyChanged += (_, _) => { if (failingTask.Status == "失败") failed.TrySetResult(); };
+        runner.Calls[failingTask].SetException(new IOException("encoder failure"));
+        await failed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        runner.Calls[model.Tasks[4]].SetResult();
+        await queue.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal("失败", model.Tasks[3].Status);
+        Assert.Equal("已完成", model.Tasks[4].Status);
+        Assert.All(model.Tasks.Skip(5), task => Assert.False(task.Started));
+
+        model.MaxConcurrentEncodings = 1;
+        queue = model.RunQueueAsync();
+        Assert.True(model.Tasks[5].Started);
+        Assert.False(model.Tasks[6].Started);
+        model.CancelTask(model.Tasks[5]);
+        await runner.WaitForStartAsync(model.Tasks[6]);
+        runner.Calls[model.Tasks[6]].SetResult();
+        await queue.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal("已取消", model.Tasks[5].Status);
+        Assert.Equal("已完成", model.Tasks[6].Status);
+    }
+
+    private sealed class ControlledRunner : IEncodingRunner
+    {
+        public Dictionary<TaskDraft, TaskCompletionSource> Calls { get; } = [];
+        private readonly Dictionary<TaskDraft, TaskCompletionSource> _started = [];
+        public void Validate(TaskDraft task) { }
+
+        public Task WaitForStartAsync(TaskDraft task)
+        {
+            if (Calls.ContainsKey(task)) return Task.CompletedTask;
+            _started[task] = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            return _started[task].Task.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        public Task RunAsync(TaskDraft task, CancellationToken token)
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            Calls.Add(task, completion);
+            if (_started.Remove(task, out var started)) started.SetResult();
+            return completion.Task.WaitAsync(token);
+        }
+    }
+
     private sealed class StubRunner : IEncodingRunner
     {
         public bool Fail { get; set; } = true;

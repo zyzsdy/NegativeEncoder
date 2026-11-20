@@ -10,6 +10,8 @@
           <NativeMenuItem Header="导入视频…" Gesture="Meta+O" Click="ImportFiles_NativeClick" />
           <NativeMenuItem Header="清空待处理列表" Click="ClearFiles_NativeClick" />
           <NativeMenuItem Header="开始任务调度" Click="StartQueue_NativeClick" />
+          <NativeMenuItemSeparator />
+          <NativeMenuItem Header="设置" Click="Settings_NativeClick" />
         </NativeMenu>
       </NativeMenuItem>
       <NativeMenuItem Header="预设">
@@ -26,7 +28,6 @@
       </NativeMenuItem>
       <NativeMenuItem Header="帮助">
         <NativeMenu>
-          <NativeMenuItem Header="检查更新" IsEnabled="False" />
           <NativeMenuItem Header="工具库管理" Click="ToolLibrary_NativeClick" />
           <NativeMenuItem Header="启动工具包命令行" IsEnabled="False" />
           <NativeMenuItemSeparator /><NativeMenuItem Header="关于消极压制" Click="About_NativeClick" />
@@ -40,6 +41,7 @@
         <MenuItem Header="导入视频…" Click="ImportFiles_Click" />
         <MenuItem Header="清空待处理列表" Click="ClearFiles_Click" />
         <MenuItem Header="开始任务调度" Click="StartQueue_Click" />
+        <Separator /><MenuItem Header="设置" Click="Settings_Click" />
         <Separator /><MenuItem Header="退出" Click="Exit_Click" />
       </MenuItem>
       <MenuItem Name="PresetMenu" Header="预设(_P)">
@@ -53,7 +55,8 @@
         <MenuItem Header="导出预设集合" IsEnabled="False" />
       </MenuItem>
       <MenuItem Header="帮助(_H)">
-        <MenuItem Header="检查更新" IsEnabled="False" />
+        <MenuItem Name="CheckUpdates" Header="立即检查更新" Click="CheckUpdates_Click" />
+        <MenuItem Name="NewRelease" IsVisible="False" Click="Release_Click" />
         <MenuItem Header="工具库管理" Click="ToolLibrary_Click" />
         <MenuItem Header="启动工具包命令行" IsEnabled="False" />
         <Separator /><MenuItem Header="关于消极压制" Click="About_Click" />

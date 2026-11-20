@@ -17,20 +17,39 @@ public partial class MainWindow : Window
     private readonly Dictionary<Preset, (MenuItem Menu, NativeMenuItem Native)> _presetItems = new();
 
     private ToolLibraryViewModel? _toolLibrary;
-    private DistributionClient? _distributionClient;
+    private readonly DistributionClient _distributionClient;
+    private readonly AppUpdateViewModel _updates;
+    private SettingsWindow? _settingsWindow;
     private ToolLibraryWindow? _toolWindow;
     private readonly CancellationTokenSource _lifetime = new();
 
     public MainWindow() : this(true, Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NegativeEncoder", "Desktop")) { }
 
-    public MainWindow(bool initializeLibrary, string? presetDirectory = null)
+    public MainWindow(bool initializeLibrary, string? presetDirectory = null, DistributionClient? distributionClient = null)
     {
         Model = new MainWindowViewModel(presetDirectory: presetDirectory);
+        _distributionClient = distributionClient ?? new DistributionClient();
+        _updates = new AppUpdateViewModel(_distributionClient);
+        ApplySettings();
         InitializeComponent();
         DataContext = Model;
         if (!OperatingSystem.IsMacOS()) NativeMenu.SetMenu(this, null);
         _nativePresetMenu = NativeMenu.GetMenu(this)?.Items.OfType<NativeMenuItem>().Single(item => item.Header == "预设").Menu;
+        var nativeHelp = NativeMenu.GetMenu(this)?.Items.OfType<NativeMenuItem>().Single(item => item.Header == "帮助").Menu;
+        var nativeCheck = new NativeMenuItem("立即检查更新");
+        var nativeRelease = new NativeMenuItem { IsVisible = false };
+        nativeCheck.Click += CheckUpdates_NativeClick;
+        nativeRelease.Click += Release_NativeClick;
+        nativeHelp?.Items.Insert(0, nativeCheck);
+        nativeHelp?.Items.Insert(1, nativeRelease);
+        _updates.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(_updates.Status)) Model.Status = _updates.Status;
+            CheckUpdates.IsEnabled = nativeCheck.IsEnabled = _updates.CanCheck;
+            NewRelease.Header = nativeRelease.Header = _updates.Available?.MenuLabel;
+            NewRelease.IsVisible = nativeRelease.IsVisible = _updates.Available is not null;
+        };
         RebuildPresetMenu();
         Model.Presets.CollectionChanged += (_, _) => RebuildPresetMenu();
         Model.PropertyChanged += (_, e) =>
@@ -50,14 +69,13 @@ public partial class MainWindow : Window
             catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
             catch (Exception ex) { Model.SetVsDetectionError("工具库检测失败：" + ex.Message); }
         };
-        Closed += (_, _) => { _lifetime.Cancel(); _distributionClient?.Dispose(); _lifetime.Dispose(); };
+        Closed += (_, _) => { _lifetime.Cancel(); _distributionClient.Dispose(); _lifetime.Dispose(); };
     }
 
     private ToolLibraryViewModel GetToolLibrary()
     {
         if (_toolLibrary is not null) return _toolLibrary;
         var paths = new LibraryPaths();
-        _distributionClient = new DistributionClient();
         var runner = new ProcessRunner();
         _toolLibrary = new ToolLibraryViewModel(new ToolLibraryService(paths, HostPlatform.Current, _distributionClient, runner), runner);
         Model.ConfigureEncoding(_toolLibrary.Service);
@@ -77,6 +95,42 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法打开工具库管理", ex.ToString()); }
         finally { _toolWindow = null; }
+    }
+
+    private void ApplySettings()
+    {
+        var settings = _distributionClient.Settings;
+        settings.ApplyUiCulture();
+        Model.MaxConcurrentEncodings = settings.MaxConcurrentEncodings;
+    }
+
+    private void Settings_Click(object? sender, RoutedEventArgs e) => Settings_NativeClick(sender, e);
+    private async void Settings_NativeClick(object? sender, EventArgs e) => await ShowSettingsAsync(this);
+
+    public async Task ShowSettingsAsync(Window owner)
+    {
+        if (_settingsWindow is not null) { _settingsWindow.Activate(); return; }
+        try
+        {
+            _settingsWindow = new SettingsWindow(_distributionClient.Settings, _updates, _lifetime.Token);
+            _settingsWindow.Saved += ApplySettings;
+            await _settingsWindow.ShowDialog(owner);
+        }
+        finally { _settingsWindow = null; }
+    }
+
+    private void CheckUpdates_Click(object? sender, RoutedEventArgs e) => CheckUpdates_NativeClick(sender, e);
+    private async void CheckUpdates_NativeClick(object? sender, EventArgs e) => await _updates.CheckAsync(_lifetime.Token);
+    private void Release_Click(object? sender, RoutedEventArgs e) => Release_NativeClick(sender, e);
+    private async void Release_NativeClick(object? sender, EventArgs e)
+    {
+        if (_updates.Available is not { } release) return;
+        try
+        {
+            if (!await Launcher.LaunchUriAsync(release.Page))
+                throw new InvalidOperationException($"无法启动浏览器：{release.Page}");
+        }
+        catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法打开版本页面", ex.Message); }
     }
 
     private void RebuildPresetMenu()

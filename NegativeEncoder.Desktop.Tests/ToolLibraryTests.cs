@@ -7,7 +7,6 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.Interactivity;
-using NegativeEncoder.Desktop.Networking;
 using NegativeEncoder.Desktop.ToolLibrary;
 using NegativeEncoder.Desktop.ViewModels;
 using NegativeEncoder.Desktop.Views;
@@ -350,59 +349,73 @@ public sealed class ToolLibraryTests : IDisposable
     }
 
     [AvaloniaFact]
-    public async Task ProxyFormValidatesPersistsAndLocksDuringRequests()
+    public void ToolLibraryOpensSharedSettingsAndKeepsLegacyProxy()
     {
         var settingsFile = Path.Combine(_root, "network.json");
-        var network = new NetworkSettings(settingsFile);
-        network.ApplyProxy("http://localhost:7890");
-        using var client = new DistributionClient(new PendingHandler(), network);
+        File.WriteAllText(settingsFile, """{"proxyAddress":"http://localhost:7890"}""");
+        var settings = new AppSettings(settingsFile);
+        var response = """{"draft":false,"prerelease":false,"tag_name":"v999.0.0"}"""u8.ToArray();
+        var client = new DistributionClient(new ResponseHandler(response), settings);
         var runner = new FakeRunner(false);
         var model = new ToolLibraryViewModel(new(Paths(), Mac, client, runner), runner);
-        var owner = new MainWindow(false);
+        var owner = new MainWindow(false, distributionClient: client);
         owner.Show();
-        var window = new ToolLibraryWindow(model, false) { Width = 820, Height = 640 };
-        window.Show(owner);
+        var library = new ToolLibraryWindow(model, false);
+        library.Show(owner);
         try
         {
+            Assert.Null(library.FindControl<TextBox>("ProxyAddressField"));
+            library.FindControl<Button>("OpenSettingsButton")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            var window = Assert.IsType<SettingsWindow>(Assert.Single(library.OwnedWindows));
             Dispatcher.UIThread.RunJobs();
             var field = window.FindControl<TextBox>("ProxyAddressField")!;
-            var apply = window.FindControl<Button>("ApplyProxyButton")!;
+            var limit = window.FindControl<TextBox>("ConcurrencyField")!;
+            var language = window.FindControl<ComboBox>("LanguageField")!;
+            var save = window.FindControl<Button>("SaveButton")!;
+            var notice = owner.FindControl<MenuItem>("NewRelease")!;
             Assert.Equal("http://localhost:7890", field.Text);
+            Assert.Equal("3", limit.Text);
+            Assert.Equal("system", ((ComboBoxItem)language.SelectedItem!).Tag);
+            Assert.False(notice.IsVisible);
+
+            limit.Text = "0";
+            save.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.True(limit.IsFocused);
+            limit.Text = "5";
             field.Text = "invalid";
-            apply.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Dispatcher.UIThread.RunJobs();
-            Assert.Equal("invalid", model.ProxyAddress);
-            Assert.Equal("http://localhost:7890", network.ProxyAddress);
+            save.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Assert.True(field.IsFocused);
-            Assert.Equal(model.ProxyError, Avalonia.Automation.AutomationProperties.GetHelpText(field));
-            Assert.True(window.FindControl<TextBlock>("ProxyErrorText")!.IsVisible);
-            Assert.Contains("代理未保存", model.Status);
-            Assert.True(window.FindControl<ListBox>("ToolRows")!.Bounds.Height > 100);
+            Assert.Contains("HTTP", Avalonia.Automation.AutomationProperties.GetHelpText(field));
+            Assert.Equal("http://localhost:7890", settings.ProxyAddress);
+            Assert.Equal(3, owner.Model.MaxConcurrentEncodings);
 
-            field.Text = "socks5://localhost:1080";
-            apply.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Dispatcher.UIThread.RunJobs();
-            Assert.Empty(model.ProxyError);
-            Assert.Equal(field.Text, new NetworkSettings(settingsFile).ProxyAddress);
-            model.LibraryPath = Path.Combine(_root, "another-library");
-            await model.ApplyPathAsync();
-            Assert.Equal(field.Text, new NetworkSettings(settingsFile).ProxyAddress);
+            field.Text = "socks5://localhost:1080/";
+            language.SelectedIndex = 3;
+            save.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            var saved = new AppSettings(settingsFile);
+            Assert.Equal("socks5://localhost:1080", saved.ProxyAddress);
+            Assert.Equal("ja-JP", saved.Language);
+            Assert.Equal(5, saved.MaxConcurrentEncodings);
+            Assert.Equal(5, owner.Model.MaxConcurrentEncodings);
 
-            var refresh = model.RefreshAsync(true);
+            window.FindControl<Button>("CheckButton")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Dispatcher.UIThread.RunJobs();
-            Assert.True(model.Busy);
-            Assert.False(field.IsEffectivelyEnabled);
-            Assert.False(apply.IsEffectivelyEnabled);
-            Assert.False(model.ApplyProxy());
-            model.Cancel();
-            await refresh;
-            Dispatcher.UIThread.RunJobs();
-            Assert.True(field.IsEffectivelyEnabled);
-            field.Text = "";
-            apply.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Assert.Empty(new NetworkSettings(settingsFile).ProxyAddress);
+            Assert.True(notice.IsVisible);
+            Assert.Equal("发现新版本 v999.0.0", notice.Header);
+            var nativeHelp = NativeMenu.GetMenu(owner)?.Items.OfType<NativeMenuItem>().Single(i => i.Header == "帮助").Menu;
+            if (nativeHelp is not null)
+                Assert.Contains(nativeHelp.Items.OfType<NativeMenuItem>(), item => item.IsVisible && Equals(item.Header, notice.Header));
+            window.Close();
+            Assert.Empty(library.OwnedWindows);
+            library.Close();
+            owner.FindControl<MenuItem>("CheckUpdates")!.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            Assert.Equal(notice.Header, owner.Model.Status);
         }
-        finally { window.Close(); owner.Close(); }
+        finally
+        {
+            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = null;
+            owner.Close();
+        }
     }
 
     private string Generation(LibraryPaths paths, string tool, string contents = "old binary")
@@ -715,14 +728,6 @@ public sealed class ToolLibraryTests : IDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(bytes) });
-        }
-    }
-    private sealed class PendingHandler : HttpMessageHandler
-    {
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            await Task.Delay(Timeout.Infinite, cancellationToken);
-            throw new InvalidOperationException("Pending request should only finish by cancellation.");
         }
     }
     private sealed class FakeRunner(bool fail, string output = "ffmpeg version 1.2.3 test") : ProcessRunner

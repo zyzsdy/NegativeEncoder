@@ -106,6 +106,10 @@ available. Unsupported distributions explain the reason beside a disabled action
 Source paths truncate with full tooltips. Keep plugin descriptions Chinese and native
 component names unchanged. No new global shortcuts or custom animation.
 
+SettingsWindow owns language preference, queue concurrency and the shared network proxy.
+File and the tool-library manager open the same settings dialog. Settings and Help share
+one update check, with the newer release linked from Help. Application copy remains Chinese.
+
 ## Encoder capabilities and queue
 
 Preset and EncoderCapabilities own the per-encoder option contract. Avalonia radio
@@ -114,8 +118,8 @@ mode/codec and hides unsupported modes. VTEnc has native ABR/Quality/CBR and mac
 26+ VBR, H.264/HEVC and matching Metal filters. Runtime session errors remain visible.
 Hardware detection chooses only the initial unedited preset and defaults for new presets.
 
-MainWindowViewModel owns serial scheduling and StatusText feedback. Adding tasks starts
-execution. A failure leaves later tasks waiting for the File menu's resume action.
+MainWindowViewModel schedules jobs in queue order up to the global concurrency limit (default 3) and owns StatusText feedback. Adding tasks starts
+execution. A failure lets active jobs finish and leaves pending tasks waiting for the File menu's resume action.
 Cancellation stops both sides of a pipeline. A running task cannot be removed until it
 stops; removal of pending/completed entries has the existing undo action. PreviewDialog
 uses a read-only, selectable, live TextBox for task diagnostics. Logs on disk retain full

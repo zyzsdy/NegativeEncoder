@@ -12,6 +12,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.3.23" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.23" />
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
+    <PackageReference Include="Semver" Version="3.0.0" />
     <PackageReference Include="SharpCompress" Version="0.50.9" />
     <EmbeddedResource Include="ToolLibrary/*.json" />
     <EmbeddedResource Include="ToolLibrary/*.py" />

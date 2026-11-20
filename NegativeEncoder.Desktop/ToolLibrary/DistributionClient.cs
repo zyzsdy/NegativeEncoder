@@ -3,26 +3,25 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using NegativeEncoder.Desktop.Networking;
 
 namespace NegativeEncoder.Desktop.ToolLibrary;
 
 public sealed class DistributionClient : IDisposable
 {
     private readonly HttpMessageHandler? _handler;
-    public NetworkSettings Network { get; }
+    public AppSettings Settings { get; }
     private static readonly string[] Hosts = ["api.github.com", "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com", "codeload.github.com", "raw.githubusercontent.com", "pypi.org", "files.pythonhosted.org", "ffmpeg.org", "ffmpeg.martin-riedl.de"];
-    public DistributionClient(HttpMessageHandler? handler = null, NetworkSettings? network = null)
+    public DistributionClient(HttpMessageHandler? handler = null, AppSettings? settings = null)
     {
         _handler = handler;
-        Network = network ?? new NetworkSettings();
+        Settings = settings ?? new AppSettings();
     }
 
     private HttpClient CreateClient()
     {
         // Snapshot settings for the complete operation, including redirects and streamed downloads.
         // These infrequent operations own their handler, so changing proxy never cancels an active request.
-        var http = new HttpClient(_handler ?? Network.CreateHandler(), disposeHandler: _handler is null)
+        var http = new HttpClient(_handler ?? Settings.CreateHandler(), disposeHandler: _handler is null)
         { Timeout = TimeSpan.FromMinutes(20) };
         http.DefaultRequestHeaders.UserAgent.ParseAdd("NegativeEncoder/6.0 tool-library");
         return http;

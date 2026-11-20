@@ -27,10 +27,8 @@ public partial class ToolLibraryWindow : OwnedDialog
         catch (Exception ex) { await PreviewDialog.NoticeAsync(this, "无法选择目录", ex.Message); }
     }
     private async void Apply_Click(object? sender, RoutedEventArgs e) => await Model.ApplyPathAsync();
-    private void ApplyProxy_Click(object? sender, RoutedEventArgs e)
-    {
-        if (!Model.ApplyProxy()) ProxyAddressField.Focus();
-    }
+    private async void Settings_Click(object? sender, RoutedEventArgs e) =>
+        await ((MainWindow)Owner!).ShowSettingsAsync(this);
     private async void Refresh_Click(object? sender, RoutedEventArgs e) => await Model.RefreshAsync(true);
     private async void Install_Click(object? sender, RoutedEventArgs e)
     {
