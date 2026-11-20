@@ -1,6 +1,6 @@
 # NegativeEncoder
 
-## next：6.0.0-alpha.1
+## next：6.0.0-beta.1
 
 当前版本使用 **.NET 10 + Avalonia UI** 的 `NegativeEncoder.Desktop`，支持
 Windows / macOS / Linux，已接入工具库管理与主要编码任务执行。
@@ -19,15 +19,39 @@ dotnet test NegativeEncoder.Desktop.slnx -c Release
 ```
 
 macOS / Linux 也可运行 `./scripts/run-desktop.sh`，它会查找 PATH 或
-`~/.dotnet/dotnet`。macOS 本地独立应用：
+`~/.dotnet/dotnet`。
+
+### macOS 打包
+
+在安装了 .NET 10 SDK 和 Xcode 命令行工具的 Mac 上运行。macOS 发行包仅支持 Apple 芯片（`osx-arm64`）。
 
 ```sh
 ./scripts/package-macos.sh osx-arm64
 open artifacts/osx-arm64/NegativeEncoder.app
 ```
 
-该脚本生成包含 .NET 运行时和 macOS 应用图标的本地应用包；正式签名、公证与发行安装包尚未实现。
-Intel Mac 使用 `osx-x64`。Windows 也可用 `dotnet publish` 指定 `win-x64` 或 `win-arm64` RID，这些目标需要各自的交互验证。
+默认使用 ad-hoc 签名，一次生成包含 .NET 运行时的 `.app` 和 `artifacts/osx-arm64/NegativeEncoder-<版本>-osx-arm64-adhoc.dmg`。镜像内有可拖入“应用程序”的 App，本地打包到此完成。
+
+对外发布时，使用本机钥匙串中带私钥的 **Developer ID Application** 证书，并配置 Xcode 的公证工具。首次运行下面的命令，查看证书名称并按提示将公证凭据存入钥匙串。[Apple 公证说明](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)
+
+```sh
+security find-identity -v -p codesigning
+xcrun notarytool store-credentials "NegativeEncoder-notary"
+```
+
+**第一阶段**　将示例证书名称替换为本机证书名称或 SHA-1 指纹。脚本签名 App 和 DMG，提交 DMG 后立即打印带提交 ID 的状态查询命令，以及对应的第二阶段命令。
+
+```sh
+MACOS_SIGN_IDENTITY='Developer ID Application: Your Name (TEAMID)' \
+NOTARY_KEYCHAIN_PROFILE='NegativeEncoder-notary' \
+./scripts/package-macos.sh osx-arm64
+```
+
+**第二阶段**　查询结果为 `Accepted` 后，运行第一阶段打印的 `staple-macos.sh` 命令。脚本会重新查询状态、校验已提交镜像的 SHA-256，并在副本上装订和验证票据。最终发行文件为 `artifacts/osx-arm64/NegativeEncoder-<版本>-osx-arm64.dmg`。每次提交的原始镜像和回执保存在独立的 `notary-*` 目录中，可用于重试。
+
+### 其他平台打包
+
+Windows 也可用 `dotnet publish` 指定 `win-x64` 或 `win-arm64` RID，这些目标需要各自的交互验证。
 
 Linux 提供 x86_64 和 aarch64 两种 AppImage，内含 .NET 运行时。在 Linux 构建机上准备 .NET 10 SDK、`file` 和 `desktop-file-utils`。下载与构建机架构匹配的打包工具，命名为 `appimagetool`，赋予执行权限并放入 PATH。[appimagetool 下载页](https://github.com/AppImage/appimagetool/releases)
 

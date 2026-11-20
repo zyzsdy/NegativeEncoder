@@ -73,7 +73,7 @@ Avalonia 工具库管理已连接脚本生成器与编码任务执行。卸载�
 
 ## 支持矩阵与维护
 
-| 组合 | Windows x64 | macOS x64 / ARM64（15+） | Linux x64（glibc 2.28+） | Linux ARM64（glibc 2.28+） |
+| 组合 | Windows x64 | macOS ARM64（15+） | Linux x64（glibc 2.28+） | Linux ARM64（glibc 2.28+） |
 |---|---|---|---|---|
 | Python / VS | 有包 | 有包；ARM64 已实测 | 有包 | 有包 |
 | 基础处理 | 有包 | 已实测 ARM64 | 有包 | 有包 |

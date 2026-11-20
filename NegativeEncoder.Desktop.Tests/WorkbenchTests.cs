@@ -125,7 +125,7 @@ public sealed class WorkbenchTests
                 Assert.Equal("7654", value.Text);
                 Assert.Equal("7654", window.Model.CurrentPreset.VbrParam);
             }
-            Assert.Contains("6.0.0-alpha.1", window.Title);
+            Assert.Contains(AppVersion.Current, window.Title);
             Assert.NotNull(window.Icon);
         }
         finally { window.Close(); }
