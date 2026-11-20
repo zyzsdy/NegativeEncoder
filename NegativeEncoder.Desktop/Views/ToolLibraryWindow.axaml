@@ -15,9 +15,10 @@
         <TextBlock Text="{loc:Tr ToolLibraryWindow.ConfigureProxy}" VerticalAlignment="Center" Classes="muted"/>
         <Button Name="OpenSettingsButton" Content="{loc:Tr ToolLibraryWindow.OpenSettings}" Click="Settings_Click"/>
       </StackPanel>
-      <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,8">
+      <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,4,0,8">
         <TextBlock Text="{Binding Hardware}" VerticalAlignment="Center"/>
         <Button Grid.Column="1" Content="{loc:Tr ToolLibraryWindow.Refresh}" Click="Refresh_Click" IsEnabled="{Binding Idle}" Margin="12,0,0,0"/>
+        <Button Grid.Column="2" Name="CleanupButton" Content="{loc:Tr ToolLibraryWindow.Cleanup}" Click="Cleanup_Click" IsEnabled="{Binding Idle}" Margin="8,0,0,0"/>
       </Grid>
     </StackPanel>
     <TabControl Grid.Row="1" Name="LibraryTabs">

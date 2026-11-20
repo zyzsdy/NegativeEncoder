@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Threading;
 using NegativeEncoder.Desktop.ToolLibrary;
 
 namespace NegativeEncoder.Desktop.ViewModels;
@@ -191,6 +192,14 @@ public sealed class ToolLibraryViewModel : ObservableObject
         await Service.InstallRuntimeAsync(groups, Report, token, message => Status = message);
         await RefreshLocalAsync(token);
         Status = Loc.Text("ToolLibrary.PluginsInstalled");
+    });
+
+    public async Task CleanupAsync() => await RunAsync(async token =>
+    {
+        Status = Loc.Text("ToolLibrary.Cleaning");
+        var removed = await Task.Run(() => Service.CleanupUnusedGenerations(
+            message => Dispatcher.UIThread.Invoke(() => Report(message)), token), token);
+        Report(removed == 0 ? Loc.Text("ToolLibrary.NothingToClean") : Loc.Format("ToolLibrary.CleanupComplete", removed));
     });
 
     public void Cancel() { _operation?.Cancel(); Status = Loc.Text("ToolLibrary.Cancelling"); }

@@ -79,11 +79,11 @@ public sealed class PreviewDialog : OwnedDialog
         await dialog.ShowDialog(owner);
     }
 
-    public static async Task<bool> ConfirmAsync(Window owner, string title, string message)
+    public static async Task<bool> ConfirmAsync(Window owner, string actionLabel, string message)
     {
-        var dialog = new PreviewDialog(title, message);
+        var dialog = new PreviewDialog(actionLabel, message);
         var cancel = dialog.AddButton(Loc.Text("PreviewDialog.Cancel"), () => dialog.Close(false));
-        dialog.AddButton(Loc.Text("MainWindow.DeletePreset"), () => dialog.Close(true));
+        dialog.AddButton(actionLabel, () => dialog.Close(true));
         dialog.Opened += (_, _) => cancel.Focus();
         return await dialog.ShowDialog<bool>(owner);
     }

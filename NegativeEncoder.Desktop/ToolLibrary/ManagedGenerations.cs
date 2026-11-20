@@ -6,15 +6,16 @@ internal static class ManagedGenerations
         ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
     // The caller must hold the library's exclusive installation lease throughout cleanup.
-    public static void Cleanup(string root, Action<string> progress)
+    public static int Cleanup(string root, Action<string> progress, CancellationToken token = default)
     {
+        token.ThrowIfCancellationRequested();
         var manifest = LibraryPaths.ReadManifest(root);
         foreach (var tool in manifest.Tools.Values)
             if (!File.Exists(LibraryPaths.Within(root, tool.Executable)))
                 throw new FileNotFoundException(Loc.Text("ManagedGenerations.MissingActiveFile"), tool.Executable);
-        var protectedPaths = ProtectedPaths(root, manifest);
+        var protectedPaths = ProtectedPaths(root, manifest, token);
         var managed = LibraryPaths.Within(root, ".managed");
-        if (!Directory.Exists(managed)) return;
+        if (!Directory.Exists(managed)) return 0;
         RequireRealDirectory(managed);
         // Only delete names created by CreateGeneration; never sweep arbitrary user directories.
         var candidates = new List<string>();
@@ -25,6 +26,7 @@ internal static class ManagedGenerations
             RequireRealDirectory(component);
             foreach (var directory in Directory.EnumerateDirectories(component))
             {
+                token.ThrowIfCancellationRequested();
                 if (!Guid.TryParseExact(Path.GetFileName(directory), "N", out _)) continue;
                 RequireRealDirectory(directory);
                 if (!IsProtected(directory, protectedPaths)) candidates.Add(directory);
@@ -32,9 +34,11 @@ internal static class ManagedGenerations
         }
         foreach (var directory in candidates)
         {
+            token.ThrowIfCancellationRequested();
             DeleteTree(directory);
             progress(Loc.Format("ManagedGenerations.RemovedDirectory", Path.GetRelativePath(root, directory)));
         }
+        return candidates.Count;
     }
 
     public static void DeleteUnreferenced(string root, string generation)
@@ -54,7 +58,7 @@ internal static class ManagedGenerations
     private static bool IsProtected(string directory, IEnumerable<string> paths) =>
         paths.Any(path => Contains(directory, path) || Contains(path, directory));
 
-    private static HashSet<string> ProtectedPaths(string root, LibraryManifest manifest)
+    private static HashSet<string> ProtectedPaths(string root, LibraryManifest manifest, CancellationToken token = default)
     {
         var paths = new HashSet<string>(OperatingSystem.IsLinux() ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
         var pending = new Queue<string>();
@@ -66,6 +70,7 @@ internal static class ManagedGenerations
         var scanned = new HashSet<string>(paths.Comparer);
         while (pending.TryDequeue(out var path))
         {
+            token.ThrowIfCancellationRequested();
             paths.Add(path);
             // Resolve linked ancestors as well as links inside active runtimes. An active
             // runtime may still depend on a file in an otherwise obsolete generation.

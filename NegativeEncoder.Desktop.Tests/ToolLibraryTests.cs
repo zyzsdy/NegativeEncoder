@@ -439,6 +439,56 @@ public sealed class ToolLibraryTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task LibraryCleanupConfirmsAppliedPathAndReportsRemovedVersions()
+    {
+        var paths = Paths();
+        var active = Generation(paths, "ffmpeg");
+        Activate(paths, active);
+        var unused = Generation(paths, "vtenc");
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var runner = new FakeRunner(false);
+        var model = new ToolLibraryViewModel(new(paths, Mac, client, runner), runner)
+        {
+            LibraryPath = Path.Combine(_root, "unapplied")
+        };
+        var window = new ToolLibraryWindow(model, false);
+        window.Show();
+        try
+        {
+            var cleanup = window.FindControl<Button>("CleanupButton")!;
+            PreviewDialog OpenConfirmation()
+            {
+                cleanup.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                return Assert.IsType<PreviewDialog>(Assert.Single(window.OwnedWindows));
+            }
+
+            var dialog = OpenConfirmation();
+            Assert.Contains(dialog.GetVisualDescendants().OfType<TextBlock>(),
+                block => block.Text == Loc.Format("ToolLibraryWindow.ConfirmCleanup", paths.Root));
+            dialog.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
+            Assert.True(Directory.Exists(unused));
+            Assert.Empty(model.Log);
+
+            var finished = new TaskCompletionSource();
+            model.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(model.Busy) && model.Idle) finished.TrySetResult();
+            };
+            var confirm = OpenConfirmation().GetVisualDescendants().OfType<Button>()
+                .Single(b => Equals(b.Content, Loc.Text("ToolLibraryWindow.Cleanup")));
+            confirm.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await finished.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(Directory.Exists(active));
+            Assert.False(Directory.Exists(unused));
+            Assert.Contains(Path.GetRelativePath(paths.Root, unused), model.Log);
+            Assert.Equal(Loc.Format("ToolLibrary.CleanupComplete", 1), model.Status);
+            await model.CleanupAsync();
+            Assert.Equal(Loc.Text("ToolLibrary.NothingToClean"), model.Status);
+        }
+        finally { window.Close(); }
+    }
+
+    [AvaloniaFact]
     public void ToolLibraryOpensSharedSettingsAndKeepsLegacyProxy()
     {
         var settingsFile = Path.Combine(_root, "network.json");
@@ -680,6 +730,20 @@ public sealed class ToolLibraryTests : IDisposable
         Assert.True(Directory.Exists(executableDirectory));
         Assert.False(Directory.Exists(unused));
         Assert.Equal(before, File.ReadAllText(Path.Combine(paths.Root, "library.json")));
+    }
+
+    [Fact]
+    public void CancelledCleanupStopsBetweenVersionsAndCanResume()
+    {
+        var paths = Paths();
+        Generation(paths, "ffmpeg");
+        Generation(paths, "vtenc");
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        using var cancel = new CancellationTokenSource();
+        Assert.ThrowsAny<OperationCanceledException>(() =>
+            service.CleanupUnusedGenerations(_ => cancel.Cancel(), cancel.Token));
+        Assert.Equal(1, service.CleanupUnusedGenerations(_ => { }));
     }
 
     [Fact]

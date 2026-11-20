@@ -87,6 +87,8 @@ Linux interactive coverage must be reported separately from headless checks.
 Help → 工具库管理 opens one owned window. Path application validates before saving;
 only switches, never moves/deletes files. Failed application keeps the active root and
 shows diagnostics. Python/VS are separately visible but installed/upgraded together.
+Manual cleanup confirms the applied library path and removes unused managed versions.
+The operation log lists each removed directory. Cancellation takes effect between deletions.
 The manager links to global Settings. The “Save and close” and “Cancel” buttons stay visible below the scrollable form.
 Closing the settings window saves valid edits. Cancel and Escape discard the draft.
 Saving validates language, concurrency and proxy together.

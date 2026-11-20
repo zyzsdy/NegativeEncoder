@@ -357,10 +357,10 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             FileAccess.ReadWrite, FileShare.ReadWrite);
     }
 
-    public void CleanupUnusedGenerations(Action<string> progress)
+    public int CleanupUnusedGenerations(Action<string> progress, CancellationToken token = default)
     {
         using var lease = AcquireLock();
-        ManagedGenerations.Cleanup(Paths.Root, progress);
+        return ManagedGenerations.Cleanup(Paths.Root, progress, token);
     }
 
     private void CleanupAfterActivation(Action<string> progress)

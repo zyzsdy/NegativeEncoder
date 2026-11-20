@@ -30,6 +30,12 @@ public partial class ToolLibraryWindow : OwnedDialog
     private async void Settings_Click(object? sender, RoutedEventArgs e) =>
         await ((MainWindow)Owner!).ShowSettingsAsync(this);
     private async void Refresh_Click(object? sender, RoutedEventArgs e) => await Model.RefreshAsync(true);
+    private async void Cleanup_Click(object? sender, RoutedEventArgs e)
+    {
+        if (await PreviewDialog.ConfirmAsync(this, Loc.Text("ToolLibraryWindow.Cleanup"),
+            Loc.Format("ToolLibraryWindow.ConfirmCleanup", Model.Service.Paths.Root)))
+            await Model.CleanupAsync();
+    }
     private async void Install_Click(object? sender, RoutedEventArgs e)
     {
         if ((sender as Control)?.DataContext is ToolRowViewModel row) await Model.InstallAsync(row);
