@@ -3,8 +3,12 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.Interactivity;
 using NegativeEncoder.Desktop.ToolLibrary;
@@ -426,6 +430,13 @@ public sealed class ToolLibraryTests : IDisposable
             var limit = window.FindControl<TextBox>("ConcurrencyField")!;
             var language = window.FindControl<ComboBox>("LanguageField")!;
             var save = window.FindControl<Button>("SaveButton")!;
+            window.Width = window.MinWidth;
+            window.Height = window.MinHeight;
+            window.UpdateLayout();
+            Assert.Empty(save.GetVisualAncestors().OfType<ScrollViewer>());
+            var saveOrigin = save.TranslatePoint(default, window)!.Value;
+            Assert.True(save.Bounds.Height > 0 && saveOrigin.Y >= 0 &&
+                saveOrigin.Y + save.Bounds.Height <= window.ClientSize.Height);
             var notice = owner.FindControl<MenuItem>("NewRelease")!;
             var shellField = window.FindControl<ComboBox>("ShellField")!;
             Assert.Equal(OperatingSystem.IsWindows(), shellField.IsEffectivelyVisible);
@@ -462,6 +473,14 @@ public sealed class ToolLibraryTests : IDisposable
             Assert.Equal(5, saved.MaxConcurrentEncodings);
             Assert.Equal(5, owner.Model.MaxConcurrentEncodings);
 
+            Assert.Empty(library.OwnedWindows);
+            Dispatcher.UIThread.RunJobs();
+            library.FindControl<Button>("OpenSettingsButton")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            window = Assert.IsType<SettingsWindow>(Assert.Single(library.OwnedWindows));
+            Assert.Equal("5", window.FindControl<TextBox>("ConcurrencyField")!.Text);
+            Assert.Equal("socks5://localhost:1080", window.FindControl<TextBox>("ProxyAddressField")!.Text);
+            Assert.Equal("ja-JP", ((ComboBoxItem)window.FindControl<ComboBox>("LanguageField")!.SelectedItem!).Tag);
+
             window.FindControl<Button>("CheckButton")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Dispatcher.UIThread.RunJobs();
             Assert.True(notice.IsVisible);
@@ -480,6 +499,40 @@ public sealed class ToolLibraryTests : IDisposable
             System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = null;
             owner.Close();
         }
+    }
+
+    [AvaloniaFact]
+    public void ClosingSettingsSavesEditsAndCancelOrEscapeDiscardsThem()
+    {
+        var path = Path.Combine(_root, "network.json");
+        using var client = new DistributionClient(settings: new AppSettings(path));
+        var updates = new AppUpdateViewModel(client);
+        SettingsWindow Open()
+        {
+            var window = new SettingsWindow(new AppSettings(path), updates, default);
+            window.Show();
+            return window;
+        }
+
+        var first = Open();
+        first.FindControl<TextBox>("ConcurrencyField")!.Text = "7";
+        first.Close();
+
+        var second = Open();
+        Assert.Equal("7", second.FindControl<TextBox>("ConcurrencyField")!.Text);
+        second.FindControl<TextBox>("ConcurrencyField")!.Text = "0";
+        second.Close();
+        Assert.True(second.IsVisible);
+        Assert.True(second.FindControl<TextBlock>("SaveStatus")!.IsEffectivelyVisible);
+        second.FindControl<Button>("CancelButton")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Assert.False(second.IsVisible);
+
+        var third = Open();
+        Assert.Equal("7", third.FindControl<TextBox>("ConcurrencyField")!.Text);
+        third.FindControl<TextBox>("ConcurrencyField")!.Text = "9";
+        third.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
+        Assert.False(third.IsVisible);
+        Assert.Equal(7, new AppSettings(path).MaxConcurrentEncodings);
     }
 
     private string Generation(LibraryPaths paths, string tool, string contents = "old binary")

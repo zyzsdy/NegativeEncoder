@@ -8,6 +8,8 @@ public class OwnedDialog : Window
     public OwnedDialog()
     {
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        KeyDown += (_, e) => { if (e.Key == Key.Escape) { Close(); e.Handled = true; } };
+        KeyDown += (_, e) => { if (e.Key == Key.Escape) { Dismiss(); e.Handled = true; } };
     }
+
+    protected virtual void Dismiss() => Close();
 }

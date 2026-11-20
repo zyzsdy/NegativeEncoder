@@ -87,7 +87,9 @@ Linux interactive coverage must be reported separately from headless checks.
 Help → 工具库管理 opens one owned window. Path application validates before saving;
 only switches, never moves/deletes files. Failed application keeps the active root and
 shows diagnostics. Python/VS are separately visible but installed/upgraded together.
-The manager links to global Settings. Saving validates language, concurrency and proxy together.
+The manager links to global Settings. The “Save and close” and “Cancel” buttons stay visible below the scrollable form.
+Closing the settings window saves valid edits. Cancel and Escape discard the draft.
+Saving validates language, concurrency and proxy together.
 HTTP/SOCKS5 addresses persist in the existing application settings file. Blank restores system
 network defaults. Validation keeps the draft and focuses the field with an inline error.
 Subsequent release checks and tool downloads share the saved proxy, including redirects.

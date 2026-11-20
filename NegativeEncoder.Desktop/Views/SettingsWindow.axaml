@@ -27,10 +27,6 @@
             <Label Content="{loc:Tr SettingsWindow.Proxy}" Target="{Binding #ProxyAddressField}" Margin="0,6,0,0"/>
             <TextBox Name="ProxyAddressField" Watermark="{loc:Tr SettingsWindow.ProxyExample}" AutomationProperties.Name="{loc:Tr SettingsWindow.Proxy}"/>
             <TextBlock Text="{loc:Tr SettingsWindow.ProxyHelp}" Classes="muted"/>
-            <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
-              <TextBlock Name="SaveStatus" VerticalAlignment="Center" Margin="0,0,10,0" AutomationProperties.LiveSetting="Polite"/>
-              <Button Grid.Column="1" Name="SaveButton" Content="{loc:Tr SettingsWindow.SaveSettings}" Classes="primary" Click="Save_Click"/>
-            </Grid>
           </StackPanel>
         </Border>
         <Border Classes="panel">
@@ -41,6 +37,12 @@
         </Border>
       </StackPanel>
     </ScrollViewer>
-    <Button Grid.Row="1" Content="{loc:Tr SettingsWindow.Close}" HorizontalAlignment="Right" Margin="0,12,0,0" Click="Close_Click"/>
+    <StackPanel Grid.Row="1" Margin="0,12,0,0" Spacing="6">
+      <TextBlock Name="SaveStatus" AutomationProperties.LiveSetting="Polite" IsVisible="False"/>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button Name="CancelButton" Content="{loc:Tr PreviewDialog.Cancel}" Click="Cancel_Click"/>
+        <Button Name="SaveButton" Content="{loc:Tr SettingsWindow.SaveAndClose}" Classes="primary" Click="Save_Click"/>
+      </StackPanel>
+    </StackPanel>
   </Grid>
 </views:OwnedDialog>

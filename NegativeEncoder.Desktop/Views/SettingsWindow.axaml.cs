@@ -11,6 +11,7 @@ public partial class SettingsWindow : OwnedDialog
     private readonly AppSettings _settings = null!;
     private readonly AppUpdateViewModel _updates = null!;
     private readonly CancellationToken _lifetime;
+    private bool _discardChanges;
     public event Action? Saved;
 
     public SettingsWindow() => InitializeComponent();
@@ -34,40 +35,66 @@ public partial class SettingsWindow : OwnedDialog
                 .Single(item => Equals(item.Tag, settings.EffectiveWindowsShell(available)));
         }
         Opened += (_, _) => LanguageField.Focus();
+        Closing += OnSettingsClosing;
     }
 
-    private void Save_Click(object? sender, RoutedEventArgs e)
+    private void OnSettingsClosing(object? sender, WindowClosingEventArgs e)
+    {
+        if (_discardChanges || e.CloseReason is not (WindowCloseReason.WindowClosing or WindowCloseReason.Undefined)) return;
+
+        var language = (string)((ComboBoxItem)LanguageField.SelectedItem!).Tag!;
+        var shell = _settings.WindowsShell;
+        if (ShellField.SelectedItem is ComboBoxItem { Tag: string selected } &&
+            selected != _settings.EffectiveWindowsShell(PwshOption.IsEnabled))
+            shell = selected;
+
+        var proxy = ProxyAddressField.Text ?? "";
+        if (language == _settings.Language && shell == _settings.WindowsShell &&
+            ConcurrencyField.Text == _settings.MaxConcurrentEncodings.ToString() && proxy == _settings.ProxyAddress)
+            return;
+
+        e.Cancel = !TrySave(language, shell, proxy);
+    }
+
+    private bool TrySave(string language, string? shell, string proxy)
     {
         AutomationProperties.SetHelpText(ConcurrencyField, "");
         AutomationProperties.SetHelpText(ProxyAddressField, "");
         if (!int.TryParse(ConcurrencyField.Text, out var limit) || limit < 1)
         {
             ShowError(ConcurrencyField, Loc.Text("SettingsWindow.InvalidConcurrency"));
-            return;
+            return false;
         }
         try
         {
-            var language = (string)((ComboBoxItem)LanguageField.SelectedItem!).Tag!;
-            var shell = _settings.WindowsShell;
-            if (ShellField.SelectedItem is ComboBoxItem { Tag: string selected } &&
-                selected != _settings.EffectiveWindowsShell(PwshOption.IsEnabled))
-                shell = selected;
-            _settings.Save(language, limit, ProxyAddressField.Text ?? "", shell);
+            _settings.Save(language, limit, proxy, shell);
         }
-        catch (ArgumentException ex) { ShowError(ProxyAddressField, ex.Message); return; }
-        catch (Exception ex) { SaveStatus.Text = Loc.Format("SettingsWindow.SaveFailed", ex.Message); return; }
-        ProxyAddressField.Text = _settings.ProxyAddress;
-        SaveStatus.Text = Loc.Text("SettingsWindow.Saved");
+        catch (ArgumentException ex) { ShowError(ProxyAddressField, ex.Message); return false; }
+        catch (Exception ex)
+        {
+            SaveStatus.Text = Loc.Format("SettingsWindow.SaveFailed", ex.Message);
+            SaveStatus.IsVisible = true;
+            return false;
+        }
         Saved?.Invoke();
+        return true;
     }
 
     private void ShowError(TextBox field, string message)
     {
         SaveStatus.Text = message;
+        SaveStatus.IsVisible = true;
         AutomationProperties.SetHelpText(field, message);
         field.Focus();
     }
 
     private async void Check_Click(object? sender, RoutedEventArgs e) => await _updates.CheckAsync(_lifetime);
-    private void Close_Click(object? sender, RoutedEventArgs e) => Close();
+    private void Save_Click(object? sender, RoutedEventArgs e) => Close();
+    private void Cancel_Click(object? sender, RoutedEventArgs e) => Dismiss();
+
+    protected override void Dismiss()
+    {
+        _discardChanges = true;
+        Close();
+    }
 }
