@@ -6,6 +6,7 @@ AllowSkipFiles off
 !include "MUI2.nsh"
 !include "x64.nsh"
 !include "FileFunc.nsh"
+!include "nsDialogs.nsh"
 
 !define PRODUCT_NAME "NegativeEncoder"
 !define PUBLISHER "Ted Zyzsdy"
@@ -22,7 +23,9 @@ InstallDir "$LOCALAPPDATA\NegativeEncoder"
 Var ExistingDir
 Var PreviewDir
 Var LegacyGroup
-Var MachineUpgrade
+Var MachineRequest
+Var AllUsers
+Var AllUsersRadio
 BrandingText "MeowSound Idols"
 ShowInstDetails show
 ShowUninstDetails show
@@ -39,8 +42,11 @@ VIAddVersionKey /LANG=2052 "ProductVersion" "${PRODUCT_VERSION}"
 !define MUI_UNICON "install.ico"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "up.bmp"
 !define MUI_ABORTWARNING
+!define MUI_PAGE_CUSTOMFUNCTION_PRE SkipCompletedPage
 !insertmacro MUI_PAGE_WELCOME
+!define MUI_PAGE_CUSTOMFUNCTION_PRE SkipCompletedPage
 !insertmacro MUI_PAGE_LICENSE "licence.txt"
+Page custom ChooseInstallScope LeaveInstallScope
 !define MUI_PAGE_CUSTOMFUNCTION_PRE ChooseInstallDir
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -102,6 +108,7 @@ FunctionEnd
     StrCpy $1 ""
     IfSilent 0 +2
     StrCpy $1 "/S"
+    HideWindow
     ClearErrors
     ExecShellWait "runas" "${executable}" '${arguments} $1' SW_SHOWNORMAL $0
     ${If} ${Errors}
@@ -114,41 +121,119 @@ FunctionEnd
   ${EndIf}
 !macroend
 
+Function FindInstallation
+  SetRegView 64
+  ; Elevation can switch users. The relaunched installer only consults HKLM.
+  ${If} $MachineRequest == ""
+    ReadRegStr $PreviewDir HKCU "${PREVIEW_KEY}" "InstallLocation"
+    Call ReadInstallDir
+    ${If} $ExistingDir != ""
+      Return
+    ${EndIf}
+  ${EndIf}
+
+  !insertmacro MachineScope
+  Call ReadInstallDir
+  ${If} $ExistingDir != ""
+  ${OrIf} $MachineRequest != ""
+    StrCpy $AllUsers 1
+  ${Else}
+    SetShellVarContext current
+    SetRegView 64
+    StrCpy $ExistingDir $PreviewDir
+  ${EndIf}
+FunctionEnd
+
 Function .onInit
   ${IfNot} ${RunningX64}
     MessageBox MB_ICONSTOP|MB_OK "此安装包需要 64 位 Windows。" /SD IDOK
     SetErrorLevel 1
     Abort
   ${EndIf}
-  SetRegView 64
   ${GetParameters} $0
   ${GetOptions} $0 "/MachineUpgrade" $1
-  StrCpy $MachineUpgrade 0
-  ${If} ${Errors}
-    ReadRegStr $PreviewDir HKCU "${PREVIEW_KEY}" "InstallLocation"
-    Call ReadInstallDir
+  ${IfNot} ${Errors}
+    StrCpy $MachineRequest "/MachineUpgrade"
   ${Else}
-    ; Elevation can switch users. Only consult HKLM in the child process.
-    StrCpy $MachineUpgrade 1
-  ${EndIf}
-  ${If} $ExistingDir == ""
-    !insertmacro MachineScope
-    Call ReadInstallDir
-    ${If} $ExistingDir != ""
-      !insertmacro RequireMachineAccess "升级" "$EXEPATH" "/MachineUpgrade"
-    ${ElseIf} $MachineUpgrade == 1
-      SetErrorLevel 1
-      Abort "找不到系统级 NegativeEncoder 安装记录。"
-    ${Else}
-      SetShellVarContext current
-      SetRegView 64
-      StrCpy $ExistingDir $PreviewDir
+    ${GetOptions} $0 "/MachineInstall" $1
+    ${IfNot} ${Errors}
+      StrCpy $MachineRequest "/MachineInstall"
     ${EndIf}
   ${EndIf}
+  Call FindInstallation
   ${If} $ExistingDir != ""
     StrCpy $INSTDIR $ExistingDir
+    ${If} $MachineRequest != "/MachineUpgrade"
+      MessageBox MB_YESNO|MB_ICONQUESTION "检测到 NegativeEncoder 已安装在：$\r$\n$ExistingDir$\r$\n$\r$\n是否在此目录更新？如需更换安装位置，请先卸载现有版本。" /SD IDYES IDYES update
+      SetErrorLevel 1
+      Quit
+    ${EndIf}
+    update:
+    ${If} $AllUsers == 1
+      !insertmacro RequireMachineAccess "更新" "$EXEPATH" "/MachineUpgrade"
+    ${EndIf}
+  ${ElseIf} $MachineRequest == "/MachineUpgrade"
+    MessageBox MB_ICONSTOP|MB_OK "找不到系统级 NegativeEncoder 安装记录。" /SD IDOK
+    SetErrorLevel 1
+    Abort
+  ${ElseIf} $MachineRequest == "/MachineInstall"
+    !insertmacro RequireMachineAccess "安装" "$EXEPATH" "/MachineInstall"
+    StrCpy $INSTDIR "$PROGRAMFILES64\${PRODUCT_NAME}"
   ${EndIf}
   ReadRegStr $LegacyGroup SHCTX "${UNINSTALL_KEY}" "NSIS:StartMenuDir"
+FunctionEnd
+
+Function SkipCompletedPage
+  ; Fresh all-users installs resume at the directory page after UAC.
+  ${If} $MachineRequest == "/MachineInstall"
+    Abort
+  ${EndIf}
+FunctionEnd
+
+Function ChooseInstallScope
+  ${If} $ExistingDir != ""
+  ${OrIf} $MachineRequest != ""
+    Abort
+  ${EndIf}
+
+  !insertmacro MUI_HEADER_TEXT "选择安装范围" "选择哪些用户可以使用 NegativeEncoder。"
+  nsDialogs::Create 1018
+  Pop $0
+  ${If} $0 == error
+    MessageBox MB_ICONSTOP|MB_OK "无法显示安装范围选择页。"
+    SetErrorLevel 1
+    Quit
+  ${EndIf}
+  ${NSD_CreateRadioButton} 0 12u 100% 16u "仅为当前用户安装"
+  Pop $0
+  ${NSD_CreateLabel} 12u 30u -12u 20u "默认目录：%LOCALAPPDATA%\${PRODUCT_NAME}"
+  Pop $1
+  ${NSD_CreateRadioButton} 0 58u 100% 16u "为所有用户安装（需要管理员权限）"
+  Pop $AllUsersRadio
+  ${NSD_CreateLabel} 12u 76u -12u 20u "默认目录：$PROGRAMFILES64\${PRODUCT_NAME}"
+  Pop $1
+  ${If} $AllUsers == 1
+    ${NSD_Check} $AllUsersRadio
+  ${Else}
+    ${NSD_Check} $0
+  ${EndIf}
+  nsDialogs::Show
+FunctionEnd
+
+Function LeaveInstallScope
+  ${NSD_GetState} $AllUsersRadio $0
+  ${If} $0 == ${BST_CHECKED}
+    !insertmacro RequireMachineAccess "安装" "$EXEPATH" "/MachineInstall"
+    SetShellVarContext all
+    ${If} $AllUsers != 1
+      StrCpy $INSTDIR "$PROGRAMFILES64\${PRODUCT_NAME}"
+      StrCpy $AllUsers 1
+    ${EndIf}
+  ${ElseIf} $AllUsers == 1
+    SetShellVarContext current
+    StrCpy $INSTDIR "$LOCALAPPDATA\${PRODUCT_NAME}"
+    StrCpy $AllUsers 0
+  ${EndIf}
 FunctionEnd
 
 Function ChooseInstallDir
