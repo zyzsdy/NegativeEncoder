@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>Assets/app-icon.ico</ApplicationIcon>
-    <Version>6.0.0-beta.1</Version>
+    <Version>6.0.0-beta.2</Version>
     <Description>NegativeEncoder cross-platform desktop application</Description>
   </PropertyGroup>
   <ItemGroup>
