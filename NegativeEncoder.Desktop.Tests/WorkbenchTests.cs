@@ -62,8 +62,8 @@ public sealed class WorkbenchTests
             var view = window.FindControl<FunctionTabs>("EditorTabs")!;
             var deinterlace = view.FindControl<CheckBox>("DeinterlaceCheckBox")!;
             var resize = view.FindControl<CheckBox>("ResizeCheckBox")!;
-            var deinterlaceFields = view.FindControl<ResponsiveFormPanel>("DeinterlaceFields")!;
-            var resizeFields = view.FindControl<ResponsiveFormPanel>("ResizeFields")!;
+            var deinterlaceFields = view.FindControl<Grid>("DeinterlaceFields")!;
+            var resizeFields = view.FindControl<Grid>("ResizeFields")!;
             foreach (var encoder in Enum.GetValues<Encoder>())
             {
                 window.Model.CurrentPreset.Encoder = encoder;
@@ -82,18 +82,20 @@ public sealed class WorkbenchTests
                     foreach (var group in new[] { deinterlaceFields, resizeFields })
                     {
                         var toggle = group.Children[0].Bounds;
-                        var first = group.Children[1].Bounds;
-                        var second = group.Children[2].Bounds;
-                        Assert.True(first.Left >= toggle.Right);
+                        var parameters = (Grid)group.Children[1];
+                        var first = parameters.Children[0].Bounds;
+                        var second = parameters.Children[1].Bounds;
+                        Assert.Equal(first.Top, second.Top);
+                        Assert.True(second.Left >= first.Right);
                         if (width == 1000)
                         {
-                            Assert.Equal(toggle.Left, second.Left);
-                            Assert.True(second.Top >= first.Bottom);
+                            Assert.True(parameters.Bounds.Top >= toggle.Bottom);
+                            Assert.Equal(12, parameters.Bounds.Left);
                         }
                         else
                         {
-                            Assert.Equal(first.Top, second.Top);
-                            Assert.True(second.Left >= first.Right);
+                            Assert.True(toggle.Top < parameters.Bounds.Bottom && parameters.Bounds.Top < toggle.Bottom);
+                            Assert.InRange(parameters.Bounds.Left - Math.Max(deinterlace.Bounds.Width, resize.Bounds.Width), 11, 13);
                         }
                     }
                 }

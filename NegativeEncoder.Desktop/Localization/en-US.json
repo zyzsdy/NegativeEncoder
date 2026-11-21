@@ -74,6 +74,7 @@
   "FunctionTabs.Deinterlace": "Deinterlace",
   "FunctionTabs.DeinterlaceMethod": "Deinterlacing method",
   "FunctionTabs.Desaturation": "Desaturation (0–1)",
+  "FunctionTabs.Dar": "DAR",
   "FunctionTabs.DisplayAspectRatio": "Display aspect ratio (DAR)",
   "FunctionTabs.EnableHdrConversion": "Convert HDR format",
   "FunctionTabs.Encoder": "Encoder",

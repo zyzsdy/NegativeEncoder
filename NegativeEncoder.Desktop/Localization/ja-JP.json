@@ -74,6 +74,7 @@
   "FunctionTabs.Deinterlace": "インターレース解除",
   "FunctionTabs.DeinterlaceMethod": "インターレース解除方式",
   "FunctionTabs.Desaturation": "彩度の抑制（0～1）",
+  "FunctionTabs.Dar": "DAR",
   "FunctionTabs.DisplayAspectRatio": "表示アスペクト比（DAR）",
   "FunctionTabs.EnableHdrConversion": "HDR 形式を変換",
   "FunctionTabs.Encoder": "エンコーダー",

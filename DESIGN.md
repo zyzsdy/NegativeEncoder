@@ -53,6 +53,9 @@ splitters; the center reserves space for paths and a footer action. Each tab own
 one vertically scrolling form. Encoder fields use ResponsiveFormPanel: three equal
 columns from 700 units of available form width, two from 350 units, and one below
 that. Column gaps are 12 units and row gaps are 6 units. Read/focus order is row-first; reflow keeps the same controls.
+Right-align field labels and their selection indicators with an 8-unit gap before the input.
+Picture-processing switches share a content-sized column in the three-column layout.
+At narrower widths each switch heads its own row, with its two parameters side by side below.
 The output format and queue action share one fixed footer row. Lists virtualize through Avalonia ListBox. Long
 paths wrap or offer full-value tooltips; text fields allow selection/copy.
 

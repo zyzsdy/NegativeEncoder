@@ -74,6 +74,7 @@
   "FunctionTabs.Deinterlace": "反交错",
   "FunctionTabs.DeinterlaceMethod": "反交错方式",
   "FunctionTabs.Desaturation": "去饱和强度（0–1）",
+  "FunctionTabs.Dar": "DAR",
   "FunctionTabs.DisplayAspectRatio": "显示比例 DAR",
   "FunctionTabs.EnableHdrConversion": "启用 HDR 格式转换",
   "FunctionTabs.Encoder": "编码器",

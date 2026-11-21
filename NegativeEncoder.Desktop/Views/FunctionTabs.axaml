@@ -16,6 +16,34 @@
             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
             <Setter Property="MaxLines" Value="1"/>
           </Style>
+          <Style Selector="Label, RadioButton, CheckBox.fieldLabel">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="MinWidth" Value="0"/>
+          </Style>
+          <Style Selector="Label">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="ContentTemplate">
+              <DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Right"/></DataTemplate>
+            </Setter>
+          </Style>
+          <Style Selector="Grid.pictureGroup > CheckBox">
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+          </Style>
+          <Style Selector="Grid.pictureGroup > Grid">
+            <Setter Property="Grid.Row" Value="1"/>
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+          </Style>
+          <ContainerQuery Name="EncoderFields" Query="min-width:700">
+            <Style Selector="Grid.pictureGroup > CheckBox">
+              <Setter Property="Grid.ColumnSpan" Value="1"/>
+            </Style>
+            <Style Selector="Grid.pictureGroup > Grid">
+              <Setter Property="Grid.Row" Value="0"/>
+              <Setter Property="Grid.Column" Value="1"/>
+              <Setter Property="Grid.ColumnSpan" Value="1"/>
+            </Style>
+          </ContainerQuery>
         </Grid.Styles>
         <ScrollViewer>
           <StackPanel Spacing="6" Margin="0,12,10,12">
@@ -50,7 +78,8 @@
               <TextBlock Text="{loc:Tr FunctionTabs.CustomArguments}"/>
               <TextBox Name="CustomParametersField" Text="{Binding CurrentPreset.CustomParameters}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="150" Classes="code" AutomationProperties.Name="{loc:Tr FunctionTabs.CustomArguments}"/>
             </StackPanel>
-            <StackPanel IsVisible="{Binding !CurrentPreset.IsUseCustomParameters}" Spacing="6">
+            <StackPanel IsVisible="{Binding !CurrentPreset.IsUseCustomParameters}" Spacing="6"
+                        Container.Name="EncoderFields" Container.Sizing="Width" Grid.IsSharedSizeScope="True">
               <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.RateControl}"/>
               <views:ResponsiveFormPanel Name="RateControlFields">
                 <Grid ColumnDefinitions="120,*" Margin="0,2" IsVisible="{Binding CurrentPreset.SupportsVbr}">
@@ -119,19 +148,19 @@
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <CheckBox Content="{loc:Tr FunctionTabs.MaxGop}" IsChecked="{Binding CurrentPreset.IsSetMaxGop}"/>
+                  <CheckBox Classes="fieldLabel" Content="{loc:Tr FunctionTabs.MaxGop}" IsChecked="{Binding CurrentPreset.IsSetMaxGop}"/>
                   <Panel Grid.Column="1">
                     <TextBox Name="MaxGopField" Text="{Binding CurrentPreset.MaxGop}" AutomationProperties.Name="{loc:Tr FunctionTabs.MaxGop}" IsEnabled="{Binding CurrentPreset.IsSetMaxGop}"/>
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3">
-                  <CheckBox Content="{loc:Tr FunctionTabs.DisplayAspectRatio}" IsChecked="{Binding CurrentPreset.IsSetDar}"/>
+                  <CheckBox Classes="fieldLabel" Content="{loc:Tr FunctionTabs.Dar}" AutomationProperties.Name="{loc:Tr FunctionTabs.DisplayAspectRatio}" IsChecked="{Binding CurrentPreset.IsSetDar}"/>
                   <Panel Grid.Column="1">
                     <TextBox Name="DarField" Text="{Binding CurrentPreset.Dar}" AutomationProperties.Name="{loc:Tr FunctionTabs.DisplayAspectRatio}" IsEnabled="{Binding CurrentPreset.IsSetDar}"/>
                   </Panel>
                 </Grid>
                 <Grid ColumnDefinitions="120,*" Margin="0,3" IsVisible="{Binding CurrentPreset.SupportsMaxBitrate}">
-                  <CheckBox Content="{loc:Tr FunctionTabs.MaxBitrate}" IsChecked="{Binding CurrentPreset.IsSetMaxBitrate}"/>
+                  <CheckBox Classes="fieldLabel" Content="{loc:Tr FunctionTabs.MaxBitrate}" IsChecked="{Binding CurrentPreset.IsSetMaxBitrate}"/>
                   <Panel Grid.Column="1">
                     <TextBox Name="MaxBitrateField" Text="{Binding CurrentPreset.MaxBitrate}" AutomationProperties.Name="{loc:Tr FunctionTabs.MaxBitrate}" IsEnabled="{Binding CurrentPreset.IsSetMaxBitrate}"/>
                   </Panel>
@@ -140,7 +169,7 @@
               </views:ResponsiveFormPanel>
               <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.AdvancedOptions}"/>
               <views:ResponsiveFormPanel Name="AdvancedFields">
-                <Grid ColumnDefinitions="2*,3*" Margin="0,3">
+                <Grid ColumnDefinitions="120,*" Margin="0,3">
                   <Label Content="{loc:Tr FunctionTabs.Decoder}" Target="{Binding #DecoderSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
                     <ComboBox Name="DecoderSelect" ItemsSource="{Binding Options.DecoderOptions}" SelectedValue="{Binding CurrentPreset.Decoder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.Decoder}">
@@ -152,7 +181,7 @@
                     </ComboBox>
                   </Panel>
                 </Grid>
-                <Grid ColumnDefinitions="2*,3*" Margin="0,3" IsVisible="{Binding CurrentPreset.SupportsD3D}">
+                <Grid ColumnDefinitions="120,*" Margin="0,3" IsVisible="{Binding CurrentPreset.SupportsD3D}">
                   <Label Content="{loc:Tr FunctionTabs.D3dMode}" Target="{Binding #D3DModeSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
                     <ComboBox Name="D3DModeSelect" ItemsSource="{Binding Options.D3DModeOptions}" SelectedValue="{Binding CurrentPreset.D3DMode}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.D3dMode}" IsEnabled="{Binding CurrentPreset.SupportsD3D}">
@@ -164,8 +193,8 @@
                     </ComboBox>
                   </Panel>
                 </Grid>
-                <Grid ColumnDefinitions="2*,3*" Margin="0,3">
-                  <CheckBox Content="{loc:Tr FunctionTabs.AvSync}" IsChecked="{Binding CurrentPreset.IsSetAvSync}"/>
+                <Grid ColumnDefinitions="120,*" Margin="0,3">
+                  <CheckBox Classes="fieldLabel" Content="{loc:Tr FunctionTabs.AvSync}" IsChecked="{Binding CurrentPreset.IsSetAvSync}"/>
                   <Panel Grid.Column="1">
                     <ComboBox Name="AVSyncSelect" ItemsSource="{Binding Options.AVSyncOptions}" SelectedValue="{Binding CurrentPreset.AVSync}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.SyncMode}" IsEnabled="{Binding CurrentPreset.IsSetAvSync}">
                       <ComboBox.ItemTemplate>
@@ -176,7 +205,7 @@
                     </ComboBox>
                   </Panel>
                 </Grid>
-                <Grid ColumnDefinitions="2*,3*" Margin="0,3" IsVisible="{Binding CurrentPreset.IsVtEnc}">
+                <Grid ColumnDefinitions="120,*" Margin="0,3" IsVisible="{Binding CurrentPreset.IsVtEnc}">
                   <Label Content="{loc:Tr FunctionTabs.CfrFrameRate}" Target="{Binding #VtFrameRate}" VerticalAlignment="Center"/>
                   <ComboBox Grid.Column="1" Name="VtFrameRate" IsEditable="True" ItemsSource="{Binding Options.FrameRateOptions}"
                             Text="{Binding CurrentPreset.FrameRate, Mode=TwoWay}" AutomationProperties.Name="{loc:Tr FunctionTabs.VtCfrFrameRate}">
@@ -187,51 +216,79 @@
                 </Grid>
               </views:ResponsiveFormPanel>
               <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.VideoFilters}"/>
-              <views:ResponsiveFormPanel Name="DeinterlaceFields">
+              <Grid Name="DeinterlaceFields" Classes="pictureGroup" RowDefinitions="Auto,Auto">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="PictureSwitch"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <CheckBox Name="DeinterlaceCheckBox" Content="{loc:Tr FunctionTabs.Deinterlace}" IsChecked="{Binding CurrentPreset.IsUseDeInterlace}"/>
-                <Grid ColumnDefinitions="Auto,*" Margin="0,3" IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}">
-                  <Label Content="{loc:Tr FunctionTabs.FieldOrder}" Target="{Binding #FieldOrderSelect}" VerticalAlignment="Center"/>
-                  <Panel Grid.Column="1">
-                    <ComboBox Name="FieldOrderSelect" ItemsSource="{Binding Options.FieldOrderOptions}" SelectedValue="{Binding CurrentPreset.FieldOrder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.FieldOrder}">
-                      <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                          <TextBlock Text="{Binding Name}"/>
-                        </DataTemplate>
-                      </ComboBox.ItemTemplate>
-                    </ComboBox>
-                  </Panel>
+                <Grid ColumnDefinitions="*,*" Margin="12,0,0,0" IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}">
+                  <Grid Margin="0,3,6,3">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="PictureFirstLabel"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="{loc:Tr FunctionTabs.FieldOrder}" Target="{Binding #FieldOrderSelect}" VerticalAlignment="Center"/>
+                    <Panel Grid.Column="1">
+                      <ComboBox Name="FieldOrderSelect" ItemsSource="{Binding Options.FieldOrderOptions}" SelectedValue="{Binding CurrentPreset.FieldOrder}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.FieldOrder}">
+                        <ComboBox.ItemTemplate>
+                          <DataTemplate>
+                            <TextBlock Text="{Binding Name}"/>
+                          </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                      </ComboBox>
+                    </Panel>
+                  </Grid>
+                  <Grid Grid.Column="1" Margin="6,3,0,3">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="PictureSecondLabel"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="{loc:Tr FunctionTabs.DeinterlaceMethod}" Target="{Binding #DeInterlaceMethodPresetSelect}" VerticalAlignment="Center"/>
+                    <Panel Grid.Column="1">
+                      <ComboBox Name="DeInterlaceMethodPresetSelect" ItemsSource="{Binding Options.DeInterlaceMethodPresetOptions}" SelectedValue="{Binding CurrentPreset.DeInterlaceMethodPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.DeinterlaceMethod}">
+                        <ComboBox.ItemTemplate>
+                          <DataTemplate>
+                            <TextBlock Text="{Binding Name}"/>
+                          </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                      </ComboBox>
+                    </Panel>
+                  </Grid>
                 </Grid>
-                <Grid ColumnDefinitions="Auto,*" Margin="0,3" IsEnabled="{Binding CurrentPreset.IsUseDeInterlace}">
-                  <Label Content="{loc:Tr FunctionTabs.DeinterlaceMethod}" Target="{Binding #DeInterlaceMethodPresetSelect}" VerticalAlignment="Center"/>
-                  <Panel Grid.Column="1">
-                    <ComboBox Name="DeInterlaceMethodPresetSelect" ItemsSource="{Binding Options.DeInterlaceMethodPresetOptions}" SelectedValue="{Binding CurrentPreset.DeInterlaceMethodPreset}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.DeinterlaceMethod}">
-                      <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                          <TextBlock Text="{Binding Name}"/>
-                        </DataTemplate>
-                      </ComboBox.ItemTemplate>
-                    </ComboBox>
-                  </Panel>
-                </Grid>
-              </views:ResponsiveFormPanel>
-              <views:ResponsiveFormPanel Name="ResizeFields">
+              </Grid>
+              <Grid Name="ResizeFields" Classes="pictureGroup" RowDefinitions="Auto,Auto">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="PictureSwitch"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <CheckBox Name="ResizeCheckBox" Content="{loc:Tr FunctionTabs.ResizeVideo}" IsChecked="{Binding CurrentPreset.IsSetOutputRes}"/>
-                <Grid ColumnDefinitions="Auto,*" Margin="0,3" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}">
-                  <Label Content="{loc:Tr FunctionTabs.Width}" Target="{Binding #OutputResWidthField}" VerticalAlignment="Center"/>
-                  <Panel Grid.Column="1">
-                    <TextBox Name="OutputResWidthField" Text="{Binding CurrentPreset.OutputResWidth}" AutomationProperties.Name="{loc:Tr FunctionTabs.Width}"/>
-                  </Panel>
+                <Grid ColumnDefinitions="*,*" Margin="12,0,0,0" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}">
+                  <Grid Margin="0,3,6,3">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="PictureFirstLabel"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="{loc:Tr FunctionTabs.Width}" Target="{Binding #OutputResWidthField}" VerticalAlignment="Center"/>
+                    <Panel Grid.Column="1">
+                      <TextBox Name="OutputResWidthField" Text="{Binding CurrentPreset.OutputResWidth}" AutomationProperties.Name="{loc:Tr FunctionTabs.Width}"/>
+                    </Panel>
+                  </Grid>
+                  <Grid Grid.Column="1" Margin="6,3,0,3">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="PictureSecondLabel"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="{loc:Tr FunctionTabs.Height}" Target="{Binding #OUtputResHeightField}" VerticalAlignment="Center"/>
+                    <Panel Grid.Column="1">
+                      <TextBox Name="OUtputResHeightField" Text="{Binding CurrentPreset.OUtputResHeight}" AutomationProperties.Name="{loc:Tr FunctionTabs.Height}"/>
+                    </Panel>
+                  </Grid>
                 </Grid>
-                <Grid ColumnDefinitions="Auto,*" Margin="0,3" IsEnabled="{Binding CurrentPreset.IsSetOutputRes}">
-                  <Label Content="{loc:Tr FunctionTabs.Height}" Target="{Binding #OUtputResHeightField}" VerticalAlignment="Center"/>
-                  <Panel Grid.Column="1">
-                    <TextBox Name="OUtputResHeightField" Text="{Binding CurrentPreset.OUtputResHeight}" AutomationProperties.Name="{loc:Tr FunctionTabs.Height}"/>
-                  </Panel>
-                </Grid>
-              </views:ResponsiveFormPanel>
+              </Grid>
               <TextBlock Classes="section" Text="{loc:Tr FunctionTabs.Audio}"/>
               <views:ResponsiveFormPanel Name="AudioFields">
-                <Grid ColumnDefinitions="2*,3*" Margin="0,3">
+                <Grid ColumnDefinitions="120,*" Margin="0,3">
                   <Label Content="{loc:Tr FunctionTabs.AudioMode}" Target="{Binding #AudioEncodeSelect}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
                     <ComboBox Name="AudioEncodeSelect" ItemsSource="{Binding Options.AudioEncodeOptions}" SelectedValue="{Binding CurrentPreset.AudioEncode}" SelectedValueBinding="{Binding Value}" AutomationProperties.Name="{loc:Tr FunctionTabs.AudioMode}">
@@ -243,7 +300,7 @@
                     </ComboBox>
                   </Panel>
                 </Grid>
-                <Grid ColumnDefinitions="2*,3*" Margin="0,3">
+                <Grid ColumnDefinitions="120,*" Margin="0,3">
                   <Label Content="{loc:Tr FunctionTabs.AudioBitrate}" Target="{Binding #AudioBitrateField}" VerticalAlignment="Center"/>
                   <Panel Grid.Column="1">
                     <TextBox Name="AudioBitrateField" Text="{Binding CurrentPreset.AudioBitrate}" AutomationProperties.Name="{loc:Tr FunctionTabs.AudioBitrate}" IsEnabled="{Binding CurrentPreset.IsAudioEncoding}"/>
