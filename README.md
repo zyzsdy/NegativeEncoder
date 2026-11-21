@@ -1,129 +1,25 @@
 # NegativeEncoder
 
-## next：6.0.0-beta.1
-
-当前版本使用 **.NET 10 + Avalonia UI** 的 `NegativeEncoder.Desktop`，支持
-Windows / macOS / Linux，已接入工具库管理与主要编码任务执行。
-
-Windows x64 的 NSIS 安装包内含 .NET 运行时。首次安装默认为 `%LOCALAPPDATA%\NegativeEncoder`。
-从 5.x 升级时沿用原目录和卸载项；升级所有用户的安装（如旧版默认的 Program Files 目录）需要管理员权限。
-首次使用时，从“帮助 → 工具库管理”下载所需的编码工具。升级或卸载桌面应用都会保留已下载的工具库。
-
-```sh
-# 所有桌面平台：需要稳定版 .NET 10 SDK
-dotnet run --project NegativeEncoder.Desktop/NegativeEncoder.Desktop.csproj
-
-# 构建、测试新前端（不依赖 Windows、Libs 或编码工具）
-dotnet build NegativeEncoder.Desktop.slnx -c Release
-dotnet test NegativeEncoder.Desktop.slnx -c Release
-```
-
-macOS / Linux 也可运行 `./scripts/run-desktop.sh`，它会查找 PATH 或
-`~/.dotnet/dotnet`。
-
-### macOS 打包
-
-在安装了 .NET 10 SDK 和 Xcode 命令行工具的 Mac 上运行。macOS 发行包仅支持 Apple 芯片（`osx-arm64`）。
-
-```sh
-./scripts/package-macos.sh osx-arm64
-open artifacts/osx-arm64/NegativeEncoder.app
-```
-
-默认使用 ad-hoc 签名，一次生成包含 .NET 运行时的 `.app` 和 `artifacts/osx-arm64/NegativeEncoder-<版本>-osx-arm64-adhoc.dmg`。镜像内有可拖入“应用程序”的 App，本地打包到此完成。
-
-对外发布时，使用本机钥匙串中带私钥的 **Developer ID Application** 证书，并配置 Xcode 的公证工具。首次运行下面的命令，查看证书名称并按提示将公证凭据存入钥匙串。[Apple 公证说明](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)
-
-```sh
-security find-identity -v -p codesigning
-xcrun notarytool store-credentials "NegativeEncoder-notary"
-```
-
-**第一阶段**　将示例证书名称替换为本机证书名称或 SHA-1 指纹。脚本签名 App 和 DMG，提交 DMG 后立即打印带提交 ID 的状态查询命令，以及对应的第二阶段命令。
-
-```sh
-MACOS_SIGN_IDENTITY='Developer ID Application: Your Name (TEAMID)' \
-NOTARY_KEYCHAIN_PROFILE='NegativeEncoder-notary' \
-./scripts/package-macos.sh osx-arm64
-```
-
-**第二阶段**　查询结果为 `Accepted` 后，运行第一阶段打印的 `staple-macos.sh` 命令。脚本会重新查询状态、校验已提交镜像的 SHA-256，并在副本上装订和验证票据。最终发行文件为 `artifacts/osx-arm64/NegativeEncoder-<版本>-osx-arm64.dmg`。每次提交的原始镜像和回执保存在独立的 `notary-*` 目录中，可用于重试。
-
-### 其他平台打包
-
-Windows 也可用 `dotnet publish` 指定 `win-x64` 或 `win-arm64` RID，这些目标需要各自的交互验证。
-
-Linux 提供 x86_64 和 aarch64 两种 AppImage，内含 .NET 运行时。在 Linux 构建机上准备 .NET 10 SDK、`file` 和 `desktop-file-utils`。下载与构建机架构匹配的打包工具，命名为 `appimagetool`，赋予执行权限并放入 PATH。[appimagetool 下载页](https://github.com/AppImage/appimagetool/releases)
-
-```sh
-./scripts/package-linux.sh linux-x64
-./scripts/package-linux.sh linux-arm64
-```
-
-省略参数时按构建机架构打包。产物位于 `artifacts/<RID>/NegativeEncoder-<版本>-<架构>.AppImage`。用户下载后赋予执行权限即可启动。缺少 FUSE 时可用 `./文件名.AppImage --appimage-extract-and-run` 启动。运行需要兼容的 glibc、Avalonia 桌面原生依赖及所需字体，硬件编码还依赖本机显卡驱动。发行前应在最低支持环境验证启动和实际编码。参见 [Avalonia 支持平台](https://v11.docs.avaloniaui.net/docs/get-started/supported-platforms)。
-
-已迁移：三栏主窗口、宽窗口下的编码器两栏表单、六个功能页（编码器 / HDR / VS / 音频 / 封装 / 常用）、
-文件选择及拖放、预设菜单切换和管理、任务状态与执行日志、状态栏和关于窗口。
-预设保存工作台的编码、HDR、音频、封装、批量和 VS 设置，包括手动编辑的脚本和填写的路径。
-编辑时，窗口标题和预设菜单会在名称前显示 `*`。切换预设或重启应用都会恢复各自的草稿；“保存预设”会更新该预设并清除星号。
-正式预设和草稿分别写入用户应用数据目录 `NegativeEncoder/Desktop/` 下的 `presets.json` 和 `preset-draft.json`。待处理视频列表和任务队列仅保留于本次会话。
-
-VS 编辑器使用 AvaloniaEdit，保留 Python 语法高亮、行号和缩进；
-代码生成器会随输入视频、字幕、滤镜选项和尺寸变化自动重建脚本（覆盖手动编辑），也可从菜单手动生成。生成器根据当前 Libs 的实际取帧检测启用功能；缺失或无效选项会阻止生成并保留原脚本。编码队列按入队顺序执行，默认最多同时运行 3 个任务。任务支持取消和查看实时日志。失败时暂停启动后续任务，修正后可从“文件 → 开始任务调度”继续后续任务。
-
-在“文件 → 设置”中修改语言、并发数量和代理服务器。点击窗口底部的“保存并关闭”或标题栏关闭按钮即可保存；点击“取消”或按 Esc 放弃本次修改。界面支持简体中文、英语和日语。默认跟随系统语言，其他系统语言使用简体中文。更改语言后重启应用生效。
-设置面板和“帮助”菜单均可立即检查程序更新。发现更高的正式版后，点击“帮助 → 发现新版本 {版本号}”即可打开对应的 GitHub Release 页面。
-
-启动时根据系统与显卡选择默认编码器：macOS 使用 VTEnc；Windows/Linux 按 NVIDIA → Intel → AMD
-选择 NVENC / QSV / VCE。检测失败会显示错误；未检测到支持的显卡时提示手动选择，不会声称硬件可用。
-启动检测不会覆盖已经编辑的预设。编码模式、编解码选项按编码器区分：
-
-- NVENC/VCE：VBR、CBR、CQP；QSV 另有 LA、LA-ICQ、QVBR，沿用原 Windows 实现。
-- VTEnc：ABR、Quality（0–1）、CBR；macOS 26+ 显示 VBR。只支持 H.264 8-bit、HEVC 8/10-bit。
-  CBR 需要 CFR/Force CFR 和明确帧率；原生属性最终由硬件会话检查，失败直接报告。
-- macOS 音频由 VTEnc 的 AudioToolbox AAC 编码；Windows/Linux 音频由当前工具库的 FFmpeg 编码，不依赖 qaac。
-  当前 VTEnc 没有纯音频入口：独立音频任务需要含视频的输入，会先生成小尺寸临时视频，再用 FFmpeg 无损提取 AAC。
-- 普通编码、HDR 编码/HEVC 元数据标记、字幕压制、VS/FFmpeg 管道、音频编码/提取与封装已接入。
-  MKV 封装也使用 FFmpeg。VTEnc 的普通字幕压制和 FFmpeg / VapourSynth 管道在执行时用工具库中的 ffprobe 读取源视频的色彩标记。缺失项按 BT.709、有限范围和左置色度采样补齐，采用的默认值记录在任务日志中。自定义参数模式由用户指定源色彩。
-  HDR 编码与 HDR 字幕使用 HDR 页的设置，转换时可选 SDR、HDR10 或 HLG 作为源格式。
-
-所有可执行文件从当前 Libs 解析，不搜索系统 PATH。执行期间保护正在使用的工具库版本。
-输出不覆盖已有文件；临时目录与目标同目录，完整成功后才交付结果。失败/取消保留工作目录与日志供诊断；
-成功清理临时媒体并保留输出旁的执行日志。自定义参数按引号分词，不经过 shell，输入/输出路径由任务管理。
-从“帮助 → 启动工具包命令行”打开终端，即可直接调用当前工具库里的命令，例如 `ffmpeg` 和 `vspipe`。工具目录只加入该会话的 PATH。Windows 可在“文件 → 设置”中选择 `pwsh`、`cmd` 或 `powershell`。默认使用 `pwsh`，未检测到时默认使用 `cmd`。macOS 和 Linux 使用当前用户的默认 Shell。
-
-预设导入导出、自动安装程序更新尚未迁移。
-
-“帮助 → 工具库管理”可切换 Libs 位置、检测显卡、安装／升级独立工具及 VS 推荐插件。
-默认工具库位于以下用户数据目录：
-
-- Windows：`%LOCALAPPDATA%\NegativeEncoder\Libs`
-- macOS：`~/Library/Application Support/NegativeEncoder/Libs`
-- Linux：`$XDG_DATA_HOME/NegativeEncoder/Libs`，未设置有效绝对路径时使用 `~/.local/share/NegativeEncoder/Libs`
-
-已保存的自定义路径优先。升级前使用程序旁旧版默认 `../Libs` 的用户，可在工具库管理中选回原目录，继续使用已下载的工具。
-
-FFmpeg 追踪最新稳定版；NVEnc／QSVEnc／VCEEnc／VTEnc 追踪最新发行版（含 pre-release）；Python／VapourSynth／插件使用固定推荐组合。
-没有当前平台发行包时禁用安装；未检测到相应显卡仍允许安装。
-macOS VS 推荐组合要求 15+，Linux 要求 glibc 2.28+。手工插件放在
-`Libs/vapoursynth/user-plugins`，Python 脚本放在 `Libs/vapoursynth/user-scripts`。
-下载使用 SHA256 校验，新环境通过运行检查后才启用，旧版本保留。
-发行包来源、支持矩阵和维护验证方式见 [工具库说明](TOOL-LIBRARY.md)。
-
-仓库仅保留跨平台解决方案 `NegativeEncoder.Desktop.slnx`。旧 Windows 实现可通过 Git 历史查看。
-迁移结构与验证记录见 [MIGRATION.md](MIGRATION.md)。
-
-
 ### **“消极压制(NegativeEncoder)”是什么？**
 
 “消极压制”是指最大程度的节约系统资源，加快编码速度的一种压制方式。有时候视频质量并不是首要考虑因素，可以不用“积极的”进行一个精致的压制，何不“消极一把”呢？
 本软件调用硬件加速编码（例如NVENC），这是十分有效的一种方式。虽然很多人说生成的质量不如x264的好，但是很多时候也足够用了，不是吗？
 
-消极压制 v5.0 使用.NET Core完全重制。原始版本请查看oldver分支。
+消极压制 v6.0.0 使用 .NET 10 + Avalonia UI 完全重制，这让本应用实现了跨平台。
+
+我们提供 Windows x64、 macOS ARM64 (Apple Silicon) 和 Linux x64、 Linux ARM64 四种格式的安装包，以及多语言支持。
+
+在 Apple Silicon 平台，使用 [VTEnc](https://github.com/zyzsdy/VTEnc) 作为硬件编码器。
 
 ## Download
 
-请去[Releases](https://github.com/zyzsdy/NegativeEncoder/releases)找安装包。原有百度网盘的下载不再提供了。
+请去[Releases](https://github.com/zyzsdy/NegativeEncoder/releases)下载最新的安装包。
+
+首次使用时，请从“帮助 → 工具库管理”下载所需的编码工具。升级或卸载桌面应用都会保留已下载的工具库。
+
+升级说明：使用安装包升级时，会默认覆盖原目录。
+
+卸载说明：如果卸载后不想保留工具库，可以在“帮助 → 工具库管理”中点击“清理工具库”，然后再卸载。若卸载前忘记操作，你也可以简单的删除Lib目录。
 
 ## LICENSE
 
