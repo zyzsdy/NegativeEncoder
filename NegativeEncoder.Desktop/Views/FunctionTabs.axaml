@@ -10,6 +10,13 @@
   <TabControl Name="Tabs">
     <TabItem Header="{loc:Tr FunctionTabs.Encoder}">
       <Grid RowDefinitions="*,Auto">
+        <Grid.Styles>
+          <Style Selector="ComboBox TextBlock, ComboBoxItem TextBlock">
+            <Setter Property="TextWrapping" Value="NoWrap"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="MaxLines" Value="1"/>
+          </Style>
+        </Grid.Styles>
         <ScrollViewer>
           <StackPanel Spacing="6" Margin="0,12,10,12">
             <views:ResponsiveFormPanel Name="EncoderIdentityFields">
