@@ -6,11 +6,16 @@ namespace NegativeEncoder.Desktop.Views;
 // Reflows the same controls without reparenting them or losing edits/focus.
 public sealed class ResponsiveFormPanel : Panel
 {
-    public const double TwoColumnWidth = 660;
-    private const double ColumnGap = 20;
+    private const double ColumnGap = 12;
     private const double RowGap = 6;
 
-    private static int Columns(double width) => double.IsFinite(width) && width >= TwoColumnWidth ? 2 : 1;
+    private static int Columns(double width) => width switch
+    {
+        double.PositiveInfinity => 1,
+        >= 700 => 3,
+        >= 350 => 2,
+        _ => 1
+    };
 
     protected override Size MeasureOverride(Size availableSize)
     {

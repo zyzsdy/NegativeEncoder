@@ -50,9 +50,9 @@ use monospace; descriptive text follows the selected language. Keep product/code
 
 Default desktop window: 1320 × 850; minimum: 1000 × 620. Side panes resize with
 splitters; the center reserves space for paths and a footer action. Each tab owns
-one vertically scrolling form. Encoder fields use ResponsiveFormPanel: two equal
-columns at 660 units of available form width, otherwise one, with 20-unit column
-gaps and 6-unit row gaps. Read/focus order is row-first; reflow keeps the same controls.
+one vertically scrolling form. Encoder fields use ResponsiveFormPanel: three equal
+columns from 700 units of available form width, two from 350 units, and one below
+that. Column gaps are 12 units and row gaps are 6 units. Read/focus order is row-first; reflow keeps the same controls.
 The output format and queue action share one fixed footer row. Lists virtualize through Avalonia ListBox. Long
 paths wrap or offer full-value tooltips; text fields allow selection/copy.
 

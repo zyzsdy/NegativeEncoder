@@ -78,14 +78,23 @@ public sealed class WorkbenchTests
                     Assert.Equal(deinterlace.IsChecked, view.FindControl<ComboBox>("DeInterlaceMethodPresetSelect")!.IsEffectivelyEnabled);
                     Assert.Equal(resize.IsChecked, view.FindControl<TextBox>("OutputResWidthField")!.IsEffectivelyEnabled);
                     Assert.Equal(resize.IsChecked, view.FindControl<TextBox>("OUtputResHeightField")!.IsEffectivelyEnabled);
-                    Assert.True(deinterlace.Bounds.Bottom <= deinterlaceFields.Bounds.Top);
-                    Assert.True(deinterlaceFields.Bounds.Bottom <= resize.Bounds.Top);
-                    Assert.True(resize.Bounds.Bottom <= resizeFields.Bounds.Top);
+                    Assert.True(deinterlaceFields.Bounds.Bottom <= resizeFields.Bounds.Top);
                     foreach (var group in new[] { deinterlaceFields, resizeFields })
                     {
-                        var first = group.Children[0].Bounds;
-                        var second = group.Children[1].Bounds;
-                        Assert.True(width == 1000 ? second.Top >= first.Bottom : second.Left >= first.Right);
+                        var toggle = group.Children[0].Bounds;
+                        var first = group.Children[1].Bounds;
+                        var second = group.Children[2].Bounds;
+                        Assert.True(first.Left >= toggle.Right);
+                        if (width == 1000)
+                        {
+                            Assert.Equal(toggle.Left, second.Left);
+                            Assert.True(second.Top >= first.Bottom);
+                        }
+                        else
+                        {
+                            Assert.Equal(first.Top, second.Top);
+                            Assert.True(second.Left >= first.Right);
+                        }
                     }
                 }
             }
@@ -102,26 +111,33 @@ public sealed class WorkbenchTests
         {
             var view = window.FindControl<FunctionTabs>("EditorTabs")!;
             var fields = view.FindControl<ResponsiveFormPanel>("RateControlFields")!;
+            window.Model.CurrentPreset.Encoder = Encoder.QSV;
             var value = (TextBox)((Grid)fields.Children[0]).Children[1];
             value.Text = "7654";
             foreach (var width in new[] { 1320, 1000, 1600, 1000, 1320 })
             {
                 window.Width = width;
+                window.Height = width == 1000 ? window.MinHeight : 850;
                 window.UpdateLayout();
                 Dispatcher.UIThread.RunJobs();
-                var first = fields.Children[0].Bounds;
-                var second = fields.Children[1].Bounds;
-                if (width == 1000)
+                var visible = fields.Children.Where(child => child.IsVisible).ToArray();
+                Assert.Equal(6, visible.Length);
+                var columns = width == 1000 ? 2 : 3;
+                for (var index = 0; index < visible.Length; index++)
                 {
-                    Assert.Equal(first.X, second.X);
-                    Assert.True(second.Y >= first.Bottom);
+                    var bounds = visible[index].Bounds;
+                    Assert.True(bounds.Width > 0);
+                    Assert.True(bounds.Right <= fields.Bounds.Width + 1);
+                    Assert.Equal(visible[index % columns].Bounds.Left, bounds.Left);
+                    if (index % columns > 0)
+                    {
+                        var previous = visible[index - 1].Bounds;
+                        Assert.Equal(previous.Top, bounds.Top);
+                        Assert.True(previous.Right <= bounds.Left);
+                    }
+                    if (index >= columns)
+                        Assert.True(visible[index - columns].Bounds.Bottom <= bounds.Top);
                 }
-                else
-                {
-                    Assert.Equal(first.Y, second.Y);
-                    Assert.True(second.X >= first.Right);
-                }
-                Assert.All(fields.Children, child => Assert.True(child.Bounds.Right <= fields.Bounds.Width + 1));
                 Assert.Equal("7654", value.Text);
                 Assert.Equal("7654", window.Model.CurrentPreset.VbrParam);
             }
