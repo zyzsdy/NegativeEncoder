@@ -72,7 +72,9 @@ public sealed class NetworkProxyTests : IDisposable
         settings.ApplyProxy("socks5://localhost:1080");
         File.Delete(Path.Combine(_root, "network.json"));
         Directory.CreateDirectory(Path.Combine(_root, "network.json"));
-        Assert.ThrowsAny<IOException>(() => settings.ApplyProxy("http://localhost:7890"));
+        var error = Record.Exception(() => settings.ApplyProxy("http://localhost:7890"));
+        Assert.True(error is IOException or UnauthorizedAccessException,
+            $"Expected a file write failure, got {error?.ToString() ?? "no exception"}.");
         Assert.Equal("socks5://localhost:1080", settings.ProxyAddress);
     }
 
