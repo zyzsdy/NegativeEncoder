@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -13,6 +14,52 @@ namespace NegativeEncoder.Desktop.Tests;
 
 public sealed class WorkbenchTests
 {
+    [AvaloniaFact]
+    public async Task TaskLogOpensAtTheBottomAndFollowsUntilScrolledUp()
+    {
+        var owner = new Window();
+        owner.Show();
+        try
+        {
+            var task = new TaskDraft(TaskOperation.Video, "input.mp4", "output.mp4", new Preset(), "", "", "");
+            task.AppendLog(string.Concat(Enumerable.Repeat("existing line\n", 100)));
+            var closed = PreviewDialog.TaskAsync(owner, task);
+            var dialog = Assert.Single(owner.OwnedWindows);
+            void UpdateLayout()
+            {
+                dialog.UpdateLayout();
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            UpdateLayout();
+            var log = Assert.Single(dialog.GetVisualDescendants().OfType<TextBox>());
+            var scroll = log.GetVisualAncestors().OfType<ScrollViewer>().First();
+            double Bottom() => scroll.Extent.Height - scroll.Viewport.Height;
+            Assert.True(Bottom() > 0);
+            Assert.Equal(Bottom(), scroll.Offset.Y);
+
+            var previousBottom = Bottom();
+            task.AppendLog("another line\n");
+            UpdateLayout();
+            Assert.True(Bottom() > previousBottom);
+            Assert.Equal(Bottom(), scroll.Offset.Y);
+
+            scroll.Offset = Vector.Zero;
+            task.AppendLog("line while reading history\n");
+            UpdateLayout();
+            Assert.Equal(0, scroll.Offset.Y);
+
+            scroll.ScrollToEnd();
+            UpdateLayout();
+            task.AppendLog("latest line\n");
+            UpdateLayout();
+            Assert.Equal(Bottom(), scroll.Offset.Y);
+            dialog.Close();
+            await closed;
+        }
+        finally { owner.Close(); }
+    }
+
     [AvaloniaFact]
     public void PresetMenusTrackSelectionRenameAndDeletionWithoutLosingEdits()
     {

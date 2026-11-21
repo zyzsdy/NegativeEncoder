@@ -16,6 +16,7 @@ public enum EmptyLibraryChoice { Dismiss, OpenLibrary, NeverAskAgain }
 public sealed class PreviewDialog : OwnedDialog
 {
     private readonly StackPanel _body;
+    private readonly ScrollViewer _bodyScroll;
     private readonly StackPanel _actions;
 
     public PreviewDialog(string title, string message)
@@ -29,7 +30,8 @@ public sealed class PreviewDialog : OwnedDialog
         if (!string.IsNullOrEmpty(message)) _body.Children.Add(new TextBlock { Text = message });
         _actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(20, 0, 20, 20) };
         var grid = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
-        grid.Children.Add(new ScrollViewer { Content = _body, MaxHeight = 510 });
+        _bodyScroll = new ScrollViewer { Content = _body, MaxHeight = 510 };
+        grid.Children.Add(_bodyScroll);
         Grid.SetRow(_actions, 1);
         grid.Children.Add(_actions);
         Content = grid;
@@ -48,6 +50,16 @@ public sealed class PreviewDialog : OwnedDialog
         details.Bind(TextBox.TextProperty, new Avalonia.Data.Binding(nameof(task.Details)));
         Avalonia.Automation.AutomationProperties.SetName(details, Loc.Text("PreviewDialog.TaskLog"));
         dialog._body.Children.Add(details);
+        var scroll = dialog._bodyScroll;
+        scroll.ScrollChanged += (_, e) =>
+        {
+            if (e.Source != scroll || (e.ExtentDelta.Y == 0 && e.ViewportDelta.Y == 0)) return;
+            // Follow the tail only if the old end was already visible before layout changed.
+            var previousExtent = scroll.Extent.Height - e.ExtentDelta.Y;
+            var previousViewport = scroll.Viewport.Height - e.ViewportDelta.Y;
+            if (scroll.Offset.Y + previousViewport >= previousExtent - 1)
+                scroll.ScrollToEnd();
+        };
         await ShowNoticeAsync(owner, dialog);
     }
 
