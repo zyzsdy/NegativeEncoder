@@ -6,6 +6,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using NegativeEncoder.Desktop.Models;
 
 namespace NegativeEncoder.Desktop.Views;
 
@@ -88,6 +89,16 @@ public sealed class PreviewDialog : OwnedDialog
         return await dialog.ShowDialog<bool>(owner);
     }
 
+    public static Task<PresetChangeChoice> UnsavedPresetAsync(Window owner, string name)
+    {
+        var dialog = new PreviewDialog(Loc.Text("MainWindow.UnsavedPreset"), Loc.Format("MainWindow.SaveChangesToPreset", name));
+        var cancel = dialog.AddButton(Loc.Text("PreviewDialog.Cancel"), () => dialog.Close(PresetChangeChoice.Cancel));
+        dialog.AddButton(Loc.Text("PreviewDialog.DontSave"), () => dialog.Close(PresetChangeChoice.Discard));
+        dialog.AddButton(Loc.Text("PreviewDialog.Save"), () => dialog.Close(PresetChangeChoice.Save));
+        dialog.Opened += (_, _) => cancel.Focus();
+        return dialog.ShowDialog<PresetChangeChoice>(owner);
+    }
+
     public static async Task EditNameAsync(Window owner, string title, string initial, Func<string, bool> apply, Func<string> error)
     {
         var dialog = new PreviewDialog(title, "");
@@ -99,8 +110,16 @@ public sealed class PreviewDialog : OwnedDialog
         dialog.AddButton(Loc.Text("PreviewDialog.Cancel"), () => dialog.Close());
         dialog.AddButton(Loc.Text("PreviewDialog.Save"), () =>
         {
-            if (apply(input.Text ?? "")) dialog.Close();
-            else { validation.Text = error(); input.Focus(); }
+            try
+            {
+                if (apply(input.Text ?? "")) { dialog.Close(); return; }
+                validation.Text = error();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                validation.Text = Loc.Format("MainWindow.SaveFailed", ex.Message);
+            }
+            input.Focus();
         });
         // Do not bind Enter to submit: Enter must remain safe while composing Chinese text.
         dialog.Opened += (_, _) => Dispatcher.UIThread.Post(() => { input.Focus(); input.SelectAll(); });

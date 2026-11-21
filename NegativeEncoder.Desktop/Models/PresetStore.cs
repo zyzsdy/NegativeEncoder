@@ -3,8 +3,16 @@ using NegativeEncoder.Desktop.ToolLibrary;
 
 namespace NegativeEncoder.Desktop.Models;
 
+public enum PresetChangeChoice { Cancel, Save, Discard }
+
 internal sealed record SavedPreset(Guid Id, JsonElement Settings);
-internal sealed record PresetDrafts(Guid Selected, Dictionary<Guid, JsonElement> Changes);
+internal sealed record PresetDrafts(Guid Selected, Dictionary<Guid, JsonElement> Changes)
+{
+    public bool Matches(Guid selected, JsonElement? draft) =>
+        Selected == selected && (draft is { } snapshot
+            ? Changes.Count == 1 && Changes.TryGetValue(selected, out var saved) && JsonElement.DeepEquals(saved, snapshot)
+            : Changes.Count == 0);
+}
 
 internal sealed class PresetStore(string directory)
 {
@@ -31,7 +39,13 @@ internal sealed class PresetStore(string directory)
     }
 
     public void WriteCatalog(IEnumerable<SavedPreset> presets) => LibraryJson.WriteAtomic(_catalog, presets);
-    public void WriteDrafts(PresetDrafts drafts) => LibraryJson.WriteAtomic(_drafts, drafts);
+    public void WriteDraft(Guid selected, JsonElement? settings)
+    {
+        // Keep the recovery format readable by earlier releases.
+        var changes = new Dictionary<Guid, JsonElement>();
+        if (settings is { } snapshot) changes.Add(selected, snapshot);
+        LibraryJson.WriteAtomic(_drafts, new PresetDrafts(selected, changes));
+    }
 
     private static T? ReadIfPresent<T>(string path) where T : class
     {

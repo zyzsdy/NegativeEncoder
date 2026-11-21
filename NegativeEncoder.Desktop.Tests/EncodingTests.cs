@@ -196,9 +196,9 @@ public sealed class EncodingTests
             view.FindControl<CheckBox>("ResizeCheckBox")!.Focus();
             Dispatcher.UIThread.RunJobs();
             Assert.Equal("120000/1001", preset.FrameRate);
-            Assert.True(window.Model.CreatePreset("另一帧率", false));
+            Assert.True(window.Model.CreatePreset("另一帧率", false, PresetChangeChoice.Save));
             Assert.Equal("30000/1001", combo.Text);
-            window.Model.CurrentPreset = preset;
+            window.Model.SelectPreset(preset);
             Dispatcher.UIThread.RunJobs();
             Assert.Equal("120000/1001", editor.Text);
             var args = VideoArguments.Build(preset.Copy(), Host("osx"), false, false);
@@ -227,7 +227,7 @@ public sealed class EncodingTests
         var encoder = model.CurrentPreset.Encoder;
         model.ApplyHardware(Host("win"), new("AMD", ["AMD"], null));
         Assert.Equal(encoder, model.CurrentPreset.Encoder);
-        model.CreatePreset("new", false);
+        model.CreatePreset("new", false, PresetChangeChoice.Discard);
         Assert.Equal(Encoder.VCE, model.CurrentPreset.Encoder);
     }
 

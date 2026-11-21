@@ -6,21 +6,8 @@ namespace NegativeEncoder.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel
 {
-    public TextDocument ScriptDocument { get; private set; } = new();
-    private void LoadScriptDocument()
-    {
-        ScriptDocument.TextChanged -= ScriptEdited;
-        ScriptDocument = new TextDocument(CurrentPreset.Script);
-        ScriptDocument.TextChanged += ScriptEdited;
-        Raise(nameof(ScriptDocument));
-        Raise(nameof(Script));
-    }
-
-    private void ScriptEdited(object? sender, EventArgs e)
-    {
-        CurrentPreset.Script = ScriptDocument.Text;
-        Raise(nameof(Script));
-    }
+    public TextDocument ScriptDocument { get; } = new();
+    private bool _scriptEdited;
     public string Script { get => ScriptDocument.Text; set => ScriptDocument.Text = value; }
 
     private VsCapabilities _vsCapabilities = VsCapabilities.Empty;
@@ -55,7 +42,12 @@ public sealed partial class MainWindowViewModel
     }
 
     public bool UseVsfmod { get => SubtitleRenderer == "vsfm"; set { if (value) SubtitleRenderer = "vsfm"; } }
-    public string Subtitle { get => CurrentPreset.Subtitle; set => CurrentPreset.Subtitle = value; }
+    private string _subtitle = "";
+    public string Subtitle
+    {
+        get => _subtitle;
+        set { if (Set(ref _subtitle, value)) GenerateVsScript(); }
+    }
     public bool UseRepeat { get => CurrentPreset.UseRepeat; set => CurrentPreset.UseRepeat = value; }
     public bool UseQtgmc { get => CurrentPreset.UseQtgmc; set => CurrentPreset.UseQtgmc = value; }
     public bool UseIvtc { get => CurrentPreset.UseIvtc; set => CurrentPreset.UseIvtc = value; }
@@ -69,7 +61,7 @@ public sealed partial class MainWindowViewModel
 
     private static readonly string[] VsOptions =
     [
-        nameof(SubtitleRenderer), nameof(Subtitle), nameof(UseRepeat), nameof(UseQtgmc), nameof(UseIvtc),
+        nameof(SubtitleRenderer), nameof(UseRepeat), nameof(UseQtgmc), nameof(UseIvtc),
         nameof(UseYadifDouble), nameof(UseYadifNormal), nameof(UseBwdifNormal), nameof(UseBwdifDouble),
         nameof(VsResize), nameof(VsWidth), nameof(VsHeight)
     ];
@@ -141,6 +133,7 @@ public sealed partial class MainWindowViewModel
         }
         script.Append("video.set_output()\n");
         Script = script.ToString();
+        _scriptEdited = false;
     }
 
     private static string PythonString(string value) => "'" + value

@@ -99,7 +99,7 @@ information, following the original Windows layout with a 20-unit gap.
 ## Do's and Don'ts
 
 - Preserve all six tabs and the original parameter terminology.
-- Keep parameter edits and selection when switching tabs and presets.
+- Keep parameter edits when switching tabs. Prompt before leaving a preset with unsaved edits.
 - Distinguish waiting tasks from running tasks. No synthetic progress or success.
 - Keep platform details in About/status and migration docs, not every form field.
 - Avoid a dashboard rebrand, fake video thumbnails, or decorative KPI cards.

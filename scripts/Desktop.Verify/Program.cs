@@ -48,7 +48,7 @@ sealed class VerificationApp : App
             window.UpdateLayout();
             Require(encoder.IsDropDownOpen, "native dropdown opens");
             encoder.IsDropDownOpen = false;
-            window.Model.CreatePreset("Linux UI", true);
+            window.Model.CreatePreset("Linux UI", true, PresetChangeChoice.Discard);
             Require(window.Model.CurrentPreset.VbrQuailty == "28", "preset snapshot");
             tabs.SelectedIndex = 2;
             var editor = view.FindControl<AvaloniaEdit.TextEditor>("ScriptEditor")!;

@@ -31,12 +31,14 @@ exists in this preview. No legacy configuration is read or written.
   restrictions, with VTEnc options mapped from its own implementation. Startup selects
   macOS VTEnc or a detected Windows/Linux GPU; failed detection is reported. Options
   describe encoder features; successful execution still requires driver/session support.
-- Presets: each workbench preset owns its encoding, batch, path, generator and script
-  settings. Edits update a separate recovery file immediately. Restart restores the
-  selected preset and each working copy. Both menus and the title prefix edited
-  names with an asterisk. Saving updates the selected baseline and clears its marker. Deletion
-  requires confirmation, initially focused on Cancel. Duplicate/blank names show
-  an error in the name dialog. Import/export is deferred.
+- Presets store encoding, batch, output and generator settings. Subtitle and audio
+  input paths and the VS script belong to the current session. Each queued task captures
+  its own copy. Only the active preset can have a recovery draft and an asterisk in
+  the title and menus. Restart restores that draft. When switching away, Save commits
+  the edits and switches, Don’t save restores the saved settings and switches, and
+  Cancel keeps the current selection and edits. Save As copies the edited settings.
+  Deletion requires confirmation, initially focused on Cancel. Duplicate or blank
+  names show an error in the name dialog. Import/export is deferred.
 - Queue: Add validates inputs/tools/destinations, captures a preset/script snapshot and
   starts jobs in queue order up to the saved concurrency limit (default 3). Changes to forms do not mutate existing tasks. Both sides of
   pipelines must succeed before the staged output is published; existing files are never

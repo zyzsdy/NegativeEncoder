@@ -10,7 +10,7 @@ namespace NegativeEncoder.Desktop.ViewModels;
 public sealed partial class MainWindowViewModel : ObservableObject
 {
     private readonly Dictionary<Preset, SavedPreset> _savedPresets = new();
-    private readonly Dictionary<Guid, JsonElement> _drafts = new();
+    private JsonElement? _draft;
     private readonly PresetStore? _store;
     private readonly Dictionary<DeInterlaceMethodPreset, string> _deinterlaceNames;
     private Preset? _initialDefault;
@@ -20,25 +20,37 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public PresetOption Options { get; } = new();
 
     private Preset _currentPreset;
-    public Preset CurrentPreset
+    public Preset CurrentPreset => _currentPreset;
+
+    public void SelectPreset(Preset preset, PresetChangeChoice choice = PresetChangeChoice.Cancel)
     {
-        get => _currentPreset;
-        set
+        if (preset == CurrentPreset) return;
+        if (!_savedPresets.ContainsKey(preset)) throw new ArgumentException(Loc.Text("MainWindow.SelectExistingPreset"), nameof(preset));
+        if (IsPresetDirty && choice == PresetChangeChoice.Cancel) return;
+        if (IsPresetDirty && choice == PresetChangeChoice.Save) SavePreset();
+        WriteDraft(_savedPresets[preset].Id, null);
+        var previous = CurrentPreset;
+        previous.PropertyChanged -= PresetChanged;
+        if (IsPresetDirty)
         {
-            if (value is null || value == _currentPreset) return;
-            if (!_savedPresets.ContainsKey(value)) throw new ArgumentException(Loc.Text("MainWindow.SelectExistingPreset"), nameof(value));
-            _initialDefault = null;
-            _currentPreset = value;
-            ActivatePreset();
-            WriteDrafts();
+            var baseline = _savedPresets[previous];
+            var restored = Preset.FromSnapshot(baseline.Settings);
+            _savedPresets.Add(restored, baseline);
+            Presets[Presets.IndexOf(previous)] = restored;
+            _savedPresets.Remove(previous);
         }
+        _currentPreset = preset;
+        _draft = null;
+        _initialDefault = null;
+        ActivatePreset();
     }
 
     private void ActivatePreset()
     {
-        LoadScriptDocument();
+        CurrentPreset.PropertyChanged += PresetChanged;
+        if (_scriptEdited) VsIssue = UnavailableVsReason();
+        else GenerateVsScript();
         RefreshEncoderOptions();
-        VsIssue = UnavailableVsReason();
         Raise(nameof(CurrentPreset));
         foreach (var name in WorkbenchProperties.Concat(VsOptions)) Raise(name);
         RefreshVsControls();
@@ -46,9 +58,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Raise(nameof(Title));
     }
 
-    public bool IsPresetDirty => _drafts.ContainsKey(_savedPresets[CurrentPreset].Id);
+    public bool IsPresetDirty => _draft.HasValue;
     public string PresetLabel(Preset preset) =>
-        (_drafts.ContainsKey(_savedPresets[preset].Id) ? "*" : "") + preset.PresetName;
+        (preset == CurrentPreset && IsPresetDirty ? "*" : "") + preset.PresetName;
     public string Title => Loc.Format("MainWindow.Title", AppVersion.Current, PresetLabel(CurrentPreset));
     public bool FilesEmpty => Files.Count == 0;
     public bool TasksEmpty => Tasks.Count == 0;
@@ -80,45 +92,51 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private string _status = Loc.Text("MainWindow.Ready");
     public string Status { get => _status; set => Set(ref _status, value); }
     public string AudioOutput { get => CurrentPreset.AudioOutput; set => CurrentPreset.AudioOutput = value; }
-    public string MuxAudio { get => CurrentPreset.MuxAudio; set => CurrentPreset.MuxAudio = value; }
+    private string _muxAudio = "";
+    public string MuxAudio { get => _muxAudio; set => Set(ref _muxAudio, value); }
     public string MuxOutput { get => CurrentPreset.MuxOutput; set => CurrentPreset.MuxOutput = value; }
 
     private static readonly string[] WorkbenchProperties =
-        [nameof(OutputPath), nameof(ProcessAll), nameof(AudioOutput), nameof(MuxAudio), nameof(MuxOutput)];
+        [nameof(OutputPath), nameof(ProcessAll), nameof(AudioOutput), nameof(MuxOutput)];
 
     public MainWindowViewModel(VsCapabilities? capabilities = null, string? presetDirectory = null)
     {
         _deinterlaceNames = Options.DeInterlaceMethodPresetOptions.ToDictionary(o => o.Value, o => o.Name);
         if (capabilities is not null) _vsCapabilities = capabilities;
         _store = presetDirectory is null ? null : new PresetStore(presetDirectory);
+        ScriptDocument.TextChanged += (_, _) => { _scriptEdited = true; Raise(nameof(Script)); };
         var catalog = _store?.LoadCatalog();
         var recovery = _store?.LoadDrafts();
         if (catalog is null)
         {
             if (recovery is not null) throw new InvalidDataException(Loc.Text("MainWindow.OrphanDraft"));
             _currentPreset = NewDefaultPreset();
-            LoadScriptDocument();
-            GenerateVsScript();
             RegisterPreset(_currentPreset, NewBaseline(_currentPreset));
             _initialDefault = _currentPreset;
             WriteCatalog(_savedPresets.Values);
         }
         else
         {
+            var rewriteCatalog = false;
             foreach (var saved in catalog)
             {
                 var preset = Preset.FromSnapshot(saved.Settings);
                 var baseline = saved with { Settings = preset.Snapshot() };
-                if (recovery is not null && recovery.Changes.TryGetValue(saved.Id, out var draft))
+                rewriteCatalog |= saved.Settings.TryGetProperty(nameof(Subtitle), out _) ||
+                    saved.Settings.TryGetProperty(nameof(MuxAudio), out _) || saved.Settings.TryGetProperty(nameof(Script), out _);
+                if (recovery?.Selected == saved.Id && recovery.Changes.TryGetValue(saved.Id, out var draft))
                 {
                     preset = Preset.FromSnapshot(draft);
                     var settings = preset.Snapshot();
-                    if (!JsonElement.DeepEquals(baseline.Settings, settings)) _drafts.Add(saved.Id, settings);
+                    if (!JsonElement.DeepEquals(baseline.Settings, settings)) _draft = settings;
                 }
                 RegisterPreset(preset, baseline);
             }
             // A catalog change can reach disk before the selection update (e.g. deletion).
             _currentPreset = Presets.FirstOrDefault(p => _savedPresets[p].Id == recovery?.Selected) ?? Presets[0];
+            if (rewriteCatalog) WriteCatalog(_savedPresets.Values);
+            var selected = _savedPresets[CurrentPreset].Id;
+            if (recovery is not null && !recovery.Matches(selected, _draft)) WriteDraft(selected, _draft);
         }
         ActivatePreset();
         Files.CollectionChanged += (_, _) => { Raise(nameof(FilesEmpty)); Raise(nameof(FileCount)); };
@@ -130,7 +148,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private void RegisterPreset(Preset preset, SavedPreset saved)
     {
         _savedPresets.Add(preset, saved);
-        preset.PropertyChanged += PresetChanged;
         Presets.Add(preset);
     }
 
@@ -144,9 +161,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    private void WriteDrafts()
+    private void WriteDraft(Guid selected, JsonElement? settings)
     {
-        try { _store?.WriteDrafts(new(_savedPresets[CurrentPreset].Id, _drafts)); }
+        try { _store?.WriteDraft(selected, settings); }
         catch (Exception error)
         {
             Status = Loc.Format("MainWindow.DraftWriteFailed", error.Message);
@@ -161,68 +178,74 @@ public sealed partial class MainWindowViewModel : ObservableObject
         _initialDefault = null;
         var saved = _savedPresets[preset];
         var snapshot = preset.Snapshot();
-        if (JsonElement.DeepEquals(saved.Settings, snapshot)) _drafts.Remove(saved.Id);
-        else _drafts[saved.Id] = snapshot;
+        _draft = JsonElement.DeepEquals(saved.Settings, snapshot) ? null : snapshot;
 
-        if (preset == CurrentPreset)
+        if (name is nameof(Preset.Encoder) or nameof(Preset.Codec)) RefreshEncoderOptions();
+        if (WorkbenchProperties.Contains(name) || VsOptions.Contains(name)) Raise(name);
+        if (VsOptions.Contains(name))
         {
-            if (name is nameof(Preset.Encoder) or nameof(Preset.Codec)) RefreshEncoderOptions();
-            if (WorkbenchProperties.Contains(name) || VsOptions.Contains(name)) Raise(name);
-            if (VsOptions.Contains(name))
-            {
-                RefreshVsControls();
-                GenerateVsScript();
-            }
-            if (name == nameof(Preset.Script) && Script != preset.Script) Script = preset.Script;
-            if (name == nameof(Preset.OutputFormat))
-            {
-                if (preset.OutputPath is { Length: > 0 } path)
-                    OutputPath = Path.ChangeExtension(path, Extension(preset.OutputFormat));
-                Raise(nameof(OutputPath));
-            }
+            RefreshVsControls();
+            GenerateVsScript();
+        }
+        if (name == nameof(Preset.OutputFormat))
+        {
+            if (preset.OutputPath is { Length: > 0 } path)
+                OutputPath = Path.ChangeExtension(path, Extension(preset.OutputFormat));
+            Raise(nameof(OutputPath));
         }
         Raise(nameof(IsPresetDirty));
         Raise(nameof(Title));
-        WriteDrafts();
+        WriteDraft(saved.Id, _draft);
     }
 
     public void SavePreset()
     {
-        _initialDefault = null;
-        var saved = _savedPresets[CurrentPreset] with { Settings = CurrentPreset.Snapshot() };
-        WriteCatalog(Presets.Select(p => p == CurrentPreset ? saved : _savedPresets[p]));
-        _savedPresets[CurrentPreset] = saved;
-        _drafts.Remove(saved.Id);
-        WriteDrafts();
-        Raise(nameof(IsPresetDirty));
-        Raise(nameof(Title));
+        CommitCurrentPreset();
+        WriteDraft(_savedPresets[CurrentPreset].Id, null);
         Status = Loc.Text("MainWindow.PresetSaved");
     }
 
-    public bool CreatePreset(string name, bool copy)
+    private void CommitCurrentPreset(SavedPreset? newPreset = null)
     {
-        if (!ValidatePresetName(name, null)) return false;
+        _initialDefault = null;
+        var saved = _savedPresets[CurrentPreset] with { Settings = CurrentPreset.Snapshot() };
+        var catalog = Presets.Select(p => p == CurrentPreset ? saved : _savedPresets[p]);
+        WriteCatalog(newPreset is null ? catalog : catalog.Append(newPreset));
+        _savedPresets[CurrentPreset] = saved;
+        _draft = null;
+        Raise(nameof(IsPresetDirty));
+        Raise(nameof(Title));
+    }
+
+    public bool CreatePreset(string name, bool copy, PresetChangeChoice choice = PresetChangeChoice.Cancel)
+    {
+        if (IsPresetDirty && choice == PresetChangeChoice.Cancel) return false;
+        var names = IsPresetDirty && choice == PresetChangeChoice.Discard
+            ? _savedPresets.Values.Select(p => p.Settings.GetProperty(nameof(Preset.PresetName)).GetString())
+            : Presets.Select(p => p.PresetName);
+        if (!ValidatePresetName(name, names)) return false;
         var preset = copy ? CurrentPreset.Copy() : NewDefaultPreset();
         preset.PresetName = name.Trim();
         var saved = NewBaseline(preset);
-        WriteCatalog(Presets.Select(p => _savedPresets[p]).Append(saved));
+        if (IsPresetDirty && choice == PresetChangeChoice.Save) CommitCurrentPreset(saved);
+        else WriteCatalog(Presets.Select(p => _savedPresets[p]).Append(saved));
         RegisterPreset(preset, saved);
-        CurrentPreset = preset;
+        SelectPreset(preset, choice);
         Status = Loc.Text("MainWindow.PresetSaved");
         return true;
     }
 
     public bool RenamePreset(string name)
     {
-        if (!ValidatePresetName(name, CurrentPreset)) return false;
+        if (!ValidatePresetName(name, Presets.Where(p => p != CurrentPreset).Select(p => p.PresetName))) return false;
         CurrentPreset.PresetName = name.Trim();
         return true;
     }
 
-    private bool ValidatePresetName(string name, Preset? except)
+    private bool ValidatePresetName(string name, IEnumerable<string?> existingNames)
     {
         if (string.IsNullOrWhiteSpace(name)) { Status = Loc.Text("MainWindow.EnterPresetName"); return false; }
-        if (Presets.Any(p => p != except && string.Equals(p.PresetName, name.Trim(), StringComparison.OrdinalIgnoreCase)))
+        if (existingNames.Contains(name.Trim(), StringComparer.OrdinalIgnoreCase))
         { Status = Loc.Text("MainWindow.DuplicatePresetName"); return false; }
         return true;
     }
@@ -239,12 +262,14 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
         else WriteCatalog(Presets.Where(p => p != old).Select(p => _savedPresets[p]));
 
-        _drafts.Remove(_savedPresets[old].Id);
-        CurrentPreset = Presets.First(p => p != old);
+        _draft = null;
+        _initialDefault = null;
+        _currentPreset = Presets.First(p => p != old);
         old.PropertyChanged -= PresetChanged;
         Presets.Remove(old);
         _savedPresets.Remove(old);
-        Raise(nameof(IsPresetDirty));
+        ActivatePreset();
+        WriteDraft(_savedPresets[CurrentPreset].Id, null);
         Status = Loc.Text("MainWindow.PresetDeleted");
     }
 

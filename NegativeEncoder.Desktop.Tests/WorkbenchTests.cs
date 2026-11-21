@@ -1,7 +1,10 @@
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using NegativeEncoder.Desktop.Models;
 using NegativeEncoder.Desktop.Views;
 using Xunit;
@@ -30,13 +33,39 @@ public sealed class WorkbenchTests
             }
 
             CheckSelection("Default");
-            model.CurrentPreset.VbrParam = "8765";
             Assert.True(model.CreatePreset("测试预设", false));
             CheckSelection("测试预设");
             PresetItems()[0].RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            CheckSelection("Default");
+            model.CurrentPreset.VbrParam = "8765";
+            void Switch(string choice)
+            {
+                PresetItems()[1].RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+                var dialog = Assert.IsType<PreviewDialog>(Assert.Single(window.OwnedWindows));
+                CheckSelection("*Default");
+                if (choice == "Escape")
+                    dialog.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
+                else
+                    dialog.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, choice))
+                        .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                Dispatcher.UIThread.RunJobs();
+            }
+            Switch("Escape");
+            CheckSelection("*Default");
+            Switch("取消");
             CheckSelection("*Default");
             Assert.Equal("8765", model.CurrentPreset.VbrParam);
-            Assert.True(model.IsPresetDirty);
+            Switch("保存");
+            CheckSelection("测试预设");
+            PresetItems()[0].RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            CheckSelection("Default");
+            Assert.Equal("8765", model.CurrentPreset.VbrParam);
+            model.CurrentPreset.VbrParam = "9000";
+            Switch("不保存");
+            CheckSelection("测试预设");
+            PresetItems()[0].RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            CheckSelection("Default");
+            Assert.Equal("8765", model.CurrentPreset.VbrParam);
             Assert.True(model.RenamePreset("重命名"));
             CheckSelection("*重命名");
             Assert.Contains("*重命名", window.Title);

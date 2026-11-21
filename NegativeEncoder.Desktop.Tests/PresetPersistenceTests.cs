@@ -17,20 +17,29 @@ public sealed class PresetPersistenceTests : IDisposable
     private MainWindowViewModel Open() => new(VapourSynthTests.FullCapabilities, _directory);
 
     [Fact]
-    public void DraftsRestoreImmediatelyAndSavingOnlyCommitsTheSelectedPreset()
+    public void RecoveryKeepsPresetSettingsAndExcludesSessionInputs()
     {
         var model = Open();
         var savedPath = Path.Combine(_directory, "presets.json");
         var original = File.ReadAllText(savedPath);
         Assert.DoesNotContain(nameof(Preset.AvailableModes), original);
+        model.AddFiles(["/视频/素材.mp4"]);
+        model.MuxAudio = "/视频/混音.m4a";
+        model.Subtitle = "/字幕/对白.ass";
+        model.ScriptDocument.Text = "# 手写脚本\n";
+        Assert.False(model.IsPresetDirty);
+        Assert.True(model.AddTask(TaskOperation.VapourSynth));
+        var queued = Assert.Single(model.Tasks);
+        Assert.Equal(model.Script, queued.Script);
+        Assert.Equal(model.Subtitle, queued.SubtitlePath);
+        Assert.Equal(model.MuxAudio, queued.AudioInputPath);
+
         model.CurrentPreset.VbrParam = "8012";
         model.CurrentPreset.IsOutputHdr = true;
         model.ProcessAll = true;
         model.OutputPath = "/视频/out.mkv";
         model.AudioOutput = "/视频/声音.m4a";
-        model.MuxAudio = "/视频/混音.m4a";
         model.MuxOutput = "/视频/封装.mkv";
-        model.Subtitle = "/字幕/对白.ass";
         model.SubtitleRenderer = "xyvsf";
         model.UseRepeat = true;
         model.VsResize = true;
@@ -46,35 +55,63 @@ public sealed class PresetPersistenceTests : IDisposable
         Assert.True(reopened.ProcessAll);
         Assert.Equal(model.OutputPath, reopened.OutputPath);
         Assert.Equal(model.AudioOutput, reopened.AudioOutput);
-        Assert.Equal(model.MuxAudio, reopened.MuxAudio);
+        Assert.Empty(reopened.MuxAudio);
         Assert.Equal(model.MuxOutput, reopened.MuxOutput);
-        Assert.Equal(model.Subtitle, reopened.Subtitle);
+        Assert.Empty(reopened.Subtitle);
         Assert.True(reopened.UseXyVsf && reopened.UseRepeat && reopened.VsResize);
         Assert.Equal("", reopened.VsWidth);
-        Assert.Equal("# 手写脚本\n", reopened.Script);
-
-        Assert.True(reopened.CreatePreset("副本", true));
-        Assert.False(reopened.IsPresetDirty);
-        Assert.Equal("# 手写脚本\n", reopened.Script);
-        reopened.Script = "# 副本编辑";
-        reopened.SavePreset();
-
-        var selected = Open();
-        Assert.Equal("副本", selected.CurrentPreset.PresetName);
-        Assert.False(selected.IsPresetDirty);
-        Assert.Equal("# 副本编辑", selected.Script);
-        selected.CurrentPreset = selected.Presets.Single(p => p.PresetName == "Default");
-        Assert.Equal("# 手写脚本\n", selected.Script);
-        Assert.True(selected.IsPresetDirty);
-        selected.RenamePreset("归档");
-        Assert.Contains("*归档", Open().Title);
-        selected.SavePreset();
+        Assert.Empty(reopened.Script);
+        Assert.True(model.CreatePreset("副本", true, PresetChangeChoice.Save));
+        Assert.False(model.IsPresetDirty);
+        Assert.Equal("# 手写脚本\n", model.Script);
+        Assert.Equal("/视频/混音.m4a", model.MuxAudio);
+        Assert.Equal("/字幕/对白.ass", model.Subtitle);
+        model.RenamePreset("归档");
+        var recovered = Open();
+        Assert.Contains("*归档", recovered.Title);
+        recovered.SavePreset();
         Assert.False(Open().IsPresetDirty);
-        selected.DeletePreset();
-        Assert.Equal("副本", Assert.Single(Open().Presets).PresetName);
-        selected.DeletePreset();
-        Assert.Equal("Default", Assert.Single(Open().Presets).PresetName);
-        Assert.False(Open().IsPresetDirty);
+        foreach (var file in new[] { savedPath, Path.Combine(_directory, "preset-draft.json") })
+        {
+            var json = File.ReadAllText(file);
+            foreach (var field in new[] { "Subtitle", "MuxAudio", "Script" })
+                Assert.DoesNotContain($"\"{field}\"", json);
+        }
+    }
+
+    [Fact]
+    public void LegacyRecoveryKeepsOnlyTheSelectedDraftAndRemovesSessionInputs()
+    {
+        var model = Open();
+        model.CreatePreset("第二个", false);
+        var catalogPath = Path.Combine(_directory, "presets.json");
+        var draftPath = Path.Combine(_directory, "preset-draft.json");
+        var catalog = JsonNode.Parse(File.ReadAllText(catalogPath))!.AsArray();
+        var recovery = JsonNode.Parse(File.ReadAllText(draftPath))!;
+        foreach (var preset in catalog)
+        {
+            var settings = preset!["settings"]!;
+            settings["Subtitle"] = "legacy.ass";
+            settings["MuxAudio"] = "legacy.aac";
+            settings["Script"] = "# legacy";
+            var draft = settings.DeepClone();
+            draft["AudioBitrate"] = "320";
+            recovery["changes"]![preset["id"]!.GetValue<string>()] = draft;
+        }
+        File.WriteAllText(catalogPath, catalog.ToJsonString());
+        File.WriteAllText(draftPath, recovery.ToJsonString());
+
+        var reopened = Open();
+        Assert.Contains("*第二个", reopened.Title);
+        Assert.Equal("320", reopened.CurrentPreset.AudioBitrate);
+        Assert.Equal("192", reopened.Presets[0].AudioBitrate);
+        Assert.Equal("Default", reopened.PresetLabel(reopened.Presets[0]));
+        Assert.Empty(reopened.Subtitle);
+        Assert.Empty(reopened.MuxAudio);
+        Assert.DoesNotContain("legacy", reopened.Script);
+        Assert.DoesNotContain("legacy", File.ReadAllText(catalogPath));
+        Assert.DoesNotContain("legacy", File.ReadAllText(draftPath));
+        Assert.Single(JsonNode.Parse(File.ReadAllText(draftPath))!["changes"]!.AsObject());
     }
 
     [Fact]
@@ -126,6 +163,35 @@ public sealed class PresetPersistenceTests : IDisposable
         restored.SavePreset();
         var saved = JsonNode.Parse(File.ReadAllText(catalogPath))![0]!["settings"]!.AsObject();
         Assert.All(obsolete, name => Assert.False(saved.ContainsKey(name)));
+    }
+
+    [Theory]
+    [InlineData(PresetChangeChoice.Save)]
+    [InlineData(PresetChangeChoice.Discard)]
+    public void FailedSwitchKeepsCurrentPresetAndAllowsRetry(PresetChangeChoice choice)
+    {
+        var model = Open();
+        Assert.True(model.CreatePreset("第二个", false));
+        var edited = model.CurrentPreset;
+        edited.AudioBitrate = "256";
+        var path = Path.Combine(_directory, choice == PresetChangeChoice.Save ? "presets.json" : "preset-draft.json");
+        File.Move(path, path + ".bak");
+        Directory.CreateDirectory(path);
+        var target = model.Presets[0];
+        var error = Record.Exception(() => model.SelectPreset(target, choice));
+        Assert.True(error is IOException or UnauthorizedAccessException);
+        Assert.Same(edited, model.CurrentPreset);
+        Assert.True(model.IsPresetDirty);
+        Assert.Equal("256", model.CurrentPreset.AudioBitrate);
+
+        Directory.Delete(path);
+        File.Move(path + ".bak", path);
+        model.SelectPreset(target, choice);
+        var reopened = Open();
+        Assert.Equal("Default", reopened.CurrentPreset.PresetName);
+        reopened.SelectPreset(reopened.Presets[1]);
+        Assert.Equal(choice == PresetChangeChoice.Save ? "256" : "192", reopened.CurrentPreset.AudioBitrate);
+        Assert.False(reopened.IsPresetDirty);
     }
 
     [Fact]
@@ -187,12 +253,12 @@ public sealed class PresetPersistenceTests : IDisposable
             Assert.Equal("1280", view.FindControl<TextBox>("VsWidthField")!.Text);
             Assert.True(view.FindControl<CheckBox>("VsResizeCheckBox")!.IsChecked);
             var editor = view.FindControl<AvaloniaEdit.TextEditor>("ScriptEditor")!;
-            Assert.Equal("# 原片", editor.Document.Text);
-            var original = next.Model.CurrentPreset;
-            next.Model.CurrentPreset = next.Model.Presets[0];
-            next.Model.CurrentPreset = original;
-            Assert.Equal("# 原片", editor.Document.Text);
-            Assert.Equal(Codec.AV1, original.Codec);
+            Assert.Empty(editor.Document.Text);
+            editor.Document.Text = "# 当次编辑";
+            next.Model.SelectPreset(next.Model.Presets[0], PresetChangeChoice.Save);
+            next.Model.SelectPreset(next.Model.Presets[1]);
+            Assert.Equal("# 当次编辑", editor.Document.Text);
+            Assert.Equal(Codec.AV1, next.Model.CurrentPreset.Codec);
         }
         finally { next.Close(); }
     }

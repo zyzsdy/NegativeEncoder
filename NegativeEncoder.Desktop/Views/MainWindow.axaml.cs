@@ -154,13 +154,27 @@ public partial class MainWindow : Window
         {
             var menu = new MenuItem { ToggleType = MenuItemToggleType.Radio, GroupName = "Presets" };
             var native = new NativeMenuItem { ToggleType = NativeMenuItemToggleType.Radio };
-            menu.Click += (_, _) => { Model.CurrentPreset = preset; UpdatePresetMenu(); };
-            native.Click += (_, _) => { Model.CurrentPreset = preset; UpdatePresetMenu(); };
+            menu.Click += async (_, _) => await SelectPresetAsync(preset);
+            native.Click += async (_, _) => await SelectPresetAsync(preset);
             _presetItems.Add(preset, (menu, native));
             PresetMenu.Items.Add(menu);
             _nativePresetMenu?.Items.Add(native);
         }
         UpdatePresetMenu();
+    }
+
+    private async Task SelectPresetAsync(Preset preset)
+    {
+        UpdatePresetMenu();
+        if (preset == Model.CurrentPreset) return;
+        var choice = Model.IsPresetDirty
+            ? await PreviewDialog.UnsavedPresetAsync(this, Model.CurrentPreset.PresetName)
+            : PresetChangeChoice.Cancel;
+        try { Model.SelectPreset(preset, choice); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            await PreviewDialog.NoticeAsync(this, Loc.Text("MainWindow.Presets"), Model.Status);
+        }
     }
 
     private void UpdatePresetMenu()
@@ -257,9 +271,23 @@ public partial class MainWindow : Window
     private void SavePreset_Click(object? sender, RoutedEventArgs e) => SavePreset_NativeClick(sender, e);
     private void SavePreset_NativeClick(object? sender, EventArgs e) => Model.SavePreset();
     private void NewPreset_Click(object? sender, RoutedEventArgs e) => NewPreset_NativeClick(sender, e);
-    private async void NewPreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, Loc.Text("MainWindow.NewPreset"), "", name => Model.CreatePreset(name, false), () => Model.Status);
+    private async void NewPreset_NativeClick(object? sender, EventArgs e) => await CreatePresetAsync(false);
     private void CopyPreset_Click(object? sender, RoutedEventArgs e) => CopyPreset_NativeClick(sender, e);
-    private async void CopyPreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, Loc.Text("MainWindow.SavePresetAs"), Loc.Format("MainWindow.CopyName", Model.CurrentPreset.PresetName), name => Model.CreatePreset(name, true), () => Model.Status);
+    private async void CopyPreset_NativeClick(object? sender, EventArgs e) => await CreatePresetAsync(true);
+
+    private async Task CreatePresetAsync(bool copy)
+    {
+        var choice = PresetChangeChoice.Cancel;
+        if (Model.IsPresetDirty)
+        {
+            choice = await PreviewDialog.UnsavedPresetAsync(this, Model.CurrentPreset.PresetName);
+            if (choice == PresetChangeChoice.Cancel) return;
+        }
+        var title = Loc.Text(copy ? "MainWindow.SavePresetAs" : "MainWindow.NewPreset");
+        var initial = copy ? Loc.Format("MainWindow.CopyName", Model.CurrentPreset.PresetName) : "";
+        await PreviewDialog.EditNameAsync(this, title, initial, name => Model.CreatePreset(name, copy, choice), () => Model.Status);
+    }
+
     private void RenamePreset_Click(object? sender, RoutedEventArgs e) => RenamePreset_NativeClick(sender, e);
     private async void RenamePreset_NativeClick(object? sender, EventArgs e) => await PreviewDialog.EditNameAsync(this, Loc.Text("MainWindow.RenamePreset"), Model.CurrentPreset.PresetName, Model.RenamePreset, () => Model.Status);
 

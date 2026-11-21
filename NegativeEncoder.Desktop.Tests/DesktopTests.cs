@@ -58,20 +58,18 @@ public sealed class DesktopTests
     }
 
     [Fact]
-    public void PresetsRetainDraftEditsAndValidateNames()
+    public void SaveAsCopiesEditsAndValidatesNames()
     {
         var model = new MainWindowViewModel();
         Assert.False(model.IsPresetDirty);
         model.CurrentPreset.VbrParam = "1234";
         Assert.True(model.IsPresetDirty);
-        var first = model.CurrentPreset;
-        Assert.False(model.CreatePreset(" ", false));
-        Assert.False(model.CreatePreset("Default", false));
-        Assert.True(model.CreatePreset("测试", true));
+        Assert.False(model.CreatePreset(" ", false, PresetChangeChoice.Discard));
+        Assert.False(model.CreatePreset("Default", false, PresetChangeChoice.Discard));
+        Assert.True(model.CreatePreset("测试", true, PresetChangeChoice.Discard));
         Assert.Equal("1234", model.CurrentPreset.VbrParam);
-        model.CurrentPreset = first;
-        Assert.True(model.IsPresetDirty);
-        model.SavePreset();
+        model.SelectPreset(model.Presets[0]);
+        Assert.Equal("6500", model.CurrentPreset.VbrParam);
         Assert.False(model.IsPresetDirty);
         model.DeletePreset();
         model.DeletePreset();

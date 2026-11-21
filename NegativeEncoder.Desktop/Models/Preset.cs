@@ -369,12 +369,8 @@ public sealed class Preset : ObservableObject
     public string? OutputPath { get => _outputPath; set => Set(ref _outputPath, value); }
     private string _audioOutput = "";
     public string AudioOutput { get => _audioOutput; set => Set(ref _audioOutput, value); }
-    private string _muxAudio = "";
-    public string MuxAudio { get => _muxAudio; set => Set(ref _muxAudio, value); }
     private string _muxOutput = "";
     public string MuxOutput { get => _muxOutput; set => Set(ref _muxOutput, value); }
-    private string _subtitle = "";
-    public string Subtitle { get => _subtitle; set => Set(ref _subtitle, value); }
     private string _subtitleRenderer = "subtext";
     public string SubtitleRenderer { get => _subtitleRenderer; set => Set(ref _subtitleRenderer, value); }
     private bool _useRepeat;
@@ -397,8 +393,6 @@ public sealed class Preset : ObservableObject
     public string VsWidth { get => _vsWidth; set => Set(ref _vsWidth, value); }
     private string _vsHeight = "1080";
     public string VsHeight { get => _vsHeight; set => Set(ref _vsHeight, value); }
-    private string _script = "";
-    public string Script { get => _script; set => Set(ref _script, value); }
 
     // Only editable properties belong to a preset. Capabilities depend on the current host.
     private static readonly JsonSerializerOptions SnapshotOptions = new() { IgnoreReadOnlyProperties = true };
