@@ -37,6 +37,7 @@ public partial class MainWindow : Window
         _updates = new AppUpdateViewModel(_distributionClient);
         ApplyConcurrency();
         InitializeComponent();
+        FitStartupSizeToScreen();
         DataContext = Model;
         if (!OperatingSystem.IsMacOS()) NativeMenu.SetMenu(this, null);
         _nativePresetMenu = OperatingSystem.IsMacOS() ? (NativeMenu)Resources["NativePresetActions"]! : null;
@@ -76,6 +77,22 @@ public partial class MainWindow : Window
         if (initializeLibrary && !_distributionClient.Settings.SkipEmptyLibraryCheck)
             Opened += CheckEmptyLibraryOnStartup;
         Closed += (_, _) => { _lifetime.Cancel(); _distributionClient.Dispose(); _lifetime.Dispose(); };
+    }
+
+    private void FitStartupSizeToScreen()
+    {
+        // Match the display Avalonia uses for CenterScreen before the window is shown.
+        var screen = Screens.ScreenFromPoint(Position) ?? Screens.Primary;
+        if (screen is null) return;
+
+        var workArea = screen.WorkingArea.Size.ToSize(screen.Scaling);
+        const double usableFraction = 0.9; // Leave room for the native frame and desktop edges.
+        var width = Math.Min(Width, Math.Floor(workArea.Width * usableFraction));
+        var height = Math.Min(Height, Math.Floor(workArea.Height * usableFraction));
+        MinWidth = Math.Min(MinWidth, width);
+        MinHeight = Math.Min(MinHeight, height);
+        Width = width;
+        Height = height;
     }
 
     private async void CheckEmptyLibraryOnStartup(object? sender, EventArgs e)

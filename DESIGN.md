@@ -48,7 +48,9 @@ use monospace; descriptive text follows the selected language. Keep product/code
 
 ## Layout
 
-Default desktop window: 1320 × 850; minimum: 1000 × 620. Side panes resize with
+The desktop window opens at up to 1320 × 850 logical units. Its initial width and
+height each use at most 90% of the startup display’s usable work area. The usual
+1000 × 620 minimum shrinks on either axis when needed to fit. Side panes resize with
 splitters; the center reserves space for paths and a footer action. Each tab owns
 one vertically scrolling form. Encoder fields use ResponsiveFormPanel: three equal
 columns from 700 units of available form width, two from 350 units, and one below
