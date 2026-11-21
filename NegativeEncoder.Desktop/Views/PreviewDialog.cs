@@ -10,6 +10,8 @@ using NegativeEncoder.Desktop.Models;
 
 namespace NegativeEncoder.Desktop.Views;
 
+public enum EmptyLibraryChoice { Dismiss, OpenLibrary, NeverAskAgain }
+
 // All app-owned dialogs share modal ownership, Escape, scrolling and initial focus.
 public sealed class PreviewDialog : OwnedDialog
 {
@@ -87,6 +89,16 @@ public sealed class PreviewDialog : OwnedDialog
         dialog.AddButton(actionLabel, () => dialog.Close(true));
         dialog.Opened += (_, _) => cancel.Focus();
         return await dialog.ShowDialog<bool>(owner);
+    }
+
+    public static Task<EmptyLibraryChoice> EmptyLibraryAsync(Window owner)
+    {
+        var dialog = new PreviewDialog(Loc.Text("MainWindow.ToolLibrary"), Loc.Text("PreviewDialog.EmptyLibrary"));
+        dialog.AddButton(Loc.Text("PreviewDialog.NeverAskAgain"), () => dialog.Close(EmptyLibraryChoice.NeverAskAgain));
+        var no = dialog.AddButton(Loc.Text("PreviewDialog.No"), () => dialog.Close(EmptyLibraryChoice.Dismiss));
+        dialog.AddButton(Loc.Text("PreviewDialog.Yes"), () => dialog.Close(EmptyLibraryChoice.OpenLibrary));
+        dialog.Opened += (_, _) => no.Focus();
+        return dialog.ShowDialog<EmptyLibraryChoice>(owner);
     }
 
     public static Task<PresetChangeChoice> UnsavedPresetAsync(Window owner, string name)

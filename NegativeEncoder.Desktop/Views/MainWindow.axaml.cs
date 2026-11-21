@@ -18,6 +18,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<Preset, (MenuItem Menu, NativeMenuItem Native)> _presetItems = new();
 
     private ToolLibraryViewModel? _toolLibrary;
+    private readonly LibraryPaths? _libraryPaths;
     private readonly DistributionClient _distributionClient;
     private readonly AppUpdateViewModel _updates;
     private SettingsWindow? _settingsWindow;
@@ -27,8 +28,9 @@ public partial class MainWindow : Window
     public MainWindow() : this(true, Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NegativeEncoder", "Desktop")) { }
 
-    public MainWindow(bool initializeLibrary, string? presetDirectory = null, DistributionClient? distributionClient = null)
+    public MainWindow(bool initializeLibrary, string? presetDirectory = null, DistributionClient? distributionClient = null, LibraryPaths? libraryPaths = null)
     {
+        _libraryPaths = libraryPaths;
         _distributionClient = distributionClient ?? new DistributionClient();
         _distributionClient.Settings.ApplyUiCulture();
         Model = new MainWindowViewModel(presetDirectory: presetDirectory);
@@ -71,13 +73,43 @@ public partial class MainWindow : Window
             catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
             catch (Exception ex) { Model.SetVsDetectionError(Loc.Format("MainWindow.LibraryProbeFailed", ex.Message)); }
         };
+        if (initializeLibrary && !_distributionClient.Settings.SkipEmptyLibraryCheck)
+            Opened += CheckEmptyLibraryOnStartup;
         Closed += (_, _) => { _lifetime.Cancel(); _distributionClient.Dispose(); _lifetime.Dispose(); };
+    }
+
+    private async void CheckEmptyLibraryOnStartup(object? sender, EventArgs e)
+    {
+        Opened -= CheckEmptyLibraryOnStartup;
+        try
+        {
+            if (GetToolLibrary().Service.HasInstalledTools()) return;
+        }
+        catch (Exception ex)
+        {
+            await PreviewDialog.NoticeAsync(this, Loc.Text("MainWindow.ToolLibrary"), Loc.Format("MainWindow.LibraryProbeFailed", ex.Message));
+            return;
+        }
+
+        switch (await PreviewDialog.EmptyLibraryAsync(this))
+        {
+            case EmptyLibraryChoice.OpenLibrary:
+                await ShowToolLibraryAsync();
+                break;
+            case EmptyLibraryChoice.NeverAskAgain:
+                try { _distributionClient.Settings.DisableEmptyLibraryCheck(); }
+                catch (Exception ex)
+                {
+                    await PreviewDialog.NoticeAsync(this, Loc.Text("MainWindow.ToolLibrary"), Loc.Format("SettingsWindow.SaveFailed", ex.Message));
+                }
+                break;
+        }
     }
 
     private ToolLibraryViewModel GetToolLibrary()
     {
         if (_toolLibrary is not null) return _toolLibrary;
-        var paths = new LibraryPaths();
+        var paths = _libraryPaths ?? new LibraryPaths();
         var runner = new ProcessRunner();
         _toolLibrary = new ToolLibraryViewModel(new ToolLibraryService(paths, HostPlatform.Current, _distributionClient, runner), runner);
         Model.ConfigureEncoding(new EncodingRunner(_toolLibrary.Service, _distributionClient.Settings));

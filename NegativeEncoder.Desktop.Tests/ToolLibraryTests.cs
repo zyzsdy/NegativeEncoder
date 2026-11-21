@@ -27,6 +27,85 @@ public sealed class ToolLibraryTests : IDisposable
     private static HostPlatform Mac => new("osx", "arm64", new Version(15, 0));
 
     [Fact]
+    public void EmptyLibraryCheckRecognizesOnlyActiveOrManuallyInstalledTools()
+    {
+        var paths = Paths();
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        Assert.False(service.HasInstalledTools());
+        var generation = Generation(paths, "ffmpeg");
+        Assert.False(service.HasInstalledTools());
+        var manual = Path.Combine(paths.Root, "vtenc");
+        File.WriteAllText(manual, "");
+        Assert.True(service.HasInstalledTools());
+        File.Delete(manual);
+        Activate(paths, generation);
+        Assert.True(service.HasInstalledTools());
+        Directory.Delete(generation, true);
+        Assert.Throws<FileNotFoundException>(() => service.HasInstalledTools());
+    }
+
+    [AvaloniaTheory]
+    [InlineData("是")]
+    [InlineData("否")]
+    [InlineData("不再弹出")]
+    [InlineData("Escape")]
+    public async Task EmptyLibraryStartupChoiceControlsThisAndFollowingLaunches(string choice)
+    {
+        var file = Path.Combine(_root, "network.json");
+        File.WriteAllText(file, """{"proxyAddress":"http://localhost:8080"}""");
+        MainWindow Launch()
+        {
+            var client = new DistributionClient(new ResponseHandler([]), new AppSettings(file));
+            var window = new MainWindow(true, distributionClient: client, libraryPaths: Paths());
+            window.Show();
+            return window;
+        }
+
+        var first = Launch();
+        try
+        {
+            var dialog = Assert.IsType<PreviewDialog>(Assert.Single(first.OwnedWindows));
+            Assert.Contains(dialog.GetVisualDescendants().OfType<TextBlock>(),
+                block => block.Text == "检测到当前系统中没有任何工具库，可能无法正常使用，是否立即下载工具库？");
+            if (choice == "Escape")
+                dialog.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
+            else
+                dialog.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, choice))
+                    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Dispatcher.UIThread.RunJobs();
+            if (choice == "是")
+            {
+                var manager = Assert.IsType<ToolLibraryWindow>(Assert.Single(first.OwnedWindows));
+                if (manager.Model.Busy)
+                {
+                    var idle = new TaskCompletionSource();
+                    manager.Model.PropertyChanged += (_, e) =>
+                    {
+                        if (e.PropertyName == nameof(manager.Model.Busy) && manager.Model.Idle) idle.TrySetResult();
+                    };
+                    manager.Model.Cancel();
+                    await idle.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                }
+                manager.Close();
+            }
+            Assert.Empty(first.OwnedWindows);
+        }
+        finally { first.Close(); }
+
+        var settings = new AppSettings(file);
+        Assert.Equal("http://localhost:8080", settings.ProxyAddress);
+        settings.Save("system", 5, settings.ProxyAddress);
+        var second = Launch();
+        try
+        {
+            if (choice == "不再弹出") Assert.Empty(second.OwnedWindows);
+            else Assert.IsType<PreviewDialog>(Assert.Single(second.OwnedWindows));
+        }
+        finally { second.Close(); }
+    }
+
+    [Fact]
     public void ManualToolAliasesIgnoreCaseButDistinctLocationsStillFail()
     {
         var paths = Paths();

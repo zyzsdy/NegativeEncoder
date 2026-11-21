@@ -15,6 +15,7 @@ public sealed class AppSettings
     public int MaxConcurrentEncodings => _preferences.MaxConcurrentEncodings;
 
     public bool KeepTemporaryFilesOnFailure => _preferences.KeepTemporaryFilesOnFailure;
+    public bool SkipEmptyLibraryCheck => _preferences.SkipEmptyLibraryCheck;
     public string? WindowsShell => _preferences.WindowsShell;
     public string EffectiveWindowsShell(bool pwshAvailable) => WindowsShell is null or "pwsh"
         ? (pwshAvailable ? "pwsh" : "cmd") : WindowsShell;
@@ -38,9 +39,18 @@ public sealed class AppSettings
     public void Save(string language, int maxConcurrentEncodings, string address, string? windowsShell) =>
         Save(language, maxConcurrentEncodings, address, windowsShell, KeepTemporaryFilesOnFailure);
 
-    public void Save(string language, int maxConcurrentEncodings, string address, string? windowsShell, bool keepTemporaryFilesOnFailure)
+    public void Save(string language, int maxConcurrentEncodings, string address, string? windowsShell, bool keepTemporaryFilesOnFailure) =>
+        Save(_preferences with
+        {
+            Language = language, MaxConcurrentEncodings = maxConcurrentEncodings, ProxyAddress = address,
+            WindowsShell = windowsShell, KeepTemporaryFilesOnFailure = keepTemporaryFilesOnFailure
+        });
+
+    public void DisableEmptyLibraryCheck() => Save(_preferences with { SkipEmptyLibraryCheck = true });
+
+    private void Save(Preferences preferences)
     {
-        var preferences = Validate(new(address, language, maxConcurrentEncodings, windowsShell, keepTemporaryFilesOnFailure));
+        preferences = Validate(preferences);
         LibraryJson.WriteAtomic(_file, preferences);
         _preferences = preferences;
     }
@@ -88,5 +98,6 @@ public sealed class AppSettings
         };
     }
 
-    private sealed record Preferences(string ProxyAddress, string Language = "system", int MaxConcurrentEncodings = DefaultConcurrency, string? WindowsShell = null, bool KeepTemporaryFilesOnFailure = false);
+    private sealed record Preferences(string ProxyAddress, string Language = "system", int MaxConcurrentEncodings = DefaultConcurrency, string? WindowsShell = null,
+        bool KeepTemporaryFilesOnFailure = false, bool SkipEmptyLibraryCheck = false);
 }

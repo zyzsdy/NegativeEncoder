@@ -13,6 +13,14 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
 
     private static readonly EnumerationOptions FilesOnly = new() { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint, IgnoreInaccessible = false };
 
+    public bool HasInstalledTools()
+    {
+        var root = Paths.Root;
+        using var lease = AcquireUsageLease(root);
+        var manifest = LibraryPaths.ReadManifest(root);
+        return ToolDefinition.All.Any(tool => FindExecutable(tool, root, manifest) is not null);
+    }
+
     public string? FindExecutable(ToolDefinition tool)
     {
         var root = Paths.Root;
