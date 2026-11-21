@@ -24,6 +24,7 @@ public partial class SettingsWindow : OwnedDialog
         DataContext = updates;
         LanguageField.SelectedItem = LanguageField.Items.OfType<ComboBoxItem>().Single(item => Equals(item.Tag, settings.Language));
         ConcurrencyField.Text = settings.MaxConcurrentEncodings.ToString();
+        KeepTemporaryFilesOnFailureField.IsChecked = settings.KeepTemporaryFilesOnFailure;
         ProxyAddressField.Text = settings.ProxyAddress;
         if (OperatingSystem.IsWindows())
         {
@@ -49,14 +50,16 @@ public partial class SettingsWindow : OwnedDialog
             shell = selected;
 
         var proxy = ProxyAddressField.Text ?? "";
-        if (language == _settings.Language && shell == _settings.WindowsShell &&
+        var keepTemporaryFiles = KeepTemporaryFilesOnFailureField.IsChecked == true;
+        if (keepTemporaryFiles == _settings.KeepTemporaryFilesOnFailure &&
+            language == _settings.Language && shell == _settings.WindowsShell &&
             ConcurrencyField.Text == _settings.MaxConcurrentEncodings.ToString() && proxy == _settings.ProxyAddress)
             return;
 
-        e.Cancel = !TrySave(language, shell, proxy);
+        e.Cancel = !TrySave(language, shell, proxy, keepTemporaryFiles);
     }
 
-    private bool TrySave(string language, string? shell, string proxy)
+    private bool TrySave(string language, string? shell, string proxy, bool keepTemporaryFiles)
     {
         AutomationProperties.SetHelpText(ConcurrencyField, "");
         AutomationProperties.SetHelpText(ProxyAddressField, "");
@@ -67,7 +70,7 @@ public partial class SettingsWindow : OwnedDialog
         }
         try
         {
-            _settings.Save(language, limit, proxy, shell);
+            _settings.Save(language, limit, proxy, shell, keepTemporaryFiles);
         }
         catch (ArgumentException ex) { ShowError(ProxyAddressField, ex.Message); return false; }
         catch (Exception ex)

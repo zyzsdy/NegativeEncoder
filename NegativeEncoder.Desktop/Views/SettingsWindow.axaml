@@ -16,6 +16,7 @@
             <TextBlock Text="{loc:Tr SettingsWindow.LanguageRestart}" Classes="muted"/>
             <Label Content="{loc:Tr SettingsWindow.Concurrency}" Target="{Binding #ConcurrencyField}" Margin="0,6,0,0"/>
             <TextBox Name="ConcurrencyField" AutomationProperties.Name="{loc:Tr SettingsWindow.Concurrency}"/>
+            <CheckBox Name="KeepTemporaryFilesOnFailureField" Content="{loc:Tr SettingsWindow.KeepTemporaryFilesOnFailure}"/>
             <StackPanel Name="WindowsShellPanel" IsVisible="{OnPlatform Windows=True, Default=False}" Spacing="6" Margin="0,6,0,0">
               <Label Content="{loc:Tr SettingsWindow.ToolkitShell}" Target="{Binding #ShellField}"/>
               <ComboBox Name="ShellField" AutomationProperties.Name="{loc:Tr SettingsWindow.ToolkitShell}">

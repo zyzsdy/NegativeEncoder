@@ -11,7 +11,7 @@ public interface IEncodingRunner
     Task RunAsync(TaskDraft task, CancellationToken token);
 }
 
-public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
+public sealed class EncodingRunner(ToolLibraryService library, AppSettings settings) : IEncodingRunner
 {
     public void Validate(TaskDraft task)
     {
@@ -96,17 +96,35 @@ public sealed class EncodingRunner(ToolLibraryService library) : IEncodingRunner
                 throw new IOException(Loc.Text("EncodingRunner.MissingEncodedOutput"));
             File.Move(plan.StagedOutput, task.OutputPath, false);
         }
-        catch (Exception error)
+        catch (Exception error) when (settings.KeepTemporaryFilesOnFailure ||
+                                      (error is OperationCanceledException && token.IsCancellationRequested))
         {
             Report(Loc.Format("EncodingRunner.RetainedWorkDirectory", error, work));
             throw;
         }
-        // Preserve the real log next to the output. Never silently discard cleanup errors.
-        log.Close();
-        var finalLog = task.OutputPath + Path.GetFileName(work) + ".log";
-        File.Move(task.LogPath, finalLog, false);
-        task.LogPath = finalLog;
-        Directory.Delete(work, true);
+        catch (Exception error)
+        {
+            try
+            {
+                Report($"\n{error}\n");
+                CleanWorkDirectory();
+            }
+            catch (Exception cleanupError)
+            {
+                throw new AggregateException(Loc.Format("EncodingRunner.CleanupFailed", work), error, cleanupError);
+            }
+            throw;
+        }
+        CleanWorkDirectory();
+
+        void CleanWorkDirectory()
+        {
+            log.Close();
+            var finalLog = task.OutputPath + Path.GetFileName(work) + ".log";
+            File.Move(task.LogPath, finalLog, false);
+            task.LogPath = finalLog;
+            Directory.Delete(work, true);
+        }
     }
 
     public static async Task RunStepAsync(EncodingStep step, Action<string> report, CancellationToken token,

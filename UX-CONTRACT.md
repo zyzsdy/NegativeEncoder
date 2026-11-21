@@ -40,7 +40,9 @@ exists in this preview. No legacy configuration is read or written.
 - Queue: Add validates inputs/tools/destinations, captures a preset/script snapshot and
   starts jobs in queue order up to the saved concurrency limit (default 3). Changes to forms do not mutate existing tasks. Both sides of
   pipelines must succeed before the staged output is published; existing files are never
-  overwritten. Errors stop scheduling and preserve diagnostics; the File menu resumes
+  overwritten. Failed tasks clean up temporary files by default and always retain the execution log.
+  Enabling temporary file retention in Settings keeps the failed task’s working directory and logs its path.
+  Errors stop scheduling and preserve diagnostics; the File menu resumes
   pending tasks. Cancellation stops the complete process tree. Running entries cannot be
   removed; pending/completed entries retain Undo. Details show selectable live logs.
   Batch VS tasks rebind only the generator's explicit VIDEO_PATH declaration; scripts

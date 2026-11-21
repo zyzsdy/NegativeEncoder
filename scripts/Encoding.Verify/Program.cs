@@ -34,7 +34,7 @@ var input = Path.Combine(output, "输入 视频.mp4");
 (await runner.RunAsync(ffmpeg, ["-nostdin", "-n", "-f", "lavfi", "-i", "testsrc2=size=320x240:rate=30", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000", "-t", "1", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", "-color_range", "tv", "-c:a", "aac", input], token)).EnsureSuccess("fixture");
 var ass = Path.Combine(output, "字幕 测试.ass");
 await File.WriteAllTextAsync(ass, "[Script Info]\nScriptType: v4.00+\nPlayResX: 320\nPlayResY: 240\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,24,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,Encoding test\n", token);
-var executor = new EncodingRunner(service);
+var executor = new EncodingRunner(service, settings);
 async Task<string> Execute(string name, TaskOperation operation, Preset preset, string extension = ".mp4", string? audio = null, string? source = null, string script = "")
 {
     var destination = Path.Combine(output, name + extension);

@@ -537,6 +537,7 @@ public sealed class ToolLibraryTests : IDisposable
             }
             Assert.Equal("http://localhost:7890", field.Text);
             Assert.Equal("3", limit.Text);
+            Assert.False(window.FindControl<CheckBox>("KeepTemporaryFilesOnFailureField")!.IsChecked);
             Assert.Equal("system", ((ComboBoxItem)language.SelectedItem!).Tag);
             Assert.False(notice.IsVisible);
 
@@ -602,7 +603,14 @@ public sealed class ToolLibraryTests : IDisposable
             return window;
         }
 
+        var retentionWindow = Open();
+        var keepFiles = retentionWindow.FindControl<CheckBox>("KeepTemporaryFilesOnFailureField")!;
+        Assert.False(keepFiles.IsChecked);
+        keepFiles.IsChecked = true;
+        retentionWindow.Close();
+
         var first = Open();
+        Assert.True(first.FindControl<CheckBox>("KeepTemporaryFilesOnFailureField")!.IsChecked);
         first.FindControl<TextBox>("ConcurrencyField")!.Text = "7";
         first.Close();
 
@@ -617,10 +625,12 @@ public sealed class ToolLibraryTests : IDisposable
 
         var third = Open();
         Assert.Equal("7", third.FindControl<TextBox>("ConcurrencyField")!.Text);
+        third.FindControl<CheckBox>("KeepTemporaryFilesOnFailureField")!.IsChecked = false;
         third.FindControl<TextBox>("ConcurrencyField")!.Text = "9";
         third.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
         Assert.False(third.IsVisible);
         Assert.Equal(7, new AppSettings(path).MaxConcurrentEncodings);
+        Assert.True(new AppSettings(path).KeepTemporaryFilesOnFailure);
     }
 
     private string Generation(LibraryPaths paths, string tool, string contents = "old binary")

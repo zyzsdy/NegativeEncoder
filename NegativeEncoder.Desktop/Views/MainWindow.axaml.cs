@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using NegativeEncoder.Desktop.EncodingTasks;
 using NegativeEncoder.Desktop.Models;
 using NegativeEncoder.Desktop.ViewModels;
 using NegativeEncoder.Desktop.ToolLibrary;
@@ -79,7 +80,7 @@ public partial class MainWindow : Window
         var paths = new LibraryPaths();
         var runner = new ProcessRunner();
         _toolLibrary = new ToolLibraryViewModel(new ToolLibraryService(paths, HostPlatform.Current, _distributionClient, runner), runner);
-        Model.ConfigureEncoding(_toolLibrary.Service);
+        Model.ConfigureEncoding(new EncodingRunner(_toolLibrary.Service, _distributionClient.Settings));
         _toolLibrary.CapabilitiesChanged += Model.ApplyVsCapabilities;
         return _toolLibrary;
     }

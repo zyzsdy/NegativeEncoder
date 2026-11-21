@@ -114,7 +114,7 @@ available. Unsupported distributions explain the reason beside a disabled action
 Source paths truncate with full tooltips. Localize plugin descriptions and keep native
 component names unchanged. No new global shortcuts or custom animation.
 
-SettingsWindow owns language preference, queue concurrency, the shared network proxy and the Windows toolkit shell choice.
+SettingsWindow owns language preference, queue concurrency, temporary file retention after failure, the shared network proxy and the Windows toolkit shell choice.
 File and the tool-library manager open the same settings dialog. Settings and Help share
 one update check, with the newer release linked from Help. Application-owned text uses stable IDs in the bundled Chinese, English and Japanese language packs.
 
@@ -133,4 +133,4 @@ stops; removal of pending/completed entries has the existing undo action. Previe
 uses a read-only, selectable, live TextBox for task diagnostics. Logs on disk retain full
 output; the UI retains the latest 64,000 characters. Output paths are unique among active
 jobs and never overwrite existing files. Execution uses a private staging directory,
-keeps failed work for diagnosis, and publishes only after all exit codes succeed.
+publishes only after all exit codes succeed, and always preserves the execution log. Failed jobs keep their staging directory when enabled in Settings. Cancelled jobs keep their staging directory.

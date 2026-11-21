@@ -391,7 +391,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    public void ConfigureEncoding(ToolLibraryService library) => ConfigureEncoding(new EncodingRunner(library));
     public void ConfigureEncoding(IEncodingRunner runner) => _encodingRunner = runner;
     public async Task RunQueueAsync(CancellationToken token = default)
     {

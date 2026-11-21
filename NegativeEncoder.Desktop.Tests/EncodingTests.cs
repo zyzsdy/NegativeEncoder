@@ -519,6 +519,62 @@ public sealed class EncodingTests
         }
     }
 
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    public async Task TemporaryFileRetentionAfterVideoStep(bool keepFiles, bool failAudio)
+    {
+        if (OperatingSystem.IsWindows()) return; // The fixture encoders are POSIX shell scripts.
+        var root = Directory.CreateTempSubdirectory("ne-retention-").FullName;
+        try
+        {
+            void WriteTool(string name, string script)
+            {
+                var path = Path.Combine(root, name);
+                File.WriteAllText(path, "#!/bin/sh\n" + script);
+                File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserExecute);
+            }
+
+            WriteTool("nvencc", """while [ "$1" != "-o" ]; do shift; done; echo video > "$2" """);
+            WriteTool("ffmpeg", failAudio ? "exit 19" : """for output do :; done; echo media > "$output" """);
+            var settings = new AppSettings(Path.Combine(root, "network.json"));
+            using var client = new DistributionClient(settings: settings);
+            var service = new ToolLibraryService(new LibraryPaths(Path.Combine(root, "library-settings.json"), root),
+                Host("linux"), client, new ProcessRunner());
+            var runner = new EncodingRunner(service, settings);
+            settings.Save("system", 1, "", null, keepFiles);
+            var input = Path.Combine(root, "input.mp4");
+            File.WriteAllText(input, "input");
+            var task = new TaskDraft(TaskOperation.Video, input, Path.Combine(root, "result.mp4"),
+                new Preset { Encoder = Encoder.NVENC, AudioEncode = AudioEncode.Encode }, "", "", "");
+
+            if (failAudio)
+            {
+                var error = await Assert.ThrowsAsync<InvalidOperationException>(() => runner.RunAsync(task, default));
+                Assert.Contains("19", error.Message);
+                Assert.Contains(error.Message, File.ReadAllText(task.LogPath));
+                Assert.False(File.Exists(task.OutputPath));
+            }
+            else
+            {
+                await runner.RunAsync(task, default);
+                Assert.True(File.Exists(task.OutputPath));
+            }
+
+            Assert.True(File.Exists(task.LogPath));
+            var directories = Directory.GetDirectories(root, ".negativeencoder-*");
+            if (failAudio && keepFiles)
+            {
+                var work = Assert.Single(directories);
+                Assert.Equal("video", File.ReadAllText(Path.Combine(work, "video.mkv")).Trim());
+                Assert.Contains(work, task.Log);
+            }
+            else Assert.Empty(directories);
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
     [Fact]
     public async Task ProducerFailureCannotBecomeSuccessAndCancellationStopsBothProcesses()
     {
