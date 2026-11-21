@@ -9,7 +9,7 @@ using var cancellation = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; cancellation.Cancel(); };
 var token = cancellation.Token;
 Console.WriteLine($"Platform: {service.Host}, root: {root}");
-if (args[1] == "cleanup") service.CleanupUnusedGenerations(Console.WriteLine);
+if (args[1] == "cleanup") service.CleanupLibrary(Console.WriteLine, token);
 if (args[1] == "runtime") await service.InstallRuntimeAsync(args.Skip(2), Console.WriteLine, token);
 if (args[1] == "ffmpeg")
 {

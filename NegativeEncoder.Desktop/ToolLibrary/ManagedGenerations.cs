@@ -6,7 +6,7 @@ internal static class ManagedGenerations
         ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
     // The caller must hold the library's exclusive installation lease throughout cleanup.
-    public static int Cleanup(string root, Action<string> progress, CancellationToken token = default)
+    public static (int Versions, int Packages) Cleanup(string root, Action<string> progress, bool includeDownloads = false, CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
         var manifest = LibraryPaths.ReadManifest(root);
@@ -14,6 +14,13 @@ internal static class ManagedGenerations
             if (!File.Exists(LibraryPaths.Within(root, tool.Executable)))
                 throw new FileNotFoundException(Loc.Text("ManagedGenerations.MissingActiveFile"), tool.Executable);
         var protectedPaths = ProtectedPaths(root, manifest, token);
+        var versions = CleanupVersions(root, protectedPaths, progress, token);
+        var packages = includeDownloads ? CleanupDownloads(root, protectedPaths, progress, token) : 0;
+        return (versions, packages);
+    }
+
+    private static int CleanupVersions(string root, HashSet<string> protectedPaths, Action<string> progress, CancellationToken token)
+    {
         var managed = LibraryPaths.Within(root, ".managed");
         if (!Directory.Exists(managed)) return 0;
         RequireRealDirectory(managed);
@@ -39,6 +46,35 @@ internal static class ManagedGenerations
             progress(Loc.Format("ManagedGenerations.RemovedDirectory", Path.GetRelativePath(root, directory)));
         }
         return candidates.Count;
+    }
+
+    private static int CleanupDownloads(string root, HashSet<string> protectedPaths, Action<string> progress, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var downloads = new DirectoryInfo(LibraryPaths.Within(root, ".downloads"));
+        if (!downloads.Exists) return 0;
+        RequireRealDirectory(downloads.FullName);
+        var removed = 0;
+        foreach (var folder in downloads.EnumerateDirectories())
+        {
+            token.ThrowIfCancellationRequested();
+            if (folder.Name.Length != 64 || !folder.Name.All(char.IsAsciiHexDigit)) continue;
+            RequireRealDirectory(folder.FullName);
+            if (IsProtected(folder.FullName, protectedPaths)) continue;
+            foreach (var file in folder.EnumerateFiles())
+            {
+                token.ThrowIfCancellationRequested();
+                if (file.Attributes.HasFlag(FileAttributes.ReparsePoint)) continue;
+                if (file.Extension.ToLowerInvariant() is not (".zip" or ".7z" or ".deb" or ".whl") &&
+                    !file.Name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase)) continue;
+                file.Delete();
+                removed++;
+                progress(Loc.Format("ManagedGenerations.RemovedPackage", Path.GetRelativePath(root, file.FullName)));
+            }
+            if (!folder.EnumerateFileSystemInfos().Any()) folder.Delete();
+        }
+        if (!downloads.EnumerateFileSystemInfos().Any() && !IsProtected(downloads.FullName, protectedPaths)) downloads.Delete();
+        return removed;
     }
 
     public static void DeleteUnreferenced(string root, string generation)

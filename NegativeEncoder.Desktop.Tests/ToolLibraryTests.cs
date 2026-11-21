@@ -524,12 +524,16 @@ public sealed class ToolLibraryTests : IDisposable
     }
 
     [AvaloniaFact]
-    public async Task LibraryCleanupConfirmsAppliedPathAndReportsRemovedVersions()
+    public async Task LibraryCleanupConfirmsAppliedPathAndReportsRemovedVersionsAndPackages()
     {
         var paths = Paths();
         var active = Generation(paths, "ffmpeg");
         Activate(paths, active);
         var unused = Generation(paths, "vtenc");
+        var downloads = Path.Combine(paths.Root, ".downloads");
+        var cache = Directory.CreateDirectory(Path.Combine(downloads, new string('a', 64)));
+        var archive = Path.Combine(cache.FullName, "python.tar.gz");
+        File.WriteAllBytes(archive, []);
         using var client = new DistributionClient(new ResponseHandler([]));
         var runner = new FakeRunner(false);
         var model = new ToolLibraryViewModel(new(paths, Mac, client, runner), runner)
@@ -552,6 +556,7 @@ public sealed class ToolLibraryTests : IDisposable
                 block => block.Text == Loc.Format("ToolLibraryWindow.ConfirmCleanup", paths.Root));
             dialog.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
             Assert.True(Directory.Exists(unused));
+            Assert.True(File.Exists(archive));
             Assert.Empty(model.Log);
 
             var finished = new TaskCompletionSource();
@@ -566,7 +571,9 @@ public sealed class ToolLibraryTests : IDisposable
             Assert.True(Directory.Exists(active));
             Assert.False(Directory.Exists(unused));
             Assert.Contains(Path.GetRelativePath(paths.Root, unused), model.Log);
-            Assert.Equal(Loc.Format("ToolLibrary.CleanupComplete", 1), model.Status);
+            Assert.False(Directory.Exists(downloads));
+            Assert.Contains(Path.GetRelativePath(paths.Root, archive), model.Log);
+            Assert.Equal(Loc.Format("ToolLibrary.CleanupComplete", 1, 1), model.Status);
             await model.CleanupAsync();
             Assert.Equal(Loc.Text("ToolLibrary.NothingToClean"), model.Status);
         }
@@ -825,12 +832,32 @@ public sealed class ToolLibraryTests : IDisposable
         var before = File.ReadAllText(Path.Combine(paths.Root, "library.json"));
         using var client = new DistributionClient(new ResponseHandler([]));
         var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
-        service.CleanupUnusedGenerations(_ => { });
-        service.CleanupUnusedGenerations(_ => { });
+        service.CleanupLibrary(_ => { });
+        service.CleanupLibrary(_ => { });
         Assert.True(Directory.Exists(directory));
         Assert.True(Directory.Exists(executableDirectory));
         Assert.False(Directory.Exists(unused));
         Assert.Equal(before, File.ReadAllText(Path.Combine(paths.Root, "library.json")));
+    }
+
+    [Fact]
+    public void CleanupRemovesLegacyPackagesWithoutInstalledToolsAndKeepsUnrelatedFiles()
+    {
+        var paths = Paths();
+        var downloads = Path.Combine(paths.Root, ".downloads");
+        var cache = Directory.CreateDirectory(Path.Combine(downloads, new string('b', 64)));
+        var manual = Directory.CreateDirectory(Path.Combine(downloads, "manual"));
+        var packages = new[] { "ffmpeg.zip", "vs.whl", "encoder.7z", "encoder.deb" };
+        foreach (var name in packages) File.WriteAllBytes(Path.Combine(cache.FullName, name), []);
+        File.WriteAllText(Path.Combine(cache.FullName, "notes.txt"), "keep");
+        File.WriteAllBytes(Path.Combine(manual.FullName, "custom.zip"), []);
+
+        using var client = new DistributionClient(new ResponseHandler([]));
+        var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
+        Assert.Equal((0, packages.Length), service.CleanupLibrary(_ => { }));
+        Assert.Equal((0, 0), service.CleanupLibrary(_ => { }));
+        Assert.Equal("notes.txt", Assert.Single(cache.EnumerateFiles()).Name);
+        Assert.True(File.Exists(Path.Combine(manual.FullName, "custom.zip")));
     }
 
     [Fact]
@@ -843,8 +870,8 @@ public sealed class ToolLibraryTests : IDisposable
         var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
         using var cancel = new CancellationTokenSource();
         Assert.ThrowsAny<OperationCanceledException>(() =>
-            service.CleanupUnusedGenerations(_ => cancel.Cancel(), cancel.Token));
-        Assert.Equal(1, service.CleanupUnusedGenerations(_ => { }));
+            service.CleanupLibrary(_ => cancel.Cancel(), cancel.Token));
+        Assert.Equal((1, 0), service.CleanupLibrary(_ => { }));
     }
 
     [Fact]
@@ -863,7 +890,7 @@ public sealed class ToolLibraryTests : IDisposable
         Directory.CreateSymbolicLink(Path.Combine(unused, "outside"), outside);
         using var client = new DistributionClient(new ResponseHandler([]));
         var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
-        service.CleanupUnusedGenerations(_ => { });
+        service.CleanupLibrary(_ => { });
         Assert.True(Directory.Exists(dependency));
         Assert.False(Directory.Exists(unused));
         Assert.Equal("keep", File.ReadAllText(Path.Combine(outside, "custom")));
@@ -896,10 +923,10 @@ public sealed class ToolLibraryTests : IDisposable
         File.WriteAllText(Path.Combine(paths.Root, "library.json"), "broken json");
         using var client = new DistributionClient(new ResponseHandler([]));
         var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
-        Assert.Throws<JsonException>(() => service.CleanupUnusedGenerations(_ => { }));
+        Assert.Throws<JsonException>(() => service.CleanupLibrary(_ => { }));
         Assert.True(Directory.Exists(old));
         Activate(paths, old, Path.Combine(old, "missing"));
-        Assert.Throws<FileNotFoundException>(() => service.CleanupUnusedGenerations(_ => { }));
+        Assert.Throws<FileNotFoundException>(() => service.CleanupLibrary(_ => { }));
         Assert.True(Directory.Exists(old));
     }
 
@@ -916,11 +943,11 @@ public sealed class ToolLibraryTests : IDisposable
         using (first.AcquireUsageLease())
         {
             using var shared = second.AcquireUsageLease();
-            Assert.Throws<IOException>(() => second.CleanupUnusedGenerations(_ => { }));
+            Assert.Throws<IOException>(() => second.CleanupLibrary(_ => { }));
             await Assert.ThrowsAsync<IOException>(() => second.InstallToolAsync(ToolDefinition.All[0], new("1.2.3", "test", []), _ => { }, default));
             Assert.True(Directory.Exists(unused));
         }
-        second.CleanupUnusedGenerations(_ => { });
+        second.CleanupLibrary(_ => { });
         Assert.False(Directory.Exists(unused));
         Assert.True(Directory.Exists(old));
     }

@@ -197,9 +197,10 @@ public sealed class ToolLibraryViewModel : ObservableObject
     public async Task CleanupAsync() => await RunAsync(async token =>
     {
         Status = Loc.Text("ToolLibrary.Cleaning");
-        var removed = await Task.Run(() => Service.CleanupUnusedGenerations(
+        var removed = await Task.Run(() => Service.CleanupLibrary(
             message => Dispatcher.UIThread.Invoke(() => Report(message)), token), token);
-        Report(removed == 0 ? Loc.Text("ToolLibrary.NothingToClean") : Loc.Format("ToolLibrary.CleanupComplete", removed));
+        Report(removed == (0, 0) ? Loc.Text("ToolLibrary.NothingToClean")
+            : Loc.Format("ToolLibrary.CleanupComplete", removed.Versions, removed.Packages));
     });
 
     public void Cancel() { _operation?.Cancel(); Status = Loc.Text("ToolLibrary.Cancelling"); }
