@@ -53,7 +53,8 @@ public sealed class EncodingRunner(ToolLibraryService library, AppSettings setti
             var colorProbe = builder.SourceColorProbe(task);
             var length = new VideoLength(null, null);
             VtSourceColor? color = null;
-            var ffprobe = colorProbe ?? library.FindFfprobe(required: false);
+            var audioOnly = task.Operation == TaskOperation.Audio && library.Host.Os == "osx";
+            var ffprobe = audioOnly ? null : colorProbe ?? library.FindFfprobe(required: false);
             if (ffprobe is not null)
             {
                 task.Status = Loc.Text("EncodingRunner.ProbingVideo");
@@ -77,7 +78,8 @@ public sealed class EncodingRunner(ToolLibraryService library, AppSettings setti
                     if (encodedVideoFrames is null && ffprobe is not null)
                         stepLength = (await VideoLength.ProbeAsync(ffprobe, video, false, Report, token)).Length;
                 }
-                if (step.Command.Arguments.Contains("-vn")) stepLength = stepLength with { Frames = null, EstimatedFrames = false };
+                if (step.Command.Arguments.Contains("-vn") || step.Command.Arguments.Contains("--audio-only"))
+                    stepLength = stepLength with { Frames = null, EstimatedFrames = false };
                 void Update(EncodingProgress sample)
                 {
                     var progress = sample.ForTask(index, plan.Steps.Count, taskClock.Elapsed);

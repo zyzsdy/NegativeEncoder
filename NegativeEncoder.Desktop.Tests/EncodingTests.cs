@@ -118,6 +118,37 @@ public sealed class EncodingTests
     }
 
     [Fact]
+    public void MacAudioJobEncodesOnlyAudioAndKeepsTheRequestedContainer()
+    {
+        var root = Directory.CreateTempSubdirectory("ne-audio-plan-").FullName;
+        try
+        {
+            foreach (var name in new[] { "vtenc", "ffmpeg" }) File.WriteAllText(Path.Combine(root, name), "");
+            using var client = new DistributionClient();
+            var library = new ToolLibraryService(new LibraryPaths(Path.Combine(root, "settings.json"), root),
+                Host("osx"), client, new ProcessRunner());
+            var builder = new EncodingPlanBuilder(library);
+            EncodingPlan Plan(string destination) => builder.Build(new(TaskOperation.Audio, "input.mp4", destination,
+                new Preset { AudioBitrate = "256" }, "", "", ""), root, null);
+
+            var m4a = Plan("result.m4a");
+            Assert.Equal(["--audio-only", "-i", "input.mp4", "-o", m4a.StagedOutput, "--audio-bitrate", "256", "--json-status"],
+                Assert.Single(m4a.Steps).Command.Arguments);
+            Assert.Contains("adts", Assert.Single(Plan("result.AAC").Steps).Command.Arguments);
+
+            var mkv = Plan("result.mkv");
+            Assert.Collection(mkv.Steps,
+                encode => Assert.Contains("--audio-only", encode.Command.Arguments),
+                remux =>
+                {
+                    Assert.Contains("copy", remux.Command.Arguments);
+                    Assert.Equal(mkv.StagedOutput, remux.Command.Arguments[^1]);
+                });
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public void VtSubtitlesProbeSourceColorOnlyForOrdinaryAutomaticArguments()
     {
         var root = Directory.CreateTempSubdirectory("ne-subtitle-color-").FullName;

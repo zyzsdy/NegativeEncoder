@@ -41,11 +41,16 @@ public sealed class EncodingPlanBuilder(ToolLibraryService library)
         {
             if (library.Host.Os == "osx")
             {
-                // VTEnc currently has no audio-only mode. Its native AudioToolbox path is used
-                // in a small intermediate movie, then AAC packets are copied without re-encoding.
-                var movie = Path.Combine(work, "audio-source.mp4");
-                steps.Add(new("VTEnc AAC", Command("vtenc", ["-i", task.InputPath, "-o", movie, "--avsw", "--codec", "hevc", "--output-depth", "10", "--bitrate", "1000", "--output-res", "64x64", "--vpp-colorspace", "matrix=auto:auto,transfer=auto:auto,colorprim=auto:auto,range=auto:auto", "--audio-codec", "aac", "--audio-bitrate", p.AudioBitrate])));
-                steps.Add(new(Loc.Text("EncodingPlan.ExtractAac"), Ffmpeg(["-i", movie, "-map", "0:a:0", "-vn", "-c:a", "copy", destination])));
+                var extension = Path.GetExtension(destination).ToLowerInvariant();
+                // VTEnc defaults to MP4 regardless of extension. Keep FFmpeg's
+                // filename-based muxer selection for other user-chosen containers.
+                var direct = extension is ".m4a" or ".mp4" or ".aac";
+                var audio = direct ? destination : Path.Combine(work, "encoded-audio.m4a");
+                var args = new List<string> { "--audio-only", "-i", task.InputPath, "-o", audio, "--audio-bitrate", p.AudioBitrate };
+                if (extension == ".aac") args.AddRange(["-f", "adts"]);
+                steps.Add(new("VTEnc AAC", Command("vtenc", args)));
+                if (!direct)
+                    steps.Add(new(Loc.Text("EncodingPlan.ExtractAac"), Ffmpeg(["-i", audio, "-map", "0:a:0", "-vn", "-c:a", "copy", destination])));
             }
             else steps.Add(new("FFmpeg AAC", Ffmpeg(["-i", task.InputPath, "-map", "0:a:0", "-vn", "-c:a", "aac", "-b:a", p.AudioBitrate + "k", destination])));
         }
