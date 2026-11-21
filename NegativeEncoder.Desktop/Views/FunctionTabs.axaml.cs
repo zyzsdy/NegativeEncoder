@@ -10,6 +10,9 @@ public partial class FunctionTabs : UserControl
     public FunctionTabs()
     {
         InitializeComponent();
+        FileDrop.AcceptPath(SubtitleField);
+        FileDrop.AcceptPath(BurnSubtitleField);
+        FileDrop.AcceptPath(MuxAudioField);
         ScriptEditor.SyntaxHighlighting = AvaloniaEdit.Highlighting.HighlightingManager.Instance.GetDefinition("Python");
     }
 

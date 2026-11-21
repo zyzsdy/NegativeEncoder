@@ -61,8 +61,8 @@ public partial class MainWindow : Window
         {
             if (e.PropertyName is nameof(Model.CurrentPreset) or nameof(Model.Title)) UpdatePresetMenu();
         };
-        FileDropArea.AddHandler(DragDrop.DragOverEvent, Files_DragOver);
-        FileDropArea.AddHandler(DragDrop.DropEvent, Files_Drop);
+        FileDrop.AcceptFiles(FileDropArea, paths => Model.AddFiles(paths));
+        FileDrop.AcceptFiles(InputPath, paths => Model.AddFiles(paths, insertAtTop: true));
         if (initializeLibrary) Opened += async (_, _) =>
         {
             try
@@ -293,19 +293,6 @@ public partial class MainWindow : Window
             Model.Status = Loc.Format("MainWindow.PickerFailed", ex.Message);
         }
         finally { _pickerOpen = false; }
-    }
-
-    private void Files_DragOver(object? sender, DragEventArgs e)
-    {
-        e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None;
-        e.Handled = true;
-    }
-
-    private void Files_Drop(object? sender, DragEventArgs e)
-    {
-        var paths = e.DataTransfer.TryGetFiles()?.OfType<IStorageFile>().Select(f => f.TryGetLocalPath()).OfType<string>();
-        if (paths is not null) Model.AddFiles(paths);
-        e.Handled = true;
     }
 
     private void Files_SelectionChanged(object? sender, SelectionChangedEventArgs e)

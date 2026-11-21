@@ -24,7 +24,9 @@ exists in this preview. No legacy configuration is read or written.
 
 - Import: native file picker or drop files into the left pane. Cancel changes nothing.
   Importing adds paths only; it does not inspect media or invoke a tool. Duplicate
-  paths are ignored. Removing list entries never deletes files from disk.
+  paths are ignored. Dropping videos on the global input prepends the new files in drop
+  order and selects the first new file. The subtitle and mux audio input fields use
+  the absolute path of the first dropped local file. Removing list entries never deletes files from disk.
 - Selection: selected input is reflected in the input field; the output defaults to
   `<name>_encoded.<format>`. Batch mode uses all files and derives individual names.
 - Forms: controls bind to the current preset; dependencies follow original encoder

@@ -273,15 +273,15 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Status = Loc.Text("MainWindow.PresetDeleted");
     }
 
-    public void AddFiles(IEnumerable<string> paths)
+    public void AddFiles(IEnumerable<string> paths, bool insertAtTop = false)
     {
         var count = 0;
         foreach (var path in paths)
         {
             if (string.IsNullOrWhiteSpace(path) || Files.Any(f => f.Path == path)) continue;
             var file = new VideoFile(path);
-            Files.Add(file);
-            SelectedFile ??= file;
+            Files.Insert(insertAtTop ? count : Files.Count, file);
+            if (count == 0 && (insertAtTop || SelectedFile is null)) SelectedFile = file;
             count++;
         }
         Status = count == 0 ? Loc.Text("MainWindow.NoNewFiles") : Loc.Format("MainWindow.FilesAdded", count);

@@ -2,6 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using NegativeEncoder.Desktop.Models;
 using NegativeEncoder.Desktop.ViewModels;
@@ -89,6 +92,68 @@ public sealed class DesktopTests
         Assert.True(model.FilesEmpty);
         Assert.Empty(model.InputPath);
         Assert.Empty(model.OutputPath);
+    }
+
+    [AvaloniaFact]
+    public async Task FileDropsRespectTheTargetAndKeepPathBindings()
+    {
+        var window = new MainWindow(false);
+        var directory = Directory.CreateTempSubdirectory();
+        window.Show();
+        try
+        {
+            var first = Path.Combine(directory.FullName, "字幕 A.ass");
+            var second = Path.Combine(directory.FullName, "track B.m4a");
+            using var files = new DataTransfer();
+            foreach (var path in new[] { first, second, first })
+            {
+                File.WriteAllText(path, "");
+                var file = await window.StorageProvider.TryGetFileFromPathAsync(path);
+                files.Add(DataTransferItem.CreateFile(Assert.IsAssignableFrom<IStorageFile>(file)));
+            }
+
+            void Drop(Control target)
+            {
+                Dispatcher.UIThread.RunJobs();
+                var center = target.TranslatePoint(new Point(target.Bounds.Width / 2, target.Bounds.Height / 2), window)!.Value;
+                window.DragDrop(center, RawDragEventType.DragEnter, files, DragDropEffects.Copy, RawInputModifiers.None);
+                window.DragDrop(center, RawDragEventType.DragOver, files, DragDropEffects.Copy, RawInputModifiers.None);
+                window.DragDrop(center, RawDragEventType.Drop, files, DragDropEffects.Copy, RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            var model = window.Model;
+            var existing = Path.Combine(directory.FullName, "existing.mp4");
+            model.AddFiles([existing]);
+            var view = window.FindControl<FunctionTabs>("EditorTabs")!;
+            var tabs = view.FindControl<TabControl>("Tabs")!;
+            foreach (var (tab, name) in new[] { (2, "SubtitleField"), (5, "BurnSubtitleField"), (4, "MuxAudioField") })
+            {
+                tabs.SelectedIndex = tab;
+                var field = view.FindControl<TextBox>(name)!;
+                model.Subtitle = model.MuxAudio = "old";
+                Drop(field);
+                Assert.Equal(first, field.Text);
+                Assert.Equal(first, tab == 4 ? model.MuxAudio : model.Subtitle);
+                Assert.Equal("old", tab == 4 ? model.Subtitle : model.MuxAudio);
+            }
+            Assert.Single(model.Files);
+            Drop(window.FindControl<TextBox>("InputPath")!);
+            Assert.Equal(new[] { first, second, existing }, model.Files.Select(f => f.Path));
+            Assert.Equal(first, model.InputPath);
+            var fileList = window.FindControl<ListBox>("FileList")!;
+            Assert.Same(model.Files[0], fileList.SelectedItem);
+
+            model.RemoveFiles(model.Files.Take(2).ToArray());
+            Drop(fileList);
+            Assert.Equal(new[] { existing, first, second }, model.Files.Select(f => f.Path));
+            Assert.Equal(existing, model.InputPath);
+        }
+        finally
+        {
+            window.Close();
+            directory.Delete(true);
+        }
     }
 
     [AvaloniaFact]

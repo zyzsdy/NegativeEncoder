@@ -77,7 +77,7 @@
             <Button Name="ImportButton" Content="{loc:Tr MainWindow.AddVideos}" Click="ImportFiles_Click" HorizontalAlignment="Stretch" />
             <Button Grid.Column="1" Content="{loc:Tr MainWindow.Remove}" Click="RemoveFiles_Click" Margin="6,0,0,0" />
           </Grid>
-          <Grid Grid.Row="2" DragDrop.AllowDrop="True" Name="FileDropArea">
+          <Grid Grid.Row="2" Name="FileDropArea">
             <ListBox Name="FileList" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" SelectionMode="Multiple,Toggle" SelectionChanged="Files_SelectionChanged">
               <ListBox.ItemTemplate><DataTemplate x:DataType="models:VideoFile">
                 <StackPanel Spacing="4"><TextBlock Text="{Binding Name}" /><TextBlock Text="{Binding Path}" Classes="muted" FontSize="11" MaxHeight="44" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Path}" /></StackPanel>
