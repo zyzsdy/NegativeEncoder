@@ -748,13 +748,17 @@ public sealed class ToolLibraryTests : IDisposable
         using var client = new DistributionClient(new ResponseHandler(bytes));
         var service = new ToolLibraryService(paths, Mac, client, new FakeRunner(false));
         var release = new ToolRelease("1.2.3", "test", [new("https://github.com/test/test/tool.zip", Convert.ToHexString(SHA256.HashData(bytes)), "tool.zip")]);
+        var cache = Path.Combine(paths.Root, ".downloads", release.Assets[0].Sha256.ToLowerInvariant());
+        Directory.CreateDirectory(cache);
+        var otherArchive = Path.Combine(cache, "other.zip");
+        File.WriteAllBytes(otherArchive, bytes);
         await service.InstallToolAsync(ToolDefinition.All[0], release, _ => { }, default);
         Assert.False(Directory.Exists(old));
         Assert.False(Directory.Exists(abandoned));
         Assert.True(File.Exists(Path.Combine(activeVtenc, "vtenc")));
         Assert.Equal("keep", File.ReadAllText(Path.Combine(manual, "custom")));
         Assert.True(File.Exists(service.FindExecutable(ToolDefinition.All[0])));
-        Assert.Single(Directory.EnumerateFiles(Path.Combine(paths.Root, ".downloads"), "*.zip", SearchOption.AllDirectories));
+        Assert.Equal(new[] { otherArchive }, Directory.EnumerateFileSystemEntries(cache));
     }
 
     [Theory]
@@ -803,6 +807,8 @@ public sealed class ToolLibraryTests : IDisposable
         Task Install() => service.InstallToolAsync(ToolDefinition.All[0], release, _ => { }, cancellation.Token);
         if (cancel) await Assert.ThrowsAnyAsync<OperationCanceledException>(Install);
         else Assert.Contains("original failure", (await Assert.ThrowsAsync<InvalidOperationException>(Install)).Message);
+        var archive = Path.Combine(paths.Root, ".downloads", release.Assets[0].Sha256.ToLowerInvariant(), "tool.zip");
+        Assert.Equal(bytes, File.ReadAllBytes(archive));
         Assert.Equal(before, File.ReadAllText(Path.Combine(paths.Root, "library.json")));
         Assert.Equal(new[] { old }, Directory.EnumerateDirectories(Path.Combine(paths.Root, ".managed", "ffmpeg")));
         Assert.Equal("old binary", File.ReadAllText(Path.Combine(old, "ffmpeg")));
@@ -968,8 +974,10 @@ public sealed class ToolLibraryTests : IDisposable
         else await Install();
         Assert.Equal(5, calls);
         var remaining = Assert.Single(Directory.EnumerateDirectories(Path.Combine(paths.Root, ".managed", "vapoursynth")));
+        var downloads = Path.Combine(paths.Root, ".downloads");
         if (outcome == "success")
         {
+            Assert.False(Directory.Exists(downloads));
             Assert.False(Directory.Exists(old));
             Assert.Equal(service.ActiveRuntime(), remaining);
             Assert.Equal("user script", File.ReadAllText(Path.Combine(remaining, "custom.py")));
@@ -977,6 +985,7 @@ public sealed class ToolLibraryTests : IDisposable
         }
         else
         {
+            Assert.Equal(new[] { "python.zip", "vs.whl" }, Directory.EnumerateFiles(downloads, "*", SearchOption.AllDirectories).Select(Path.GetFileName).Order());
             Assert.Equal(old, remaining);
             Assert.Equal(before, File.ReadAllText(Path.Combine(paths.Root, "library.json")));
             Assert.Equal("user script", File.ReadAllText(Path.Combine(old, "custom.py")));

@@ -465,7 +465,7 @@
   "ToolLibraryService.CheckFfmpeg": "FFmpeg 运行检查",
   "ToolLibraryService.CheckFfprobe": "ffprobe 检测",
   "ToolLibraryService.CheckVs": "VapourSynth 能力检测",
-  "ToolLibraryService.CleanupFailed": "新版本已启用，但旧目录清理失败；当前版本保持有效。{0}",
+  "ToolLibraryService.CleanupFailed": "新版本已启用，但安装后清理失败。{0}",
   "ToolLibraryService.ColorProbeDependency": "VTEnc 源色彩探测需要工具库中的 FFmpeg 和 ffprobe。",
   "ToolLibraryService.ConfigureVs": "VapourSynth 配置",
   "ToolLibraryService.DownloadCleanupFailed": "下载失败，且无法清理临时文件：{0}",

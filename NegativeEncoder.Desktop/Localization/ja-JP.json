@@ -465,7 +465,7 @@
   "ToolLibraryService.CheckFfmpeg": "FFmpeg の動作確認",
   "ToolLibraryService.CheckFfprobe": "ffprobe の動作確認",
   "ToolLibraryService.CheckVs": "VapourSynth の機能確認",
-  "ToolLibraryService.CleanupFailed": "新しいバージョンは有効です。旧フォルダーの削除に失敗しました：{0}",
+  "ToolLibraryService.CleanupFailed": "新しいバージョンは有効です。インストール後のクリーンアップに失敗しました。{0}",
   "ToolLibraryService.ColorProbeDependency": "VTEnc で入力映像の色情報を調べるにはライブラリ内の FFmpeg と ffprobe が必要です。",
   "ToolLibraryService.ConfigureVs": "VapourSynth の構成",
   "ToolLibraryService.DownloadCleanupFailed": "ダウンロードに失敗し、一時ファイルも削除できませんでした：{0}",

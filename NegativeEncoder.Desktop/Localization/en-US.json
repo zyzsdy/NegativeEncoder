@@ -465,7 +465,7 @@
   "ToolLibraryService.CheckFfmpeg": "FFmpeg execution check",
   "ToolLibraryService.CheckFfprobe": "ffprobe check",
   "ToolLibraryService.CheckVs": "VapourSynth capability check",
-  "ToolLibraryService.CleanupFailed": "The new version is active, but the old directory could not be removed: {0}",
+  "ToolLibraryService.CleanupFailed": "The new version is active, but post-installation cleanup failed. {0}",
   "ToolLibraryService.ColorProbeDependency": "VTEnc source color detection requires FFmpeg and ffprobe in the tool library.",
   "ToolLibraryService.ConfigureVs": "Configure VapourSynth",
   "ToolLibraryService.DownloadCleanupFailed": "Download failed and the temporary file could not be removed: {0}",

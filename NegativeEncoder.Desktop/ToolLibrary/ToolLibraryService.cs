@@ -138,6 +138,7 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
     public async Task InstallToolAsync(ToolDefinition tool, ToolRelease release, Action<string> progress, CancellationToken token, Action<string>? downloadProgress = null)
     {
         using var lease = AcquireLock();
+        var archives = new HashSet<string>();
         var generation = CreateGeneration(tool.Id);
         try
         {
@@ -145,6 +146,7 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             foreach (var asset in release.Assets)
             {
                 var archive = await GetDownloadAsync(asset, downloadProgress ?? progress, token);
+                archives.Add(archive);
                 await Task.Run(() => SafeArchive.Extract(archive, generation, token), token);
             }
             var executable = FindSingle(generation, tool.Executable(Host));
@@ -177,7 +179,7 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             CleanupFailedGeneration(generation, error);
             throw;
         }
-        CleanupAfterActivation(progress);
+        CleanupAfterActivation(archives, progress);
         progress(Loc.Format("ToolLibraryService.Installed", tool.Name, release.Version) + (tool.Id == "ffmpeg" ? Loc.Text("ToolLibraryService.FrameCheckPassed") : Loc.Text("ToolLibraryService.HardwareResult")));
     }
 
@@ -193,12 +195,14 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             if (Catalog.Unavailable(Host, group) is { } reason) throw new NotSupportedException(reason);
         var oldRuntime = previous is null ? null : LibraryPaths.Within(Paths.Root, previous.Directory);
         var oldCapabilities = oldRuntime is null ? VsCapabilities.Empty : await ProbeVsCoreAsync(token, oldRuntime);
+        var archives = new HashSet<string>();
         var generation = CreateGeneration("vapoursynth");
         try
         {
             progress(Loc.Format("ToolLibraryService.PrepareRuntime", Catalog.PythonVersion, Catalog.VapourSynthVersion, Catalog.Combination));
             var python = Catalog.PythonAssets.Single(a => a.Platform == Host.Rid);
             var archive = await GetDownloadAsync(python.Download, downloadProgress ?? progress, token);
+            archives.Add(archive);
             await Task.Run(() => SafeArchive.Extract(archive, generation, token), token);
             var site = SitePackages(generation);
             Directory.CreateDirectory(site);
@@ -207,6 +211,7 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
                 progress(Loc.Format("ToolLibraryService.Installing", package.Id, package.Version));
                 var asset = package.Assets.Single(a => a.Platform == Host.Rid);
                 var downloaded = await GetDownloadAsync(asset.Download, downloadProgress ?? progress, token);
+                archives.Add(downloaded);
                 await Task.Run(() => InstallPackage(package, asset, downloaded, generation, site, token), token);
             }
             foreach (var script in new[] { "runtime_setup.py", "runtime_probe.py" })
@@ -241,7 +246,7 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
             CleanupFailedGeneration(generation, error);
             throw;
         }
-        CleanupAfterActivation(progress);
+        CleanupAfterActivation(archives, progress);
         progress(Loc.Text("ToolLibraryService.RuntimeReady"));
     }
 
@@ -379,9 +384,22 @@ public sealed class ToolLibraryService(LibraryPaths paths, HostPlatform host, Di
         return ManagedGenerations.Cleanup(Paths.Root, progress, token);
     }
 
-    private void CleanupAfterActivation(Action<string> progress)
+    private void CleanupAfterActivation(HashSet<string> archives, Action<string> progress)
     {
-        try { ManagedGenerations.Cleanup(Paths.Root, progress); }
+        try
+        {
+            foreach (var archive in archives)
+            {
+                File.Delete(archive);
+                var folder = Path.GetDirectoryName(archive)!;
+                if (!Directory.EnumerateFileSystemEntries(folder).Any())
+                    Directory.Delete(folder);
+            }
+            var downloads = Path.Combine(Paths.Root, ".downloads");
+            if (archives.Count > 0 && !Directory.EnumerateFileSystemEntries(downloads).Any())
+                Directory.Delete(downloads);
+            ManagedGenerations.Cleanup(Paths.Root, progress);
+        }
         catch (Exception error)
         {
             throw new IOException(Loc.Format("ToolLibraryService.CleanupFailed", error.Message), error);
